@@ -1,0 +1,740 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   Vertex 2.0 — « Black Glass, Signal Light »
+   COUCHE DE VÉRITÉ FINALE. Chargée EN DERNIER, après glass.css.
+
+   Ce fichier est la source unique des jetons de rôle de la refonte visuelle
+   2.0. Il ne renomme aucune classe existante et ne supprime aucun jeton : il
+   redéfinit les jetons `--vx-*` que les pages consomment déjà, pour que
+   l'identité change SANS toucher au balisage servi. Les alias historiques
+   restent valides tant que leurs consommateurs n'ont pas migré.
+
+   RÈGLE DE COULEUR — une couleur = une signification :
+     argent   structure, marque, sélection, série neutre
+     vert     positif RÉEL uniquement (jamais « marque », jamais « actif »)
+     rouge    négatif, perte, risque
+     ambre    prudence, incertitude, donnée dégradée
+     violet   OPTIONS exclusivement
+     cyan     crosshair, focus de graphique, comparaison technique — rien d'autre
+   Aucun bleu identitaire. Aucun dégradé multicolore. Aucun glow permanent.
+
+   DISTRIBUTION VISÉE : 82 % obsidienne/graphite · 13 % blanc/argent/gris ·
+   5 % sémantique + lumière analytique.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* ─────────────────────────────────────────────────────────────────────────
+   1) JETONS DE RÔLE 2.0
+   ───────────────────────────────────────────────────────────────────────── */
+:root{
+  /* Profondeurs — du plus profond au plus élevé */
+  --vx-night:#050607;
+  --vx-shell:#090b0e;
+  --vx-graphite:#0e1116;
+
+  /* Verre : trois niveaux, une seule stratégie de profondeur */
+  --vx-glass-subtle:rgba(255,255,255,.025);
+  --vx-glass-card:rgba(255,255,255,.045);
+  --vx-glass-raised:rgba(255,255,255,.070);
+
+  /* Encre et gris */
+  --vx-ink:#f5f7fa;
+  --vx-silver:#c9ced8;
+  --vx-mist:#b8bec8;
+  --vx-smoke:#7a828f;
+
+  /* Sémantique stricte */
+  --vx-positive:#36c889;
+  --vx-negative:#ed655c;
+  --vx-caution:#dda23b;
+  --vx-options:#9c79d0;
+  --vx-analysis-light:#65d8e8;
+
+  /* Hairlines — .045 à .075, .14 pour focus/sélection. Jamais décoratives. */
+  --vx2-line-faint:rgba(222,228,238,.045);
+  --vx2-line:rgba(222,228,238,.075);
+  --vx2-line-strong:rgba(222,228,238,.14);
+
+  /* ── Remappage des jetons réellement consommés par les pages ───────────
+     Les pages continuent d'écrire var(--vx-surface-2), var(--vx-text-muted)…
+     Elles héritent de l'identité 2.0 sans un seul changement de balisage. */
+  --vx-obsidian-950:#050607;
+  --vx-obsidian-900:#070809;
+  --vx-obsidian-850:#090b0e;
+  --vx-obsidian-800:#0b0d11;
+  --vx-graphite-900:#0e1116;
+  --vx-graphite-850:#121519;
+  --vx-graphite-800:#171b21;
+  --vx-graphite-750:#1d222a;
+  --vx-graphite-700:#242932;
+
+  --vx-root:var(--vx-night);
+  --vx-app:var(--vx-night);
+  --vx-sidebar:var(--vx-shell);
+  --vx-topbar:rgba(9,11,14,.72);
+
+  --vx-bg-0:var(--vx-night);
+  --vx-bg-1:var(--vx-shell);
+  --vx-bg-2:var(--vx-graphite);
+  --vx-bg-3:#121519;
+
+  --vx-surface-0:#0a0c0f;
+  --vx-surface-base:#0e1116;
+  --vx-surface-raised:#131720;
+  --vx-surface-elevated:#191d26;
+  --vx-surface-hover:#20252f;
+  --vx-surface-1:var(--vx-surface-base);
+  --vx-surface-2:var(--vx-surface-raised);
+  --vx-surface-3:var(--vx-surface-elevated);
+  --vx-surface-4:#1d222a;
+
+  --vx-border-faint:var(--vx2-line-faint);
+  --vx-border-soft:var(--vx2-line);
+  --vx-border-default:var(--vx2-line);
+  --vx-border-strong:var(--vx2-line-strong);
+
+  --vx-text-primary:var(--vx-ink);
+  --vx-text-secondary:var(--vx-mist);
+  --vx-text-muted:var(--vx-smoke);
+  --vx-text-faint:#5f6672;
+
+  /* Verre consommé par .vx-card & co. */
+  --vx-glass-1:rgba(20,23,29,.60);
+  --vx-glass-2:rgba(27,31,39,.62);
+  --vx-glass-3:rgba(38,43,53,.66);
+  --vx-glass-border:var(--vx2-line);
+  --vx-glass-border-faint:var(--vx2-line-faint);
+  --vx-glass-border-strong:var(--vx2-line-strong);
+  --vx-glass-sheen:inset 0 1px 0 rgba(255,255,255,.05);
+  --vx-glass-elevated:var(--vx-glass-2);
+  --vx-glass-hover:var(--vx-glass-3);
+  --vx-glass-critical:var(--vx-glass-3);
+  --vx-blur-sm:8px;--vx-blur-md:16px;--vx-blur-lg:24px;
+  --vx-glass-blur-sm:8px;--vx-glass-blur-md:16px;--vx-glass-blur-lg:24px;
+
+  /* Ombres : noir diffus, réservé au flottant. Pas d'ombre décorative. */
+  --shadow-card:0 1px 2px rgba(0,0,0,.34),0 10px 28px rgba(0,0,0,.34);
+  --shadow-float:0 24px 64px rgba(0,0,0,.58);
+
+  /* Marque = ARGENT. Le vert ne porte jamais l'identité. */
+  --vx-brand:var(--vx-silver);
+  --vx-brand-strong:#e7eaf0;
+  --vx-brand-hover:#e7eaf0;
+  --vx-brand-soft:rgba(201,206,216,.12);
+  --vx-brand-gradient:linear-gradient(135deg,#2b3038,#171b21);
+  --vx-glow-brand:0 0 0 1px rgba(201,206,216,.20);
+
+  /* Sémantique — noms consommés par les pages */
+  --vx-positive-soft:rgba(54,200,137,.13);
+  --vx-negative-soft:rgba(237,101,92,.13);
+  --vx-warning:var(--vx-caution);
+  --vx-warning-soft:rgba(221,162,59,.13);
+  --vx-option:var(--vx-options);
+  --vx-option-soft:rgba(156,121,208,.14);
+  /* Aucun bleu identitaire : info et cyan retombent sur l'argent. */
+  --vx-info:var(--vx-silver);
+  --vx-blue:var(--vx-silver);
+  --vx-cyan:var(--vx-silver);
+
+  /* Typographie 2.0 — Geist / Geist Mono, replis auto-hébergés puis système */
+  --vx-font:'Geist','General Sans',ui-sans-serif,system-ui,-apple-system,
+            BlinkMacSystemFont,"Segoe UI",sans-serif;
+  --vx-font-mono:'Geist Mono','JetBrains Mono',ui-monospace,"SFMono-Regular",
+                 Consolas,"Liberation Mono",monospace;
+
+  --vx-fs-page:30px;--vx-fs-subtitle:14px;--vx-fs-section:18px;
+  --vx-fs-card:13.5px;--vx-fs-body:14px;--vx-fs-meta:11.5px;
+  --vx-fs-kpi:28px;--vx-fs-kpi-sm:20px;--vx-fs-kpi-lg:32px;
+  --vx-fs-hero:24px;--vx-fs-hero-title:22px;
+  --vx-fs-table:12.5px;--vx-fs-label:11.5px;
+
+  /* Grille base 4 px */
+  --vx2-s1:4px;--vx2-s2:8px;--vx2-s3:12px;--vx2-s4:16px;--vx2-s5:20px;
+  --vx2-s6:24px;--vx2-s8:32px;--vx2-s10:40px;
+
+  /* Rayons : contrôle 10, carte 15, modale 18, pilule réservée badge/chip */
+  --vx2-r-control:10px;--vx2-r-card:15px;--vx2-r-modal:18px;--vx2-r-pill:999px;
+
+  /* Mesures de coque */
+  --vx2-sidebar:236px;--vx2-sidebar-collapsed:72px;
+  --vx2-topbar:62px;--vx2-content-max:1660px;
+
+  /* Motion : 140 interaction · 200 transition · 260 entrée, toujours ease-out */
+  --vx-ease-out:cubic-bezier(.23,1,.32,1);
+  --vx-t-fast:140ms;--vx-t:200ms;--vx-t-slow:260ms;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   2) BASE — typographie et chiffres tabulaires
+   ───────────────────────────────────────────────────────────────────────── */
+body{
+  font-family:var(--vx-font);
+  background:var(--vx-night);
+  color:var(--vx-ink);
+  font-size:var(--vx-fs-body);
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+h1,h2,h3,h4{text-wrap:balance}
+p{text-wrap:pretty}
+
+/* Toute valeur dynamique est tabulaire : les colonnes de chiffres s'alignent
+   au pixel et ne « sautent » pas quand la valeur change. Contrôles 050, 113. */
+.vx-mono,.vx-num,[data-numeric],code,kbd,samp,
+.vx2-mono,.vx2-kpi-value,.vx2-metric-value,
+table td,table th{
+  font-variant-numeric:tabular-nums;
+  font-feature-settings:"tnum" 1,"cv01" 1;
+}
+.vx-mono,.vx-num,[data-numeric],.vx2-mono{font-family:var(--vx-font-mono)}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   3) DECISION TRACE — la signature unique
+   Une ligne argentée fine relie quatre nœuds :
+   Donnée → Moteur → Décision → Portefeuille.
+   La couleur n'apparaît QU'AU nœud qui porte réellement ce sens.
+   Emplacements canoniques autorisés (et eux seuls) — contrôle 117 :
+     hero Aujourd'hui · drawer Opportunité · hero Analyse ·
+     audit de décision IA · simulation d'impact Portefeuille.
+   ───────────────────────────────────────────────────────────────────────── */
+.vx2-trace{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:0;
+  position:relative;
+  padding:var(--vx2-s4) 0 var(--vx2-s2);
+  isolation:isolate;
+}
+/* Le fil : une hairline argent, pas un dégradé décoratif. */
+.vx2-trace::before{
+  content:'';position:absolute;z-index:0;
+  left:12.5%;right:12.5%;top:calc(var(--vx2-s4) + 5px);
+  height:1px;
+  background:linear-gradient(90deg,
+    var(--vx2-line-faint) 0%,
+    var(--vx2-line-strong) 18%,
+    var(--vx2-line-strong) 82%,
+    var(--vx2-line-faint) 100%);
+}
+.vx2-trace-node{
+  position:relative;z-index:1;
+  display:flex;flex-direction:column;align-items:center;gap:var(--vx2-s2);
+  text-align:center;padding:0 var(--vx2-s2);min-width:0;
+}
+.vx2-trace-dot{
+  width:11px;height:11px;border-radius:var(--vx2-r-pill);
+  background:var(--vx-graphite);
+  border:1px solid var(--vx2-line-strong);
+  box-shadow:0 0 0 4px var(--vx-night);
+  flex:none;
+}
+/* Le nœud ne prend une couleur que s'il PORTE ce sens. Un nœud neutre
+   reste argent : c'est le défaut, pas un état d'erreur. */
+.vx2-trace-node[data-tone="positive"] .vx2-trace-dot{
+  background:var(--vx-positive);border-color:var(--vx-positive)}
+.vx2-trace-node[data-tone="negative"] .vx2-trace-dot{
+  background:var(--vx-negative);border-color:var(--vx-negative)}
+.vx2-trace-node[data-tone="caution"] .vx2-trace-dot{
+  background:var(--vx-caution);border-color:var(--vx-caution)}
+.vx2-trace-node[data-tone="option"] .vx2-trace-dot{
+  background:var(--vx-options);border-color:var(--vx-options)}
+.vx2-trace-body{
+  display:flex;flex-direction:column;gap:3px;align-items:center;min-width:0;
+}
+.vx2-trace-label{
+  font-size:10.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--vx-smoke);
+}
+.vx2-trace-value{
+  font-size:13px;font-weight:600;color:var(--vx-ink);line-height:1.35;
+  overflow-wrap:anywhere;
+}
+.vx2-trace-node[data-tone="positive"] .vx2-trace-value{color:var(--vx-positive)}
+.vx2-trace-node[data-tone="negative"] .vx2-trace-value{color:var(--vx-negative)}
+.vx2-trace-node[data-tone="caution"] .vx2-trace-value{color:var(--vx-caution)}
+.vx2-trace-node[data-tone="option"] .vx2-trace-value{color:var(--vx-options)}
+.vx2-trace-meta{
+  font-family:var(--vx-font-mono);font-size:10.5px;color:var(--vx-text-faint);
+  font-variant-numeric:tabular-nums;
+}
+@media (max-width:720px){
+  .vx2-trace{grid-template-columns:1fr;gap:var(--vx2-s3);padding-left:var(--vx2-s3)}
+  .vx2-trace::before{
+    left:calc(var(--vx2-s3) + 5px);right:auto;top:var(--vx2-s5);bottom:var(--vx2-s3);
+    height:auto;width:1px;
+    background:linear-gradient(180deg,var(--vx2-line-faint),
+      var(--vx2-line-strong) 20%,var(--vx2-line-strong) 80%,var(--vx2-line-faint));
+  }
+  .vx2-trace-node{flex-direction:row;align-items:flex-start;text-align:left;padding:0}
+  .vx2-trace-dot{margin-top:4px}
+  .vx2-trace-body{align-items:flex-start}
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   4) STRUCTURE DE PAGE — le contrat commun des 12 pages
+   PageHeader · ContextBar · DecisionZone · EvidenceZone · WorkZone · DepthZone
+   ───────────────────────────────────────────────────────────────────────── */
+.vx2-page{
+  display:flex;flex-direction:column;gap:var(--vx2-s6);
+  max-width:var(--vx2-content-max);
+}
+.vx2-header{display:flex;flex-direction:column;gap:var(--vx2-s2)}
+.vx2-header-top{
+  display:flex;align-items:flex-start;justify-content:space-between;
+  gap:var(--vx2-s4);flex-wrap:wrap;
+}
+.vx2-eyebrow{
+  font-size:11px;font-weight:600;letter-spacing:.11em;text-transform:uppercase;
+  color:var(--vx-smoke);
+}
+.vx2-title{
+  font-size:var(--vx-fs-page);font-weight:650;letter-spacing:-.022em;
+  color:var(--vx-ink);line-height:1.1;margin:0;
+}
+/* La question métier de la page — contrôle 031. Jamais décorative :
+   c'est elle qui dit à quoi la page sert. */
+.vx2-question{
+  font-size:14.5px;color:var(--vx-mist);line-height:1.5;max-width:78ch;margin:0;
+}
+.vx2-header-actions{display:flex;align-items:center;gap:var(--vx2-s2);flex-wrap:wrap}
+
+.vx2-contextbar{
+  display:flex;align-items:center;gap:var(--vx2-s3);flex-wrap:wrap;
+  padding:var(--vx2-s3) 0;
+  border-top:1px solid var(--vx2-line-faint);
+  border-bottom:1px solid var(--vx2-line-faint);
+}
+.vx2-context-group{display:flex;align-items:center;gap:var(--vx2-s2);min-width:0}
+.vx2-context-label{
+  font-size:10.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--vx-text-faint);
+}
+.vx2-context-sep{width:1px;height:16px;background:var(--vx2-line-faint);flex:none}
+
+.vx2-section{display:flex;flex-direction:column;gap:var(--vx2-s3)}
+.vx2-section-head{
+  display:flex;align-items:baseline;justify-content:space-between;
+  gap:var(--vx2-s3);flex-wrap:wrap;
+}
+.vx2-section-title{
+  font-size:var(--vx-fs-section);font-weight:600;letter-spacing:-.012em;
+  color:var(--vx-ink);margin:0;
+}
+.vx2-section-note{font-size:12.5px;color:var(--vx-smoke)}
+
+/* Grille 12 colonnes : une carte dominante 7–8 col + rail de preuves 4–5 col.
+   Pas de bento aléatoire. */
+.vx2-grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:var(--vx2-s4)}
+.vx2-col-3{grid-column:span 3}.vx2-col-4{grid-column:span 4}
+.vx2-col-5{grid-column:span 5}.vx2-col-6{grid-column:span 6}
+.vx2-col-7{grid-column:span 7}.vx2-col-8{grid-column:span 8}
+.vx2-col-9{grid-column:span 9}.vx2-col-12{grid-column:span 12}
+@media (max-width:1180px){
+  .vx2-col-3,.vx2-col-4{grid-column:span 6}
+  .vx2-col-5,.vx2-col-7,.vx2-col-8,.vx2-col-9{grid-column:span 12}
+}
+@media (max-width:760px){
+  .vx2-grid{gap:var(--vx2-s3)}
+  .vx2-col-3,.vx2-col-4,.vx2-col-5,.vx2-col-6,
+  .vx2-col-7,.vx2-col-8,.vx2-col-9{grid-column:span 12}
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   5) SURFACES — une seule famille de cartes
+   ───────────────────────────────────────────────────────────────────────── */
+.vx2-surface{
+  background:var(--vx-glass-1);
+  border:1px solid var(--vx2-line);
+  border-radius:var(--vx2-r-card);
+  box-shadow:var(--vx-glass-sheen);
+  backdrop-filter:blur(var(--vx-blur-sm));
+  -webkit-backdrop-filter:blur(var(--vx-blur-sm));
+  padding:var(--vx2-s4);
+  min-width:0;
+}
+/* Repli sans backdrop-filter : graphite plein, jamais transparent sur le vide. */
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+  .vx2-surface,.vx2-hero{background:var(--vx-surface-raised)}
+}
+.vx2-surface--compact{padding:var(--vx2-s3)}
+.vx2-surface--flush{padding:0;overflow:hidden}
+.vx2-hero{
+  background:var(--vx-glass-2);
+  border:1px solid var(--vx2-line);
+  border-radius:var(--vx2-r-card);
+  box-shadow:var(--vx-glass-sheen),var(--shadow-card);
+  backdrop-filter:blur(var(--vx-blur-md));
+  -webkit-backdrop-filter:blur(var(--vx-blur-md));
+  padding:var(--vx2-s5);
+  position:relative;overflow:hidden;min-width:0;
+}
+/* Vertex Beam : un reflet de MATIÈRE sur la surface élevée. Sous 12 %
+   d'opacité, jamais derrière un texte long, jamais animé. Ce n'est pas une
+   seconde signature — contrôle 118. */
+.vx2-hero::after{
+  content:'';position:absolute;inset:0 0 auto 0;height:1px;pointer-events:none;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.10) 32%,
+    rgba(255,255,255,.10) 68%,transparent);
+}
+.vx2-card-head{
+  display:flex;align-items:baseline;justify-content:space-between;
+  gap:var(--vx2-s3);margin-bottom:var(--vx2-s3);flex-wrap:wrap;
+}
+.vx2-card-title{
+  font-size:var(--vx-fs-card);font-weight:600;color:var(--vx-ink);
+  letter-spacing:-.005em;margin:0;
+}
+.vx2-card-question{font-size:12px;color:var(--vx-smoke);font-style:italic}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   6) MÉTRIQUES — UNE famille, MetricCard, et une bande compacte
+   Remplace visuellement les quatre familles historiques
+   (vx-kpi / vx-metric / vx-stat / vx-stat-xl) sans renommer leurs classes.
+   ───────────────────────────────────────────────────────────────────────── */
+.vx2-strip{
+  display:grid;gap:var(--vx2-s3);
+  grid-template-columns:repeat(auto-fit,minmax(168px,1fr));
+}
+.vx2-metric{
+  display:flex;flex-direction:column;gap:var(--vx2-s1);
+  padding:var(--vx2-s3) var(--vx2-s4);
+  background:var(--vx-glass-1);
+  border:1px solid var(--vx2-line-faint);
+  border-radius:var(--vx2-r-card);
+  min-width:0;
+}
+.vx2-metric-label{
+  font-size:10.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--vx-smoke);
+}
+/* La hiérarchie vient du POIDS et de la COULEUR, pas de la taille seule. */
+.vx2-metric-value{
+  font-family:var(--vx-font-mono);font-size:var(--vx-fs-kpi-sm);font-weight:600;
+  color:var(--vx-ink);letter-spacing:-.02em;line-height:1.15;
+  font-variant-numeric:tabular-nums;overflow-wrap:anywhere;
+}
+.vx2-metric--lg .vx2-metric-value{font-size:var(--vx-fs-kpi)}
+.vx2-metric-value[data-tone="positive"]{color:var(--vx-positive)}
+.vx2-metric-value[data-tone="negative"]{color:var(--vx-negative)}
+.vx2-metric-value[data-tone="caution"]{color:var(--vx-caution)}
+.vx2-metric-value[data-tone="option"]{color:var(--vx-options)}
+/* Donnée absente : gris, jamais zéro, jamais une couleur directionnelle. */
+.vx2-metric-value[data-tone="missing"],
+.vx2-metric-value.vx2-absent{color:var(--vx-text-faint);font-weight:500}
+.vx2-metric-meta{font-size:11px;color:var(--vx-text-faint);line-height:1.4}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   7) BADGES — le sens porte TOUJOURS un mot, jamais une couleur seule
+   (contrôles 127, 008, 009)
+   ───────────────────────────────────────────────────────────────────────── */
+.vx2-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:3px 9px;border-radius:var(--vx2-r-pill);
+  font-size:10.5px;font-weight:600;letter-spacing:.05em;
+  border:1px solid var(--vx2-line);
+  background:var(--vx-glass-subtle);color:var(--vx-mist);
+  white-space:nowrap;
+}
+.vx2-badge::before{
+  content:'';width:6px;height:6px;border-radius:var(--vx2-r-pill);
+  background:currentColor;flex:none;
+}
+.vx2-badge[data-state="live"]{color:var(--vx-positive);
+  border-color:rgba(54,200,137,.32);background:var(--vx-positive-soft)}
+.vx2-badge[data-state="delayed"],
+.vx2-badge[data-state="stale"],
+.vx2-badge[data-state="demo"],
+.vx2-badge[data-state="partial"]{color:var(--vx-caution);
+  border-color:rgba(221,162,59,.32);background:var(--vx-warning-soft)}
+.vx2-badge[data-state="error"],
+.vx2-badge[data-state="offline"]{color:var(--vx-negative);
+  border-color:rgba(237,101,92,.32);background:var(--vx-negative-soft)}
+.vx2-badge[data-state="missing"]{color:var(--vx-smoke)}
+.vx2-badge[data-state="option"]{color:var(--vx-options);
+  border-color:rgba(156,121,208,.32);background:var(--vx-option-soft)}
+
+/* Estampille de provenance : source · heure · qualité, toujours lisible.
+   Contrôle 010 — la provenance survit à la recomposition visuelle. */
+.vx2-stamp{
+  display:flex;align-items:center;gap:var(--vx2-s2);flex-wrap:wrap;
+  font-size:10.5px;color:var(--vx-text-faint);
+  font-variant-numeric:tabular-nums;
+}
+.vx2-stamp b{font-weight:600;color:var(--vx-smoke)}
+.vx2-stamp time{font-family:var(--vx-font-mono)}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   8) ÉTATS — jamais un rectangle vide
+   loading · empty · missing · partial · stale · offline · demo · error
+   ───────────────────────────────────────────────────────────────────────── */
+.vx2-state{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:var(--vx2-s2);text-align:center;
+  padding:var(--vx2-s8) var(--vx2-s5);
+  border:1px dashed var(--vx2-line);
+  border-radius:var(--vx2-r-card);
+  background:var(--vx-glass-subtle);
+  color:var(--vx-mist);min-height:132px;
+}
+/* Mini-viz fantôme : trois barres inertes qui annoncent la FORME attendue.
+   Elles ne représentent aucune valeur — d'où l'absence de toute couleur. */
+.vx2-state-ghost{display:flex;align-items:flex-end;gap:5px;height:34px;opacity:.30}
+.vx2-state-ghost i{
+  display:block;width:9px;border-radius:2px;background:var(--vx-smoke);
+}
+.vx2-state-ghost i:nth-child(1){height:44%}
+.vx2-state-ghost i:nth-child(2){height:78%}
+.vx2-state-ghost i:nth-child(3){height:26%}
+.vx2-state-ghost i:nth-child(4){height:60%}
+.vx2-state-title{font-size:13.5px;font-weight:600;color:var(--vx-ink)}
+/* La CAUSE, pas seulement le constat — contrôle 044. */
+.vx2-state-cause{font-size:12.5px;color:var(--vx-smoke);max-width:56ch;line-height:1.5}
+.vx2-state-actions{display:flex;gap:var(--vx2-s2);flex-wrap:wrap;justify-content:center}
+.vx2-state[data-kind="error"]{border-color:rgba(237,101,92,.28)}
+.vx2-state[data-kind="stale"],
+.vx2-state[data-kind="partial"]{border-color:rgba(221,162,59,.28)}
+
+/* Bandeau d'état posé SUR une carte qui contient déjà de la donnée. */
+.vx2-banner{
+  display:flex;align-items:flex-start;gap:var(--vx2-s2);
+  padding:var(--vx2-s2) var(--vx2-s3);
+  border-radius:var(--vx2-r-control);
+  border:1px solid var(--vx2-line);
+  background:var(--vx-glass-subtle);
+  font-size:12.5px;color:var(--vx-mist);line-height:1.5;
+}
+.vx2-banner[data-kind="caution"]{
+  border-color:rgba(221,162,59,.30);background:var(--vx-warning-soft);color:var(--vx-caution)}
+.vx2-banner[data-kind="negative"]{
+  border-color:rgba(237,101,92,.30);background:var(--vx-negative-soft);color:var(--vx-negative)}
+.vx2-banner[data-kind="option"]{
+  border-color:rgba(156,121,208,.30);background:var(--vx-option-soft);color:var(--vx-options)}
+
+/* Squelette : fidèle à la forme attendue, coupé en reduced motion. */
+.vx2-skeleton{
+  border-radius:var(--vx2-r-control);
+  background:linear-gradient(90deg,
+    rgba(255,255,255,.035) 25%,rgba(255,255,255,.070) 37%,rgba(255,255,255,.035) 63%);
+  background-size:400% 100%;
+  animation:vx2-shimmer 1.5s var(--vx-ease-out) infinite;
+}
+@keyframes vx2-shimmer{from{background-position:100% 0}to{background-position:0 0}}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   9) TABLES FINANCIÈRES — denses, tabulaires, sticky
+   ───────────────────────────────────────────────────────────────────────── */
+.vx2-table-wrap{
+  overflow-x:auto;overflow-y:visible;
+  border:1px solid var(--vx2-line);border-radius:var(--vx2-r-card);
+  /* Fond OPAQUE, pas du verre : une colonne collante doit masquer ce qui
+     défile dessous. Sur une surface translucide, la couture se voit. */
+  background:var(--vx-surface-base);
+  -webkit-overflow-scrolling:touch;
+}
+.vx2-table{width:100%;border-collapse:separate;border-spacing:0;font-size:var(--vx-fs-table)}
+.vx2-table th{
+  position:sticky;top:0;z-index:2;
+  background:var(--vx-surface-raised);
+  padding:var(--vx2-s2) var(--vx2-s3);
+  text-align:left;font-size:10.5px;font-weight:600;
+  letter-spacing:.07em;text-transform:uppercase;color:var(--vx-smoke);
+  border-bottom:1px solid var(--vx2-line);white-space:nowrap;
+}
+.vx2-table td{
+  padding:var(--vx2-s2) var(--vx2-s3);
+  border-bottom:1px solid var(--vx2-line-faint);
+  color:var(--vx-mist);vertical-align:middle;
+}
+/* Chiffres à droite, texte à gauche — contrôle 050. */
+.vx2-table th.vx2-num,.vx2-table td.vx2-num{
+  text-align:right;font-family:var(--vx-font-mono);
+  font-variant-numeric:tabular-nums;color:var(--vx-ink);
+}
+.vx2-table tbody tr:last-child td{border-bottom:0}
+.vx2-table tbody tr{transition:background var(--vx-t-fast) var(--vx-ease-out)}
+.vx2-table tbody tr:hover{background:rgba(255,255,255,.028)}
+/* Sélection ARGENT : le vert resterait un signal financier faux. */
+.vx2-table tbody tr[aria-selected="true"]{
+  background:var(--vx-brand-soft);box-shadow:inset 2px 0 0 var(--vx-silver);
+}
+.vx2-table tbody tr:focus-visible{outline:2px solid var(--vx-silver);outline-offset:-2px}
+/* Colonne clé collante : l'instrument reste lisible pendant le défilement. */
+.vx2-table .vx2-sticky-col{
+  position:sticky;left:0;z-index:1;background:var(--vx-surface-base);
+}
+.vx2-table th.vx2-sticky-col{z-index:3}
+.vx2-unit{
+  font-size:.82em;font-weight:500;color:var(--vx-smoke);
+  font-family:var(--vx-font);letter-spacing:0;
+}
+.vx2-th-unit{font-weight:500;color:var(--vx-text-faint);letter-spacing:0}
+.vx2-chart-conclusion{
+  font-size:13px;color:var(--vx-mist);line-height:1.5;margin:0 0 var(--vx2-s3);
+}
+.vx2-pos{color:var(--vx-positive)}
+.vx2-neg{color:var(--vx-negative)}
+.vx2-cau{color:var(--vx-caution)}
+.vx2-opt{color:var(--vx-options)}
+.vx2-absent{color:var(--vx-text-faint)}
+
+/* Mobile : cartes-lignes structurées. Une table financière compressée n'est
+   pas lisible — contrôle 134 : la donnée reste accessible, autrement. */
+.vx2-rowcards{display:none;flex-direction:column;gap:var(--vx2-s2)}
+.vx2-rowcard{
+  display:flex;flex-direction:column;gap:var(--vx2-s2);
+  padding:var(--vx2-s3);border:1px solid var(--vx2-line-faint);
+  border-radius:var(--vx2-r-control);background:var(--vx-glass-1);
+}
+.vx2-rowcard-head{display:flex;align-items:center;justify-content:space-between;gap:var(--vx2-s2)}
+.vx2-rowcard-grid{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(92px,1fr));gap:var(--vx2-s2);
+}
+.vx2-rowcard-cell{display:flex;flex-direction:column;gap:2px;min-width:0}
+.vx2-rowcard-cell dt{
+  font-size:10px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;
+  color:var(--vx-text-faint);
+}
+.vx2-rowcard-cell dd{
+  margin:0;font-family:var(--vx-font-mono);font-size:12.5px;color:var(--vx-ink);
+  font-variant-numeric:tabular-nums;
+}
+@media (max-width:760px){
+  .vx2-table-wrap[data-mobile="cards"]{display:none}
+  .vx2-rowcards{display:flex}
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   10) CONTRÔLES
+   ───────────────────────────────────────────────────────────────────────── */
+.vx2-btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:7px;
+  height:34px;padding:0 14px;border-radius:var(--vx2-r-control);
+  font-family:inherit;font-size:13px;font-weight:600;
+  border:1px solid var(--vx2-line);
+  background:var(--vx-glass-1);color:var(--vx-mist);
+  cursor:pointer;white-space:nowrap;
+  transition:background var(--vx-t-fast) var(--vx-ease-out),
+             border-color var(--vx-t-fast) var(--vx-ease-out),
+             color var(--vx-t-fast) var(--vx-ease-out),
+             transform var(--vx-t-fast) var(--vx-ease-out);
+}
+.vx2-btn:hover{background:var(--vx-glass-2);color:var(--vx-ink);border-color:var(--vx2-line-strong)}
+.vx2-btn:active{transform:scale(.98)}
+.vx2-btn:focus-visible{outline:2px solid var(--vx-silver);outline-offset:2px}
+.vx2-btn--primary{
+  background:var(--vx-brand-gradient);color:var(--vx-ink);border-color:var(--vx2-line-strong)}
+.vx2-btn--ghost{background:transparent;border-color:transparent}
+.vx2-btn--ghost:hover{background:var(--vx-glass-subtle);border-color:var(--vx2-line-faint)}
+.vx2-btn[disabled],.vx2-btn[aria-disabled="true"]{opacity:.45;cursor:not-allowed}
+
+.vx2-chip{
+  display:inline-flex;align-items:center;gap:6px;
+  height:28px;padding:0 11px;border-radius:var(--vx2-r-pill);
+  font-family:inherit;font-size:12px;font-weight:500;
+  border:1px solid var(--vx2-line-faint);
+  background:transparent;color:var(--vx-smoke);cursor:pointer;
+  transition:all var(--vx-t-fast) var(--vx-ease-out);
+}
+.vx2-chip:hover{color:var(--vx-ink);border-color:var(--vx2-line)}
+.vx2-chip:active{transform:scale(.98)}
+.vx2-chip:focus-visible{outline:2px solid var(--vx-silver);outline-offset:2px}
+.vx2-chip[aria-pressed="true"],.vx2-chip[aria-current="true"],.vx2-chip.is-active{
+  background:var(--vx-brand-soft);color:var(--vx-ink);border-color:var(--vx2-line-strong)}
+
+.vx2-tabs{
+  display:flex;gap:var(--vx2-s1);overflow-x:auto;
+  border-bottom:1px solid var(--vx2-line-faint);
+  scrollbar-width:none;-webkit-overflow-scrolling:touch;
+}
+.vx2-tabs::-webkit-scrollbar{display:none}
+.vx2-tab{
+  padding:var(--vx2-s2) var(--vx2-s3);
+  font-family:inherit;font-size:13px;font-weight:600;
+  color:var(--vx-smoke);background:none;border:0;
+  border-bottom:2px solid transparent;margin-bottom:-1px;
+  cursor:pointer;white-space:nowrap;
+  transition:color var(--vx-t-fast) var(--vx-ease-out);
+}
+.vx2-tab:hover{color:var(--vx-mist)}
+.vx2-tab[aria-selected="true"],.vx2-tab[aria-current="page"]{
+  color:var(--vx-ink);border-bottom-color:var(--vx-silver)}
+.vx2-tab:focus-visible{outline:2px solid var(--vx-silver);outline-offset:-2px;border-radius:4px}
+
+.vx2-field{display:flex;flex-direction:column;gap:6px;min-width:0}
+.vx2-field label{font-size:12px;font-weight:600;color:var(--vx-mist)}
+.vx2-field .vx2-help{font-size:11px;color:var(--vx-text-faint);line-height:1.45}
+.vx2-input,.vx2-select{
+  height:34px;padding:0 11px;border-radius:var(--vx2-r-control);
+  border:1px solid var(--vx2-line);background:var(--vx-surface-base);
+  color:var(--vx-ink);font-family:inherit;font-size:13px;width:100%;min-width:0;
+  transition:border-color var(--vx-t-fast) var(--vx-ease-out);
+}
+.vx2-input[inputmode="decimal"],.vx2-input[type="number"]{
+  font-family:var(--vx-font-mono);font-variant-numeric:tabular-nums}
+.vx2-input:focus,.vx2-select:focus{outline:2px solid var(--vx-silver);outline-offset:1px;
+  border-color:var(--vx2-line-strong)}
+.vx2-input::placeholder{color:var(--vx-text-faint)}
+.vx2-field[data-invalid="true"] .vx2-input{border-color:var(--vx-negative)}
+.vx2-field-error{font-size:11.5px;color:var(--vx-negative)}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   11) GRAPHIQUES — le conteneur, pas la donnée
+   ───────────────────────────────────────────────────────────────────────── */
+.vx2-chart{
+  position:relative;width:100%;min-width:0;
+  /* La hauteur est RÉSERVÉE avant le rendu : pas de saut de mise en page
+     quand le graphique arrive (CLS < .1). */
+  min-height:var(--vx2-chart-h,240px);
+}
+.vx2-chart canvas,.vx2-chart svg{display:block;max-width:100%}
+.vx2-chart-foot{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:var(--vx2-s3);flex-wrap:wrap;margin-top:var(--vx2-s2);
+  font-size:11px;color:var(--vx-text-faint);
+}
+.vx2-legend{display:flex;gap:var(--vx2-s3);flex-wrap:wrap;font-size:11.5px;color:var(--vx-smoke)}
+.vx2-legend-item{display:inline-flex;align-items:center;gap:6px}
+.vx2-legend-swatch{width:10px;height:2.5px;border-radius:2px;background:var(--vx-silver);flex:none}
+.vx2-legend-item[data-tone="positive"] .vx2-legend-swatch{background:var(--vx-positive)}
+.vx2-legend-item[data-tone="negative"] .vx2-legend-swatch{background:var(--vx-negative)}
+.vx2-legend-item[data-tone="caution"] .vx2-legend-swatch{background:var(--vx-caution)}
+.vx2-legend-item[data-tone="option"] .vx2-legend-swatch{background:var(--vx-options)}
+.vx2-legend-item[data-tone="benchmark"] .vx2-legend-swatch{
+  background:repeating-linear-gradient(90deg,var(--vx-smoke) 0 4px,transparent 4px 7px)}
+
+/* La table équivalente d'un graphique critique — contrôle 071.
+   Repliée par défaut, mais RÉELLEMENT présente dans le DOM. */
+.vx2-chart-table{margin-top:var(--vx2-s3)}
+.vx2-chart-table summary{
+  cursor:pointer;font-size:12px;color:var(--vx-smoke);
+  padding:var(--vx2-s1) 0;list-style:none;
+}
+.vx2-chart-table summary::-webkit-details-marker{display:none}
+.vx2-chart-table summary::before{content:'▸ ';color:var(--vx-text-faint)}
+.vx2-chart-table[open] summary::before{content:'▾ '}
+.vx2-chart-table summary:hover{color:var(--vx-ink)}
+.vx2-chart-table summary:focus-visible{outline:2px solid var(--vx-silver);outline-offset:2px;border-radius:4px}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   12) ACCESSIBILITÉ ET MOTION
+   ───────────────────────────────────────────────────────────────────────── */
+.vx2-sr-only{
+  position:absolute;width:1px;height:1px;padding:0;margin:-1px;
+  overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;
+}
+:where(a,button,summary,[tabindex]):focus-visible{
+  outline:2px solid var(--vx-silver);outline-offset:2px;border-radius:4px;
+}
+/* Cibles tactiles ≥ 44 px là où le doigt est le seul moyen d'agir. */
+@media (pointer:coarse){
+  .vx2-btn,.vx2-chip,.vx2-tab{min-height:44px}
+  .vx2-chip{padding:0 14px}
+}
+@media (prefers-reduced-motion:reduce){
+  .vx2-skeleton{animation:none;background:rgba(255,255,255,.05)}
+  *,*::before,*::after{
+    animation-duration:.01ms !important;animation-iteration-count:1 !important;
+    transition-duration:.01ms !important;scroll-behavior:auto !important;
+  }
+  .vx2-btn:active,.vx2-chip:active{transform:none}
+}
+/* Aucun débordement horizontal global — contrôle 133. */
+html,body{max-width:100%;overflow-x:clip}

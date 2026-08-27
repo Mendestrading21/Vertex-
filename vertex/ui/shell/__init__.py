@@ -232,9 +232,8 @@ def render_shell(*, title: str, active: str, space_label: str, sub_label: str = 
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <link rel="apple-touch-icon" href="/static/icon-180.png">
 <link rel="manifest" href="/manifest.webmanifest">
-<link rel="preload" as="font" type="font/woff2" crossorigin href="/static/vertex/fonts/GeneralSans-Regular.woff2">
-<link rel="preload" as="font" type="font/woff2" crossorigin href="/static/vertex/fonts/GeneralSans-Medium.woff2">
-<link rel="preload" as="font" type="font/woff2" crossorigin href="/static/vertex/fonts/JetBrainsMono-Regular.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="/static/vertex/fonts/geist-variable.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="/static/vertex/fonts/geist-mono-variable.woff2">
 <link rel="stylesheet" href="/static/vertex/css/fonts.css">
 <link rel="stylesheet" href="/static/vertex/css/tokens.css">
 <link rel="stylesheet" href="/static/vertex/css/base.css">
@@ -253,6 +252,7 @@ def render_shell(*, title: str, active: str, space_label: str, sub_label: str = 
 <link rel="stylesheet" href="/static/vertex/css/cockpit.css">
 <link rel="stylesheet" href="/static/vertex/css/premium.css">
 <link rel="stylesheet" href="/static/vertex/css/glass.css">
+<link rel="stylesheet" href="/static/vertex/css/vertex-2-0.css">
 </head>
 <body data-shell="{SHELL_VERSION}">
 <a class="vx-skip-link" href="#vx-content">Aller au contenu principal</a>
