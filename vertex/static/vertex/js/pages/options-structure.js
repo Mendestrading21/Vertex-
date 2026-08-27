@@ -399,7 +399,8 @@
     if (t.pl >= 20) return { label: 'Gain ≥ +20 % : aucune action automatique', tone: 'muted' };
     return { label: 'Conserver — thèse intacte, surveiller le theta', tone: 'muted' };
   }
-  var _optQuotes = {};   /* cache marques par id — survit aux re-rendus (§ marques n/d honnêtes) */
+  var _optQuotes = {};
+  var _optQuoteMeta = { ts: null, live: false, fallback: false };   /* cache marques par id — survit aux re-rendus (§ marques n/d honnêtes) */
   function loadPositions() {
     var host = $('vx-op-body'); if (!host) return;
     var E = window.VXEntities;
@@ -437,7 +438,55 @@
       + '<th class="vx-num">DTE</th><th>Prochaine action</th><th></th></tr></thead><tbody>' + body + '</tbody></table></div>'
       + '<div class="vx-card-footer"><span class="vx-meta">Marques/Greeks live via IBKR (lecture seule) ; sans IBKR, « n/d » honnête — jamais estimés.</span></div></section>';
 
-    function openPosition(index) {
+  
+  /* ── PROVENANCE DU CONTRAT (controle 079) ─────────────────────────────
+     « Le drawer contrat expose mark, source, qualite, spread, heure et
+     limites. » Les cinq champs etaient DEJA RECUPERES par `/api/pos-quotes`
+     — `mark_source`, `spread_pct`, `bid`, `ask`, `ts` — et seul `mark` etait
+     lu. Un prix sans son origine ni son heure est un chiffre sans autorite :
+     l'ecart avec le releve du courtier reste alors inexplicable.
+
+     Rien n'est calcule ici : chaque valeur vient du serveur telle quelle. */
+  var MARQUE_LIB = {
+    DERNIER_ECHANGE: 'dernier \u00e9change', MILIEU_FOURCHETTE: 'milieu de fourchette',
+    CLOTURE_VEILLE: 'cl\u00f4ture de la veille', ABSENTE: null
+  };
+  var SPREAD_INCERTAIN = 10;   /* au-dela, toute convention de marque diverge */
+
+  function provenanceContrat(t) {
+    var q = _optQuotes[t.id] || {};
+    var abs = function (txt) { return '<span class="vx2-absent">' + (txt || 'n/d') + '</span>'; };
+    var lignes = [];
+    var kv = function (cle, val) {
+      lignes.push('<div class="vx-kv"><span>' + cle + '</span><b>' + val + '</b></div>');
+    };
+    kv('Marque', q.mark != null ? price(q.mark) : abs('aucune cotation'));
+    var lib = MARQUE_LIB[q.mark_source];
+    kv('Source de la marque', lib ? esc(lib) : abs('convention non renseign\u00e9e'));
+    kv('Fourchette', (q.bid != null && q.ask != null)
+      ? (price(q.bid) + ' / ' + price(q.ask)) : abs());
+    /*  QUALITE : un spread large rend TOUTE marque incertaine. On le dit avec
+        un mot, pas seulement avec une couleur.  */
+    var sp = q.spread_pct;
+    kv('\u00c9cart de fourchette', sp == null ? abs()
+      : '<span class="' + (sp >= SPREAD_INCERTAIN ? 'vx-neg' : sp >= 5 ? 'vx-warn' : '') + '">'
+        + num(sp, 2) + ' %' + (sp >= SPREAD_INCERTAIN ? ' \u00b7 marque incertaine' : '') + '</span>');
+    var heure = _optQuoteMeta.ts;
+    kv('Heure de la cotation', heure != null && window.VX && VX.fmt
+      ? esc(VX.fmt.ago(heure * 1000)) : abs('non horodat\u00e9e'));
+    kv('Mode', _optQuoteMeta.live
+      ? '<span class="vx-pos">IBKR temps r\u00e9el</span>'
+      : '<span class="vx-warn">Diff\u00e9r\u00e9' + (_optQuoteMeta.fallback ? ' \u00b7 repli' : '') + '</span>');
+    return '<div class="vx-card vx-card--compact">'
+      + '<div class="vx-card-header"><span class="vx-card-title">Provenance et qualit\u00e9</span></div>'
+      + lignes.join('')
+      + '<div class="vx-card-footer"><span class="vx-meta">Trois conventions de marque '
+      + 'coexistent chez le courtier lui-m\u00eame et ne donnent pas le m\u00eame chiffre. '
+      + 'Le libell\u00e9 dit laquelle a servi. Aucune Greek n\u2019est estim\u00e9e : sans grecques '
+      + 'de position IBKR, elles restent absentes.</span></div></div>';
+  }
+
+  function openPosition(index) {
       var m = models[index]; if (!m || !VX.shell) return;
       var t = m.t, body = '<div class="vx-section-stack">'
         + '<div class="vx-data-ledger"><span>' + esc(t.type || 'Option') + '</span><span>' + esc(t.exp || 'échéance n/d') + '</span><span>Lecture seule</span></div>'
@@ -450,6 +499,7 @@
         + '<div class="vx-kv"><span>Strike</span><b>' + nd(t.strike) + '</b></div>'
         + '<div class="vx-kv"><span>Invalidation</span><b class="vx-neg">' + nd(m.snap.stop) + '</b></div>'
         + '<div class="vx-kv"><span>Action suivante</span><b class="' + toneCls(m.action.tone) + '">' + esc(m.action.label) + '</b></div></div>'
+        + provenanceContrat(t)
         + '<p class="vx-meta">La marque reste n/d sans cotation IBKR. Aucun prix n’est estimé.</p></div>';
       var footer = '<a class="vx-btn vx-btn-sm vx-btn-primary" href="/options?view=structure&sym=' + encodeURIComponent(t.sym) + '">Analyser la structure</a>';
       VX.shell.openDrawer(esc(t.sym) + ' · position option', body, { variant: 'summary', footerHtml: footer });
@@ -465,7 +515,29 @@
     fetch('/api/pos-quotes', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ positions: opts.map(function (t) { return { sym: t.sym, exp: t.exp, strike: t.strike, right: t.right }; }) }) })
       .then(function (r) { return r.json(); }).then(function (d) {
         var res = d.results || {}, changed = false;
-        opts.forEach(function (t) { var k = [String(t.sym).toUpperCase(), t.exp || '', (t.strike != null ? t.strike : ''), (t.right || '').toUpperCase()].join('|'); if (res[k]) { _optQuotes[t.id] = res[k]; changed = true; } });
+        /*  La reponse porte l'heure et le mode ; seule la marque etait lue.
+            Le controle 079 exige mark, SOURCE, HEURE, QUALITE et LIMITES.  */
+        _optQuoteMeta = { ts: d.ts != null ? d.ts : null, live: !!d.live, fallback: !!d.fallback_used };
+        /*  BOUCLE INFINIE, corrigee ici. `changed` passait a vrai des que le
+            serveur renvoyait UNE cotation, sans regarder si elle differait de
+            celle deja en cache. Le re-rendu relance ce meme fetch, qui renvoie
+            la meme cotation, qui repasse `changed` a vrai : la page appelait
+            `/api/pos-quotes` en boucle, indefiniment.
+
+            Invisible en demo, ou l'endpoint ne renvoie jamais rien — et donc
+            jamais declenchee ici. Avec IBKR connecte et une position option,
+            elle l'aurait ete a chaque visite. Mesuree en pilotant la page :
+            la navigation n'atteignait jamais l'inactivite reseau.
+
+            On ne re-rend que si la cotation a REELLEMENT change.  */
+        opts.forEach(function (t) {
+          var k = [String(t.sym).toUpperCase(), t.exp || '', (t.strike != null ? t.strike : ''), (t.right || '').toUpperCase()].join('|');
+          if (!res[k]) return;
+          var avant = _optQuotes[t.id];
+          if (avant && JSON.stringify(avant) === JSON.stringify(res[k])) return;
+          _optQuotes[t.id] = res[k];
+          changed = true;
+        });
         if (changed) loadPositions();
       }).catch(function () {});
   }

@@ -318,6 +318,45 @@
     if (el) el.innerHTML = '';
     return el;
   }
+
+  /* ── TABLE EQUIVALENTE (controle 080) ──────────────────────────────────
+     Le contrat exige que TermStructure et SmileSkew portent « des lignes
+     precises AVEC table equivalente ». Un graphique seul exclut la lecture
+     au lecteur d'ecran, le zoom fort, l'impression et la copie d'un chiffre.
+
+     L'unite vit dans l'EN-TETE, jamais repetee dans chaque cellule, et la
+     table ne recalcule RIEN : elle rend les memes nombres que la courbe. */
+  function tableEquivalente(hostId, opts) {
+    var hote = document.getElementById(hostId);
+    if (!hote || !opts || !opts.lignes || !opts.lignes.length) return;
+    var ths = opts.colonnes.map(function (c) {
+      return '<th' + (c.num ? ' class="vx2-num"' : '') + ' scope="col">' + esc(c.titre)
+        + (c.unite ? ' <span class="vx2-th-unit">' + esc(c.unite) + '</span>' : '') + '</th>';
+    }).join('');
+    var trs = opts.lignes.map(function (l) {
+      return '<tr>' + l.map(function (cel, i) {
+        var c = opts.colonnes[i] || {};
+        return '<td' + (c.num ? ' class="vx2-num"' : '') + '>' + cel + '</td>';
+      }).join('') + '</tr>';
+    }).join('');
+    var det = document.createElement('details');
+    det.className = 'vx2-table-equivalente';
+    det.innerHTML = '<summary>' + esc(opts.titre) + ' — les mêmes chiffres en table</summary>'
+      + '<div class="vx2-table-wrap"><table class="vx2-table"><caption class="vx2-sr-only">'
+      + esc(opts.legende || opts.titre) + '</caption><thead><tr>' + ths + '</tr></thead>'
+      + '<tbody>' + trs + '</tbody></table></div>'
+      + (opts.note ? '<p class="vx2-stamp">' + esc(opts.note) + '</p>' : '');
+    hote.appendChild(det);
+  }
+
+  /* L'horodatage REEL vit dans `interpretation.as_of` ; `vol_charts.build` ne
+     le remonte pas a la racine. Les quatre cartes passaient donc `d.as_of`,
+     c'est-a-dire `undefined`, a leur pied de page — un age promis, jamais
+     rendu. On lit la ou il est. */
+  function volTs(d) {
+    return (d && d.interpretation && d.interpretation.as_of) || (d && d.as_of) || null;
+  }
+
   var _charts = [];
   function destroyCharts() { _charts.forEach(function (c) { try { c && c.destroy && c.destroy(); } catch (e) { } }); _charts = []; }
 
@@ -332,6 +371,9 @@
         ids.forEach(function (id) { var e = document.getElementById(id); if (e) e.innerHTML = (window.VX && VX.states) ? VX.states.empty('Aucun contrat pour ' + esc(sym) + ' dans le tableau.') : 'Aucune donnée.'; });
         return;
       }
+      /*  La barre de contexte doit dater la donnee REELLEMENT affichee, pas le
+          scan global : sur cette vue, ce sont les graphiques de volatilite.  */
+      if (window.VX && VX.bus) VX.bus.emit('vx:options-fresh', { ts: volTs(d), contracts: d.contracts });
       chartTerm(VC, d);
       chartCone(VC, d);
       chartOI(VC, d);
@@ -376,7 +418,7 @@
     var concl = slope == null ? '' : slope > 0.02 ? 'Contango — court terme meilleur marché' : slope < -0.02 ? 'Inversée — stress court terme' : 'Structure plate';
     var c = VC.card('vx-opt-term', {
       title: 'Structure par terme de l’IV', question: 'L’IV monte-t-elle ou baisse-t-elle avec l’échéance ?',
-      conclusion: concl, variant: 'hero', height: 360, source: 'SCAN', timestamp: d.as_of, mode: 'delayed',
+      conclusion: concl, variant: 'hero', height: 360, source: 'SCAN', timestamp: volTs(d), mode: 'delayed',
       limits: 'IV ATM approximée par le contrat le plus proche du spot',
       explain: { shows: 'IV ATM par échéance (DTE).', why: 'Une structure inversée signale un stress/événement de court terme (crush probable).', confirm: 'Pente positive et régulière.', invalidate: 'Pente fortement négative.' },
       render: function (canvas) {
@@ -393,6 +435,19 @@
             } } });
       } });
     _charts.push(c);
+    tableEquivalente('vx-opt-term', {
+      titre: 'Structure par terme de l\u2019IV',
+      legende: 'Volatilit\u00e9 implicite ATM par \u00e9ch\u00e9ance, et le strike retenu pour chacune.',
+      colonnes: [{ titre: '\u00c9ch\u00e9ance', unite: '(jours)', num: true },
+                 { titre: 'IV ATM', unite: '(%)', num: true },
+                 { titre: 'Strike retenu', unite: '', num: true }],
+      lignes: pts.map(function (p) {
+        return [String(p.dte), VXf.num(p.iv * 100, 1), VXf.nd(p.strike)];
+      }),
+      note: 'IV ATM approxim\u00e9e par le contrat le plus proche du spot \u00b7 '
+        + (slope == null ? 'pente non calculable' : 'pente ' + VXf.num(slope, 4))
+        + ' \u00b7 source SCAN.'
+    });
   }
 
   // Cône de mouvement attendu — bandes 1σ/2σ (fill entre datasets).
@@ -411,7 +466,7 @@
     };
     var c = VC.card('vx-opt-cone', {
       title: 'Cône de mouvement attendu', question: 'Jusqu’où le sous-jacent peut-il bouger, à 1σ et 2σ ?',
-      conclusion: 'Estimation lognormale · spot ' + VXf.nd(d.spot), height: 240, source: 'SCAN', timestamp: d.as_of, mode: 'delayed',
+      conclusion: 'Estimation lognormale · spot ' + VXf.nd(d.spot), height: 240, source: 'SCAN', timestamp: volTs(d), mode: 'delayed',
       limits: 'σ = spot · IV_ATM · √(DTE/365) — estimation lognormale',
       legend: [{ label: '1σ', color: brand }, { label: '2σ', color: copper }],
       explain: { shows: 'Fourchette probable du spot par échéance (±1σ, ±2σ).', why: 'Situe stop et objectifs par rapport au mouvement réellement price.', confirm: 'Cible à l’intérieur de 1σ.', invalidate: 'Cible au-delà de 2σ.' },
@@ -441,7 +496,17 @@
     var brand = col(VC, 'brand', '#c9cdd4'), violet = col(VC, 'violet', '#9c79d0');
     var c = VC.card('vx-opt-oi', {
       title: 'Open interest par strike', question: 'Où se concentrent les positions ouvertes ?',
-      conclusion: 'CALL vs PUT', height: 240, source: 'SCAN', timestamp: d.as_of, mode: 'delayed',
+      /*  Le contrat exige que l'OI montre LE ZERO et la PROVENANCE des niveaux
+          (controle 081). Un strike sans contrat et un strike a zero contrat
+          ouvert se ressemblent sur une barre : le compte des strikes vides le
+          separe, et la limite dit d'ou viennent les niveaux — jamais d'un
+          moteur de « murs » que Vertex ne possede pas.  */
+      conclusion: 'CALL vs PUT sur ' + rows.length + ' strike(s) · '
+        + rows.filter(function (r) { return !r.call && !r.put; }).length + ' à zéro contrat ouvert',
+      height: 240, source: 'SCAN', timestamp: volTs(d), mode: 'delayed',
+      limits: 'Niveaux agrégés depuis les contrats du scan, strike par strike — '
+        + 'aucun « mur » n’est déduit : Vertex ne possède pas de moteur de niveaux. '
+        + 'Le zéro est la ligne médiane ; CALL au-dessus, PUT en dessous.',
       legend: [{ label: 'CALL OI', color: brand }, { label: 'PUT OI', color: violet }],
       explain: { shows: 'Open interest CALL (haut) et PUT (bas) par strike.', why: 'Les gros strikes agissent souvent comme aimants/paliers.', confirm: 'OI CALL massif au-dessus du spot.', invalidate: 'OI PUT dominant sous le spot.' },
       render: function (canvas) {
@@ -462,6 +527,23 @@
             } } });
       } });
     _charts.push(c);
+    tableEquivalente('vx-opt-oi', {
+      titre: 'Open interest par strike',
+      legende: 'Contrats ouverts en call et en put, strike par strike, et leur solde.',
+      colonnes: [{ titre: 'Strike', unite: '', num: true },
+                 { titre: 'OI call', unite: '(contrats)', num: true },
+                 { titre: 'OI put', unite: '(contrats)', num: true },
+                 { titre: 'Solde call \u2212 put', unite: '(contrats)', num: true }],
+      lignes: rows.map(function (r) {
+        var solde = (r.call || 0) - (r.put || 0);
+        /*  ZERO EXPLICITE : un 0 reel s'ecrit « 0 », il ne se tait pas et ne
+            devient pas un tiret. Le tiret est reserve a l'absence.  */
+        return [VXf.nd(r.strike), VXf.num(r.call || 0, 0), VXf.num(r.put || 0, 0),
+                (solde >= 0 ? '+' : '') + VXf.num(solde, 0)];
+      }),
+      note: 'Spot ' + VXf.nd(d.spot) + ' \u00b7 « 0 » est un z\u00e9ro mesur\u00e9, pas une absence \u00b7 '
+        + 'niveaux agr\u00e9g\u00e9s depuis les contrats du scan, aucun mur d\u00e9duit.'
+    });
   }
 
   // Smile d'IV — IV par strike (calls + puts) pour une échéance.
@@ -476,7 +558,7 @@
     var mapiv = function (arr) { var m = {}; arr.forEach(function (r) { m[r.strike] = +(r.iv * 100).toFixed(1); }); return xs.map(function (x) { return m[x] != null ? m[x] : null; }); };
     var c = VC.card('vx-opt-smile', {
       title: 'Smile d’IV' + (sm.dte != null ? ' · ' + sm.dte + ' j' : ''), question: 'L’IV est-elle plus chère sur les puts (skew) ?',
-      conclusion: 'Spot ' + VXf.nd(sm.spot), height: 240, source: 'SCAN', timestamp: d.as_of, mode: 'delayed',
+      conclusion: 'Spot ' + VXf.nd(sm.spot), height: 240, source: 'SCAN', timestamp: volTs(d), mode: 'delayed',
       legend: [{ label: 'CALL IV', color: brand }, { label: 'PUT IV', color: beige }],
       explain: { shows: 'IV par strike pour une échéance (calls et puts).', why: 'Un skew put marqué révèle une demande de protection (peur).', confirm: 'Smile symétrique et bas.', invalidate: 'Skew put très pentu.' },
       render: function (canvas) {
@@ -493,6 +575,30 @@
             } } });
       } });
     _charts.push(c);
+    var ivDe = function (arr, x) {
+      for (var i = 0; i < arr.length; i++) if (arr[i].strike === x) return VXf.num(arr[i].iv * 100, 1);
+      return '<span class="vx2-absent">\u2014</span>';
+    };
+    tableEquivalente('vx-opt-smile', {
+      titre: 'Smile d\u2019IV',
+      legende: 'Volatilit\u00e9 implicite des calls et des puts, strike par strike, pour une \u00e9ch\u00e9ance.',
+      colonnes: [{ titre: 'Strike', unite: '', num: true },
+                 { titre: 'IV call', unite: '(%)', num: true },
+                 { titre: 'IV put', unite: '(%)', num: true },
+                 { titre: '\u00c9cart put \u2212 call', unite: '(pts)', num: true }],
+      lignes: xs.map(function (x) {
+        var vc = null, vp = null;
+        calls.forEach(function (r) { if (r.strike === x) vc = r.iv * 100; });
+        puts.forEach(function (r) { if (r.strike === x) vp = r.iv * 100; });
+        var ecart = (vc != null && vp != null)
+          ? ((vp - vc >= 0 ? '+' : '') + VXf.num(vp - vc, 1))
+          : '<span class="vx2-absent">\u2014</span>';
+        return [VXf.nd(x), ivDe(calls, x), ivDe(puts, x), ecart];
+      }),
+      note: '\u00c9ch\u00e9ance ' + (sm.dte != null ? sm.dte + ' jours' : 'non pr\u00e9cis\u00e9e')
+        + ' \u00b7 spot ' + VXf.nd(sm.spot)
+        + ' \u00b7 un \u00e9cart positif signale un skew put \u00b7 source SCAN.'
+    });
   }
 
   // ── Scénarios du meilleur contrat (§19) ───────────────────────────

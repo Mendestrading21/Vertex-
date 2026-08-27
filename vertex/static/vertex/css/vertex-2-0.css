@@ -1073,3 +1073,41 @@ html,body{max-width:100%;overflow-x:clip}
   display:grid;gap:var(--vx2-s3);
   grid-template-columns:repeat(auto-fit,minmax(130px,1fr));
 }
+
+/* ─────────────────────────────────────────────────────────────────────────
+   23) TABLE ÉQUIVALENTE — le même chiffre, lisible autrement
+   Le contrat exige qu'un graphique critique porte « une table équivalente ».
+   Un graphique seul exclut le lecteur d'écran, le zoom fort, l'impression et
+   la copie d'une valeur. Repliée par défaut : elle complète la courbe, elle
+   ne la concurrence pas.
+   ───────────────────────────────────────────────────────────────────────── */
+#vx-content .vx2-table-equivalente{
+  margin-top:var(--vx2-s3);
+  border-top:1px solid var(--vx-border-soft);
+  padding-top:var(--vx2-s2);
+}
+#vx-content .vx2-table-equivalente > summary{
+  cursor:pointer;list-style:none;
+  color:var(--vx-smoke);font-size:var(--vx-fs-meta);
+  padding:var(--vx2-s2) 0;
+  display:flex;align-items:center;gap:var(--vx2-s2);
+}
+#vx-content .vx2-table-equivalente > summary::-webkit-details-marker{display:none}
+#vx-content .vx2-table-equivalente > summary::before{
+  content:"▸";color:var(--vx-text-faint);
+  transition:transform var(--vx-t-fast) var(--vx-ease-out);
+}
+#vx-content .vx2-table-equivalente[open] > summary::before{transform:rotate(90deg)}
+#vx-content .vx2-table-equivalente > summary:hover{color:var(--vx-silver)}
+#vx-content .vx2-table-equivalente > summary:focus-visible{
+  outline:2px solid var(--vx-silver);outline-offset:2px;border-radius:4px;
+}
+#vx-content .vx2-table-equivalente .vx2-stamp{margin-top:var(--vx2-s2)}
+/* `.vx2-table` est en `width:100%` : dans une carte étroite, ses colonnes se
+   compressaient jusqu'à couper les en-têtes en plein mot — « Écart put − call »
+   devenait « ÉCART PUT ». Une largeur minimale la fait DÉBORDER dans son
+   conteneur, qui défile : l'en-tête reste entier, et la page, elle, ne défile
+   jamais horizontalement. */
+#vx-content .vx2-table-equivalente .vx2-table{min-width:max-content}
+#vx-content .vx2-table-equivalente .vx2-table th,
+#vx-content .vx2-table-equivalente .vx2-table td{white-space:nowrap}

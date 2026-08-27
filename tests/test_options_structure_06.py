@@ -55,7 +55,8 @@ def test_options_pages_render_200(client):
         assert r.status_code == 200, v
     # défaut sans view = 200 + h1 Options
     r = client.get('/options')
-    assert r.status_code == 200 and '<h1>Options</h1>' in r.get_data(as_text=True)
+    assert (r.status_code == 200
+            and '<h1 class="vx2-title">Options</h1>' in r.get_data(as_text=True))
 
 
 # ── Carte-Verdict (LOT A) ────────────────────────────────────────────────

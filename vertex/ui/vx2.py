@@ -403,13 +403,19 @@ def chip(libelle: str, *, actif: bool = False, href: str = '', attrs: str = '') 
 
 
 def tabs(items: Sequence[Mapping], *, libelle: str) -> str:
-    """Onglets de sous-vues. `{'label', 'href', 'actif'}` — de vrais liens :
-    chaque sous-vue garde une URL partageable et un retour prévisible."""
+    """Onglets de sous-vues. `{'label', 'href', 'actif', 'attrs'}` — de vrais
+    liens : chaque sous-vue garde une URL partageable et un retour prévisible.
+
+    `attrs` porte les attributs dont le CLIENT a besoin pour retrouver ces
+    liens. Options s'en sert (`data-view-tab`) pour propager le sous-jacent
+    actif d'un onglet à l'autre : sans cet attribut, changer d'onglet perdait
+    le symbole en silence.
+    """
     out = []
     for it in items:
         cur = ' aria-current="page"' if it.get('actif') else ''
         out.append(f'<a class="vx2-tab" href="{_e(str(it.get("href", "#")), quote=True)}"'
-                   f'{cur}>{_e(str(it.get("label", "")))}</a>')
+                   f'{cur}{it.get("attrs", "")}>{_e(str(it.get("label", "")))}</a>')
     return (f'<nav class="vx2-tabs" aria-label="{_e(libelle, quote=True)}">'
             + ''.join(out) + '</nav>')
 

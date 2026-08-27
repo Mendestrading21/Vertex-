@@ -57,6 +57,51 @@
       lien.style.opacity = '.45';
     }
   }
+
+  /* ── BARRE DE CONTEXTE ────────────────────────────────────────────────
+     Deux emplacements de la barre 2.0 — le sous-jacent actif et la fraicheur
+     — etaient DECLARES et remplis par personne : la barre annoncait « Aucun
+     sous-jacent choisi » et « Lecture… » indefiniment, y compris apres une
+     saisie. Meme classe de defaut que les emplacements morts d'Opportunites
+     et de Suivi. Ce pont connait deja le symbole ; il le DIT.
+
+     La fraicheur n'est pas devinee : elle vient du scan, seule source de
+     contrats de cette page. Quand elle manque, on l'ecrit. */
+  var _tsAffiche = null;
+  function peindreContexte(sym) {
+    var cible = document.getElementById('vx-opt-ctx-sym');
+    if (cible) {
+      cible.innerHTML = sym
+        ? '<span class="vx2-badge" data-state="option">' + sym + '</span>'
+        : '<span class="vx2-badge" data-state="missing">Aucun sous-jacent choisi</span>';
+    }
+    var frais = document.getElementById('vx-opt-ctx-fresh');
+    if (!frais) return;
+    var dire = function (texte, etat) {
+      frais.innerHTML = '<span class="vx2-badge" data-state="' + etat + '">' + texte + '</span>';
+    };
+    /*  Priorite a l'horodatage de la donnee AFFICHEE (les graphiques de
+        volatilite l'emettent). A defaut, l'age du scan, qui est la source des
+        contrats. A defaut encore, on l'avoue.  */
+    if (_tsAffiche != null && window.VX && VX.freshness) {
+      var ageDonnee = VX.freshness._ms(_tsAffiche);
+      if (ageDonnee != null) {
+        frais.innerHTML = VX.freshness.chip(VX.freshness.assess({ ageMs: Date.now() - ageDonnee, live: false }));
+        return;
+      }
+    }
+    var pk = null;
+    try { pk = window.VX && VX.fetch && VX.fetch.peek('/scan'); } catch (e) {}
+    var scan = pk && pk.data;
+    if (!scan) { dire('Aucune donn\u00e9e dat\u00e9e sur cette vue', 'missing'); return; }
+    var age = (typeof scan.scan_age === 'number') ? scan.scan_age * 1000 : null;
+    if (age == null) { dire('Scan non horodat\u00e9 \u2014 \u00e2ge inconnu', 'missing'); return; }
+    if (window.VX && VX.freshness) {
+      var etat = VX.freshness.assess({ ageMs: age, live: scan.data_source !== 'demo' });
+      frais.innerHTML = VX.freshness.chip(etat);
+    }
+  }
+
   function currentSymbol() {
     var query = '';
     try { query = new URLSearchParams(location.search).get('sym') || ''; } catch (e) {}
@@ -78,6 +123,7 @@
       history.replaceState(history.state, '', page.pathname + page.search);
     } catch (e2) {}
     updateTabLinks(sym);
+    peindreContexte(sym);
     if (!target) return;
     var local = document.getElementById(target[0]);
     var button = document.getElementById(target[1]);
@@ -88,10 +134,27 @@
   var initial = currentSymbol();
   if (initial && valid(initial)) globalInput.value = initial;
   updateTabLinks(initial);
+  peindreContexte(valid(initial) ? initial : '');
+  /*  Le scan arrive apres ce script : la fraicheur se repeint quand il est la,
+      plutot que de rester sur « non encore lu » pour toujours.  */
+  if (window.VX && VX.bus) {
+    VX.bus.on('vx:data-refreshed', function () {
+      peindreContexte(normalize(globalInput.value));
+    });
+    /*  `VX.bus.emit(nom, detail)` envoie un CustomEvent : l'abonne recoit
+        l'EVENEMENT, et la charge vit dans `e.detail`. Lire `payload.ts`
+        directement rendait toujours `undefined`, et la barre affichait
+        « aucune donnee datee » alors que la donnee etait datee.  */
+    VX.bus.on('vx:options-fresh', function (e) {
+      _tsAffiche = ((e && e.detail) || {}).ts || null;
+      peindreContexte(normalize(globalInput.value));
+    });
+  }
+  setTimeout(function () { peindreContexte(normalize(globalInput.value)); }, 2000);
   if (window.VX && VX.bus) VX.bus.on('vx:store-changed', function (payload) {
     if (!payload || payload.key !== 'active_ticker') return;
     var sym = normalize(payload.value); if (!valid(sym)) return;
-    globalInput.value = sym; updateTabLinks(sym);
+    globalInput.value = sym; updateTabLinks(sym); peindreContexte(sym);
   });
   apply.addEventListener('click', run);
   globalInput.addEventListener('keydown', function (event) {

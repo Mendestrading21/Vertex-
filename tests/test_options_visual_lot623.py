@@ -56,7 +56,11 @@ def test_legacy_views_are_visually_attached_to_structure(client):
         assert 'data-view-tab="structure">Structure</a>' in html
         # Structure est le seul tab actif, pas un écran sans contexte sélectionné.
         prefix = html.split('data-view-tab="structure"')[0]
-        assert 'aria-selected="true"' in prefix[-120:]
+        #  VERTEX 2.0 : les onglets sont de VRAIS liens dans un `<nav>`, pas un
+        #  `role="tablist"`. L'attribut correct pour « la page courante » est
+        #  alors `aria-current="page"` ; `aria-selected` n'a de sens que sur un
+        #  onglet ARIA. L'exigence est la meme : Structure est le seul actif.
+        assert 'aria-current="page"' in prefix[-160:]
 
 
 def test_options_removed_embedded_style_and_implementation_language():

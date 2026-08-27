@@ -11,6 +11,7 @@ volatility/expected_move/event_risk/overview). Donnée absente → état honnêt
 """
 from __future__ import annotations
 
+from vertex.ui import vx2
 from vertex.ui.shell import render_shell
 
 # Onglets VISIBLES (canoniques PR n°6) — Structure d'abord : la Carte-Verdict
@@ -35,28 +36,20 @@ _VIEW_PARENT = {'overview': 'structure', 'radar': 'structure', 'scenarios': 'str
 
 
 def _tabs(view: str) -> str:
-    items = []
     selected_view = _VIEW_PARENT.get(view, view)
-    for vid, label in _VIEWS:
-        sel = 'true' if vid == selected_view else 'false'
-        items.append('<a class="vx-tab" role="tab" href="?view=%s" '
-                     'aria-selected="%s" data-view-tab="%s">%s</a>' % (vid, sel, vid, label))
-    return ('<nav class="vx-tabs" role="tablist" aria-label="Sous-vues Options">'
-            + ''.join(items) + '</nav>')
+    # `data-view-tab` n'est PAS decoratif : `options-context.js` s'en sert pour
+    # retrouver ces liens et y injecter le sous-jacent actif. Le retirer faisait
+    # perdre le symbole a chaque changement d'onglet, en silence.
+    return vx2.tabs([{'label': label, 'href': f'?view={vid}',
+                      'actif': vid == selected_view,
+                      'attrs': f' data-view-tab="{vid}"'} for vid, label in _VIEWS],
+                    libelle='Sous-vues des Options')
 
 
 _STYLE = ""  # styles Options migrés dans le CSS partagé canonique
 
 _HEADER = """
-<header class="vx-page-lead">
-  <div class="vx-page-lead__main">
-    <div class="vx-page-lead__eyebrow">Explorer</div>
-    <h1>Options</h1>
-    <p class="vx-page-lead__summary">Quelle exposition optionnelle est
-      compréhensible, liquide et compatible avec le risque&nbsp;?</p>
-    <div class="vx-page-lead__meta"><span class="vx-readonly-shield">Analyse uniquement · aucun ordre</span></div>
-  </div>
-</header>
+%%ENTETE%%
 %%TABS%%
 <section class="vx-card vx-options-context vx-mt3" aria-label="Contexte du sous-jacent">
   <div class="vx-options-context__copy">
@@ -294,9 +287,38 @@ _PAGE_JS = (
 )
 
 
+def _entete() -> str:
+    """En-tête + contexte. Le bouclier « analyse uniquement » n'était qu'une
+    ligne de texte sous le sous-titre ; il entre dans la barre de contexte,
+    au même rang que la source et la fraîcheur."""
+    return (
+        vx2.page_header(
+            surtitre='Explorer', titre='Options',
+            question='Quelle exposition optionnelle est compréhensible, liquide '
+                     'et compatible avec le risque ?',
+            actions=vx2.bouton('Ouvrir le Simulateur', href='/simulator',
+                               variante='ghost'))
+        + vx2.context_bar([
+            {'label': 'Univers', 'contenu':
+                '<span class="vx2-stamp">Contrats du <b>dernier scan</b> ; '
+                'chaîne large si IBKR est connecté</span>'},
+            {'label': 'Nature', 'contenu':
+                '<span class="vx2-badge" data-state="option">Analyse uniquement '
+                '\u00b7 aucun ordre</span>'},
+            {'label': 'Sous-jacent', 'contenu':
+                '<span id="vx-opt-ctx-sym">'
+                + vx2.badge_etat('missing', texte='Aucun sous-jacent choisi')
+                + '</span>'},
+            {'label': 'Fraîcheur', 'contenu':
+                '<span id="vx-opt-ctx-fresh">'
+                + vx2.badge_etat('missing', texte='Lecture…') + '</span>'},
+        ]))
+
+
 def render(view: str = 'structure') -> str:
     view = view if view in dict(_ALL_VIEWS) else 'structure'
-    content = (_STYLE + _HEADER.replace('%%TABS%%', _tabs(view))
+    content = (_STYLE
+               + _HEADER.replace('%%ENTETE%%', _entete()).replace('%%TABS%%', _tabs(view))
                + _VIEW_CONTENT[view].replace('%%LOADING%%', _LOADING))
     return render_shell(
         title='Options Intelligence',
