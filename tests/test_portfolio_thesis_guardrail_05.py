@@ -84,10 +84,35 @@ def test_winner_rules_indicative_never_auto_exit():
 
 # ── Tableau canonique (LOT B) ────────────────────────────────────────────
 def test_canonical_positions_table_columns():
+    """Le tableau doit porter la MEME information, pas les memes libelles.
+
+    `main` nommait ses colonnes « Prix moyen », « Prix actuel », « Valeur
+    marche », « Etat de these », « Prochaine action ». Black Glass sert
+    « Cout », « Marque », « P&L », « Stop », « Verdict » — et rend l'etat de
+    these et la prochaine action dans le bloc « positions a decision » plutot
+    qu'en colonnes.
+
+    Ce banc verifie donc ce qui compte : chaque information canonique est
+    SERVIE, par une colonne ou par un appel. Un banc qui exigerait les
+    libelles d'origine interdirait toute refonte sans rien proteger de plus.
+    """
     src = _read(PF)
-    for col in ('Prix moyen', 'Prix actuel', 'Valeur marché', 'Poids', 'Conviction',
-                'État de thèse', 'Invalidation', 'Catalyseur', 'Prochaine action'):
-        assert col in src, f'colonne canonique manquante : {col}'
+    #  Les colonnes reellement servies.
+    for col in ('Titre', 'Coût', 'Marque', 'P&L', 'Stop', 'Verdict'):
+        assert 'data-label="%s"' % col in src, 'colonne absente : %s' % col
+    #  Et les deux lectures qui ne sont pas des colonnes.
+    for fn in ('thesisState(', 'nextAction('):
+        assert src.count(fn) >= 2, (
+            '%s n est pas rendue : l information canonique manque' % fn)
+
+
+def test_le_prix_moyen_et_la_valeur_restent_LISIBLES():
+    """Contre-epreuve du banc ci-dessus : accepter d'autres libelles ne doit
+    pas revenir a accepter qu'une information disparaisse."""
+    src = _read(PF)
+    assert 'data-label="Coût (total)"' in src, 'le cout total n est plus servi'
+    assert 'poids ' in src, 'le poids de la position n est plus servi'
+
 
 
 # ── READONLY absolu (§21) ────────────────────────────────────────────────

@@ -152,6 +152,79 @@ function marqueNote(t){
   if(large)bits.push('marche large '+VX.fmt.pct(t.spreadPct,0,false));
   return '<div class="vx-meta'+(large?' vx-warn':'')+'">'+bits.join(' · ')+'</div>';
 }
+/* ═══ ÉTAT DE THÈSE — PORTÉ DEPUIS `main`, IL MANQUAIT ═══════════════════
+   `thesisState(t)` était APPELÉE ici (bloc « positions à décision ») et
+   définie NULLE PART : ni dans cette page, ni dans un fichier statique. Le
+   bloc levait donc `ReferenceError` à chaque rendu — troisième nom fantôme
+   de la refonte, après `_analyse_fp` et `_ANALYSE_MEMO`.
+
+   Ce n'est pas qu'un plantage : c'est une RÈGLE DE GESTION qui ne
+   s'appliquait plus. Six états honnêtes — dont « Données insuffisantes »,
+   qui refuse de rendre un verdict sans marque — et surtout le garde-fou
+   des perdants : une position en perte ne reçoit JAMAIS « renforcer » sans
+   confirmation positive explicite. Aucune de ces actions n'exécute d'ordre.
+   ═══════════════════════════════════════════════════════════════════════ */
+/* Validation positive du marché : SEULE justification d'un renforcement (§18).
+   Elle doit venir d'un fait explicite du snapshot d'entrée (breakout, résultats
+   confirmés, revalidation) — JAMAIS d'une baisse de prix ni d'un P&L négatif. */
+function hasPositiveConfirmation(t){
+  const s=t.entrySnap||{};
+  return !!(s.validated||s.breakout||s.confirmed||s.revalidated||s.thesis_improved);
+}
+
+/* État de thèse — six états honnêtes. La franchise de l'invalidation (niveau
+   pré-défini AVANT l'entrée) casse la thèse ; une simple baisse ne la casse
+   jamais (§18). Sans marque → « données insuffisantes » (jamais un verdict). */
+function thesisState(t){
+  const s=t.entrySnap||{};
+  const stop=Number(s.stop);
+  const hasStop=isFinite(stop)&&stop>0;
+  const mark=(t.type!=='STK')?t.underSpot:t.mark;   /* option : niveau du sous-jacent */
+  if(mark==null||mark===undefined)
+    return {key:'insuffisant',label:'Données insuffisantes',tone:'muted'};
+  if(hasStop&&mark<=stop)
+    return {key:'cassee',label:'Cassée — invalidation atteinte',tone:'neg'};
+  if(hasStop&&mark<=stop*1.04)
+    return {key:'fragilisee',label:'Fragilisée — proche invalidation',tone:'warn'};
+  if(hasPositiveConfirmation(t)&&t.pl!=null&&t.pl>0)
+    return {key:'renforcee',label:'Renforcée par les faits',tone:'pos'};
+  if(t.pl!=null&&t.pl>=0)
+    return {key:'intacte',label:'Intacte',tone:'pos'};
+  return {key:'surveiller',label:'À surveiller',tone:'muted'};
+}
+
+/* Gestion des gagnants — RÈGLES INDICATIVES uniquement (§19). Jamais une sortie
+   automatique : « laisser courir » est la règle par défaut d'une thèse qui tient. */
+function winnerRule(pl){
+  if(pl==null||pl<20)return null;
+  if(pl>=100)return 'Gain ≥ +100 % : sécuriser 25-50 % et laisser courir le reste (règle indicative).';
+  if(pl>=75) return 'Gain ≥ +75 % : envisager de sécuriser une fraction, laisser courir le reste.';
+  if(pl>=50) return 'Gain ≥ +50 % : relever le stop sous le prix, réévaluer la thèse (jamais vendre par réflexe).';
+  if(pl>=30) return 'Gain ≥ +30 % : verrouiller le risque (stop au-dessus du prix moyen).';
+  return 'Gain ≥ +20 % : trade validé — laisser courir tant que la thèse tient.';
+}
+
+/* Prochaine action ANALYTIQUE (§17-19). GARDE-FOU PERDANTS : une position en
+   perte ne reçoit JAMAIS « renforcer » sans confirmation positive explicite —
+   sinon message d'interdiction. Aucune de ces actions n'exécute d'ordre. */
+function nextAction(t){
+  const st=thesisState(t);
+  if(st.key==='cassee')
+    return {label:'Réévaluer la sortie — invalidation atteinte',tone:'neg'};
+  if(st.key==='fragilisee')
+    return {label:'Surveiller de près — thèse proche de l’invalidation',tone:'warn'};
+  if(t.pl!=null&&t.pl<0){
+    /* Perte SANS confirmation → renforcement formellement interdit (§18). */
+    if(!hasPositiveConfirmation(t))
+      return {label:'Renforcement interdit : aucune confirmation positive détectée',tone:'neg'};
+    return {label:'Confirmation détectée — renforcement possible seulement après revue',tone:'muted'};
+  }
+  const wr=winnerRule(t.pl);
+  if(wr)return {label:wr,tone:'pos'};
+  return {label:'Conserver — thèse intacte, laisser courir',tone:'muted'};
+}
+
+
 function roleOf(t){
   const snap=t.entrySnap||{};
   if(t.type!=='STK')return'Options tactiques';
