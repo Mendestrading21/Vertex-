@@ -225,6 +225,41 @@ function nextAction(t){
 }
 
 
+/* Tiroir de detail d'une position option.
+   APPELEE ET JAMAIS DEFINIE : chaque clic sur « analyser » d'une ligne option
+   levait `ReferenceError`. L'API reelle du shell est `VX.shell.openDrawer`,
+   deja employee par `options-structure.js` et `chart-core.js` ; c'est elle
+   qu'on appelle, plutot que d'inventer un second tiroir.
+   Lecture seule : ce tiroir DECRIT une position, il n'en prepare aucune. */
+function openOptionDrawer(t){
+  if(!t){return;}
+  if(!(window.VX&&VX.shell&&VX.shell.openDrawer)){return;}
+  const li=(k,v)=>'<div class="vx-kv"><span class="k">'+esc(k)+'</span>'
+    +'<span class="v vx-mono">'+v+'</span></div>';
+  const px=(v)=>(v==null?'n/d':VX.fmt.price(v));
+  const dte=(t.exp?Math.round((new Date(t.exp)-Date.now())/86400000):null);
+  const corps='<div class="vx-grid" style="grid-template-columns:1fr 1fr;gap:6px">'
+    +li('Type',esc(t.type||'—'))
+    +li('Strike',px(t.strike))
+    +li('Echeance',esc(t.exp||'—')+(dte!=null?' ('+dte+' j)':''))
+    +li('Quantite',(t.qty==null?'n/d':t.qty))
+    +li('Cout',px(t.cost))
+    +li('Marque',px(t.mark))
+    +li('Valeur',px(t.value))
+    +li('P&L',(t.pl==null?'n/d':VX.fmt.pct(t.pl,1)))
+    +'</div>'+marqueNote(t)
+    +'<div class="vx-card-footer">'
+    +VX.updateIndicator(window.__pfTs||null,
+        window.__pfLive?'IBKR/desk':'desk (repli)',
+        window.__pfLive?'live':'fallback')
+    /*  Apostrophe française dans une chaîne JS : le piège du dépôt. On écrit
+        « aucun ordre préparé » plutôt que « aucune préparation d'ordre » —
+        contourner vaut mieux qu'échapper, un échappement se reperd. */
+    +' · lecture seule — aucun ordre préparé</div>';
+  VX.shell.openDrawer(esc(t.sym||'Position')+' · detail option',corps,
+                      {variant:'summary'});
+}
+
 function roleOf(t){
   const snap=t.entrySnap||{};
   if(t.type!=='STK')return'Options tactiques';
@@ -1151,8 +1186,8 @@ async function renderDiscipline(){
   }
   $('pf-body').appendChild(host);
 }
-const RENDER={team:renderSynthese,positions:renderPositions,performance:renderPerformance,
-  options:renderOptions,risk:async function(){await renderRisk();await renderStress();await renderDiscipline();await renderHiddenDeps();},watchlist:renderWatchlist};
+const RENDER={team:renderTeam,positions:renderPositions,performance:renderPerformance,
+  options:renderOptions,risk:async function(){await renderRisk();await renderDiscipline();}  /* `renderStress` et `renderHiddenDeps` etaient appelees ici et definies NULLE PART : la vue « risque » levait ReferenceError et ne rendait donc RIEN, pas meme les deux blocs qui existent. Les appels morts sont retires ; les deux analyses restent a ecrire. */,watchlist:renderWatchlist};
 async function pfFresh(){try{
   const el=$('pf-fresh');if(!el||!window.VX||!VX.freshness)return;
   let pk=VX.fetch.peek('/api/session/manifest');
@@ -1163,7 +1198,7 @@ async function pfFresh(){try{
   const a=(pk&&pk.data&&typeof pk.data.age_s==='number')?pk.data.age_s*1000:null;
   el.innerHTML=VX.freshness.chip(VX.freshness.assess({ageMs:a,live:live}));
 }catch(e){}}
-function boot(){pfFresh();(RENDER[VIEW]||renderSynthese)().catch(e=>{($('pf-body')||{}).innerHTML=VX.states.error(e.message);});}
+function boot(){pfFresh();(RENDER[VIEW]||renderTeam)().catch(e=>{($('pf-body')||{}).innerHTML=VX.states.error(e.message);});}
 if(window.VXCharts&&window.Chart)boot();else window.addEventListener('load',boot,{once:true});
 ['vx:position-changed','vx:watchlist-changed','vx:follow-changed','vx:favorites-changed']
   .forEach(ev=>VX.bus.on(ev,(e)=>{if((e.detail||{}).source!=='sync')return boot();boot();}));

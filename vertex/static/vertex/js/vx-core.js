@@ -657,6 +657,43 @@
   if (document.readyState === 'complete') _schedule();
   else window.addEventListener('load', _schedule, { once: true });
 
+  /*  _toneAttr / _toneCls — LE TON D'UNE TUILE, ET RIEN D'AUTRE.
+
+      Les deux etaient APPELEES par `VX.tile.metric`, `.stat` et `.kpi`, et
+      definies NULLE PART — ni ici, ni sur `main`, ni sur `vertex-live`.
+      Chaque tuile construite par ces trois helpers levait donc
+      `ReferenceError`, et la section qui l'attendait restait vide.
+
+      Deux sorties distinctes parce que le CSS les consomme differemment :
+      `data-tone="…"` porte le halo et la bordure de la tuile ; `.vx-…`
+      colore un texte. Les melanger produisait des tuiles sans halo ou des
+      chiffres sans couleur.
+
+      Un ton INCONNU rend la chaine vide plutot qu'un ton par defaut : une
+      tuile neutre se lit « pas de jugement », alors qu'un vert de repli
+      affirmerait « positif » sans que rien ne le soutienne.  */
+  var _TONS_ATTR = {
+    pos: 'pos', positive: 'pos', go: 'go', success: 'success',
+    neg: 'neg', negative: 'neg', error: 'error', risk: 'risk',
+    warn: 'warn', warning: 'warning', wait: 'wait', over: 'over',
+    opt: 'opt', option: 'opt', brand: 'brand', ai: 'ai', cash: 'cash',
+    offline: 'offline'
+  };
+  var _TONS_CLS = {
+    pos: 'vx-pos', positive: 'vx-pos', go: 'vx-pos', success: 'vx-pos',
+    neg: 'vx-neg', negative: 'vx-neg', error: 'vx-neg', risk: 'vx-neg',
+    warn: 'vx-warn', warning: 'vx-warn', wait: 'vx-warn', over: 'vx-warn',
+    muted: 'vx-muted', active: 'vx-active'
+  };
+
+  function _toneAttr(t) {
+    return _TONS_ATTR[String(t == null ? '' : t).toLowerCase()] || '';
+  }
+
+  function _toneCls(t) {
+    return _TONS_CLS[String(t == null ? '' : t).toLowerCase()] || '';
+  }
+
   /*  VX.tile — systeme de tuiles de la refonte Black Glass, apporte par
       l'integration de `vertex-live`. Les pages du kit l'appellent ; sans
       lui, chaque tuile de metrique et de statistique serait vide.

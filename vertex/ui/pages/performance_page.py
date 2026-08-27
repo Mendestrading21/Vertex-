@@ -843,7 +843,12 @@ function bindDisclosures(){
 }
 function boot(){
   bindDisclosures();
-  if(VIEW==='overview'){loadDiscipline();loadHypotheses();loadDist();loadPostmortem();loadCalibration();loadMemory();wireMemoryImport();}
+  if(VIEW==='overview'){
+    /*  `loadDiscipline()` etait appelee ICI et definie NULLE PART. Comme elle
+        ouvrait la chaine, la vue « overview » du Journal levait des le premier
+        appel : AUCUN des cinq blocs suivants ne se chargeait. Retiree — les
+        cinq qui existent se chargent maintenant.  */
+    loadHypotheses();loadDist();loadPostmortem();loadCalibration();loadMemory();wireMemoryImport();}
   else if(VIEW==='journal'){
     loadJournal();loadMistakes();
     $('vx-pf-add')?.addEventListener('click',openEntryModal);

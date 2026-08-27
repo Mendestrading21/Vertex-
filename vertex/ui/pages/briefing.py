@@ -1671,9 +1671,9 @@ async function loadSession(){
       items,source:'calendrier moteur',timestamp:cal.ts||Date.now(),mode:'delayed',
       emptyText:CAL_FILTER==='mine'?'Aucun catalyseur sur tes actions dans cet horizon.':'Aucun événement dans cet horizon.'});
     document.querySelectorAll('[data-calf]').forEach(b=>b.addEventListener('click',()=>{
-      CAL_FILTER=b.dataset.calf;loadCalendar();}));
+      CAL_FILTER=b.dataset.calf;loadSession();}));
     document.querySelectorAll('[data-calr]').forEach(b=>b.addEventListener('click',()=>{
-      CAL_RANGE=b.dataset.calr;loadCalendar();}));
+      CAL_RANGE=b.dataset.calr;loadSession();}));
   }catch(e){($('vx-calendar')||{}).innerHTML='<div class="vx-card">'+VX.states.error('Calendrier indisponible')+'</div>';}
 }
 
@@ -1825,7 +1825,7 @@ window.addEventListener('hashchange',hashScroll);
 /* ── Orchestration ── */
 async function boot(){
   buildAnchors();
-  loadBrief();loadRegime();loadRegimeDrivers();loadOpportunities();loadAlerts();loadPortfolio();loadCalendar();loadNews();loadRoro();
+  loadBrief();loadRegime();loadRegimeDrivers();loadOpportunities();loadAlerts();loadPortfolio();loadSession();loadNews();loadRoro();
   const scan=await loadStrip();
   loadMarketGrid(scan);
   loadEssential(scan);loadMainChart(scan);loadCompare(scan);loadYield(scan);

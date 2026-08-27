@@ -746,6 +746,19 @@ function paintPhysics(d){
 
 /* Dossier principal — /api/ticker + décision exécutive */
 let TF='6m'; let TICKER=null;
+/*  `_g` et `DEC` etaient EMPLOYES et jamais declares.
+
+    `_g` fige la generation de page au moment ou le chargement commence :
+    `if(VX.page._gen!==_g)return;` sert a ne rien peindre sur une page que
+    l'utilisateur a deja quittee. Sans declaration, cette garde levait
+    `ReferenceError` — et emportait tout le chargement du dossier avec elle.
+    Elle protegeait donc contre une course, en provoquant une panne certaine.
+
+    `DEC` porte la decision du moteur, relue par le brouillon de these.
+    `DEC=dec` sur un nom non declare leve en mode strict, et la page est en
+    `'use strict'`.  */
+let _g=(window.VX&&VX.page&&VX.page._gen)||0;
+let DEC=null;
 async function loadDossier(){
   /* Lot 4 : préchauffe EN PARALLÈLE toutes les requêtes indépendantes du dossier —
      les await plus bas récupèrent le résultat déjà en vol (coalescing VX.fetch par URL) :
@@ -830,7 +843,18 @@ async function loadDossier(){
     }
   }catch(e){}
   const decision=(exec&&exec.final_decision)||'ATTENDRE';
-  const db=$('an-decision');db.textContent=decision;db.dataset.decision=decision.replace('É','E');
+  /*  Une écriture NUE de `textContent` sur `an-decision` vivait ici, et le
+      nœud `#an-decision` n'existe plus : il appartenait à l'agencement
+      précédent. (Le motif exact n'est pas recopié ci-dessus : le recensement
+      du lot « DOM sûr » lit aussi les commentaires, et le citer ferait
+      échouer la garde sur sa propre documentation.)
+      L'écriture levait donc « Cannot set properties of null » à CHAQUE
+      chargement de fiche, et emportait tout ce qui suit — le rail décisionnel,
+      les scénarios, l'audit.
+
+      Le verdict lui-même n'était pas perdu : il est rendu plus bas dans un
+      badge `vx-badge-decision` porteur du même `data-decision`. C'est
+      l'écriture morte qu'on retire, pas l'information.  */
   /* Rail décisionnel sticky */
   const railD=$('an-rail-decision')&&$('an-rail-decision').querySelector('[data-body]');
   if(railD){

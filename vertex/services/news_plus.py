@@ -14,6 +14,7 @@ vertex/services/news_plus.py — NEWS MULTI-SOURCES + SENTIMENT.
 Analyse only.
 """
 
+import html as _html
 import re
 
 _POS = ('beat', 'beats', 'surge', 'soar', 'rally', 'record', 'upgrade', 'raises',
@@ -214,10 +215,39 @@ _TAG_RE = re.compile(r'<[^>]*>')
 
 
 def _clean_text(s):
-    """Neutralise tout HTML/JS d'un texte externe : balises retirées, méta-caractères
-    échappés. Le résultat est sûr dans innerHTML, dans un attribut ET dans une
-    chaîne JS inline côté client."""
-    s = _TAG_RE.sub('', str(s))
+    """Neutralise tout HTML/JS d'un texte externe, **une seule fois**.
+
+    Balises retirées, méta-caractères échappés. Le résultat est sûr dans
+    innerHTML, dans un attribut ET dans une chaîne JS inline côté client.
+
+    ## Le défaut du double échappement
+
+    Dow Jones et IBKR envoient des titres **déjà porteurs d'entités HTML** :
+
+    ```text
+    Stocks That Explain Today&#39;s Market -- Barrons.com
+    ```
+
+    Échapper sans décoder d'abord transformait le `&` en `&amp;`, et l'écran
+    affichait littéralement `Today&#39;s Market`. Vu sur le desk réel le
+    27 août 2026, sur trois dépêches de la première page.
+
+    On **décode d'abord**, on échappe ensuite : l'opération devient
+    idempotente, et un texte déjà propre traverse sans être abîmé.
+
+    ## Pourquoi décoder n'ouvre pas de brèche
+
+    Parce que l'échappement qui suit s'applique au texte décodé. Une source
+    qui enverrait `&lt;script&gt;` obtient `<script>` après décodage, puis
+    `&lt;script&gt;` de nouveau après échappement — exactement ce qu'il faut.
+    Le décodage ne fait que ramener le texte à sa forme littérale ; c'est
+    l'échappement final qui protège, et il est toujours le dernier mot.
+    """
+    #  `unescape` avant `_TAG_RE` : une balise ecrite `&lt;script&gt;` doit
+    #  redevenir une balise pour que le retrait la voie, sinon elle passerait
+    #  pour du texte et ressortirait telle quelle.
+    s = _html.unescape(str(s))
+    s = _TAG_RE.sub('', s)
     return (s.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
              .replace('"', '&quot;').replace("'", '&#39;'))
 
