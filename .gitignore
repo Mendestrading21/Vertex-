@@ -52,3 +52,18 @@ skyler_sessions.json
 # tramer fait echouer la suite pour une raison qui ne concerne pas le produit.
 .coverage
 .coverage.*
+
+#  ── Trous mesures le 27 aout 2026, sur un depot PUBLIC ───────────────────────
+#  `.env` etait couvert, mais pas ses SAUVEGARDES. Un fichier
+#  `.env.sauvegarde-20260826-133828` portait le code d'acces et le secret de
+#  webhook TradingView, et un `git add -A` les aurait publies.
+.env.*
+!.env.example
+
+#  `*_cache.json` etait couvert, mais pas `*.bak.json` : `optall_cache.bak.json`
+#  passait au travers. Une regle qui rate une variante de nom ne protege rien.
+*.bak.json
+
+#  Les archives de remise a zero contiennent l'historique de trading complet :
+#  positions, journal, coffre. Elles ne doivent jamais quitter la machine.
+_archive_avant_remise_a_zero_*/
