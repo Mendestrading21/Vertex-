@@ -83,9 +83,9 @@ Ce qu'elles n'ont pas reçu, c'est une refonte de leur **hiérarchie d'informati
 | № | Contrôle | État | Preuve |
 |---|---|---|---|
 | 031 | Chaque page formule sa question métier | **RÉUSSI** | `vx2.page_header()` rend la question **obligatoire**. Les **12 pages** portent la question canonique du contrat, vérifié au navigateur : chacune se termine par « ? ». Quatre portaient une *description* et non une question (« Le régime d'abord, une tendance principale, les détails ensuite ») — corrigées. |
-| 032 | Le point focal est compris en cinq secondes | **RÉUSSI** pour Aujourd'hui, Calendrier, Simulateur, Analyse, Suivi ; **À CORRIGER** pour Marchés, Opportunités, Options, Portefeuille, Performance, Vertex IA | Analyse porte désormais sa DecisionTrace **et** son verdict canonique — qui était calculé puis jeté faute de conteneur. Suivi ouvre sur son résumé et ses suivis actifs. |
-| 033 | Le premier viewport répond à situation, attention, raison, risque | **RÉUSSI** pour Aujourd'hui ; **À CORRIGER** ailleurs | La DecisionTrace répond aux quatre. → lots de page. |
-| 034 | Une seule visualisation ou table domine la page | **RÉUSSI** sur Calendrier, Simulateur, Analyse, Suivi ; **À CORRIGER** ailleurs | Sur Analyse, la réparation du balisage a rétabli la hiérarchie : le dossier ne s'imbrique plus dans la carte d'identité. |
+| 032 | Le point focal est compris en cinq secondes | **RÉUSSI** pour Aujourd'hui, Calendrier, Simulateur, Analyse, Suivi, Marchés, Portefeuille, Performance ; **À CORRIGER** pour Opportunités, Options, Vertex IA | Analyse porte désormais sa DecisionTrace **et** son verdict canonique — qui était calculé puis jeté faute de conteneur. Suivi ouvre sur son résumé et ses suivis actifs. |
+| 033 | Le premier viewport répond à situation, attention, raison, risque | **RÉUSSI** pour Aujourd'hui, Analyse, Marchés, Portefeuille, Performance, Suivi, Simulateur, Calendrier ; **À CORRIGER** pour Opportunités, Options, Vertex IA, Système | La DecisionTrace répond aux quatre sur Aujourd'hui et Analyse. Ailleurs, la ContextBar 2.0 porte périmètre, nature de la donnée et fraîcheur dès le premier viewport. |
+| 034 | Une seule visualisation ou table domine la page | **RÉUSSI** sur Calendrier, Simulateur, Analyse, Suivi, Marchés, Portefeuille→Allocation, Performance ; **À CORRIGER** sur Opportunités, Options, Vertex IA | Sur Analyse, la réparation du balisage a rétabli la hiérarchie : le dossier ne s'imbrique plus dans la carte d'identité. |
 | 035 | Les KPI secondaires ne rivalisent pas tous au même niveau | **RÉUSSI** pour Aujourd'hui | La bande de 12 tuiles égales n'est plus le premier écran : elle passe **après** le point focal. Ailleurs : → lots de page. |
 | 036 | PageHeader expose périmètre et fraîcheur | **RÉUSSI** | Les **12 pages** annoncent désormais leur groupe de travail en surtitre — `PILOTER`, `EXPLORER`, `GÉRER`, `INTELLIGENCE`, `UTILITAIRE` — et leur nom canonique. Vérifié au navigateur sur les 12. Sans lui, une page n'annonçait pas où elle se situe dans une navigation devenue groupée. |
 | 037 | ContextBar expose période, univers, filtres et source | **RÉUSSI** pour Calendrier, Simulateur, Opportunités, Suivi | Opportunités : Univers · Dernier scan · Source · Fraîcheur, peinte par les **cinq** sous-vues. Suivi : Population · Nature du rendement · Référence · Fraîcheur. |
@@ -170,11 +170,11 @@ Ce qu'elles n'ont pas reçu, c'est une refonte de leur **hiérarchie d'informati
 
 | № | Contrôle | État | Preuve |
 |---|---|---|---|
-| 091–098 | Valeur/cash/exposition, réconciliation IBKR, tables distinctes, allocation, treemap, contribution, corrélation, concentration | **À CORRIGER** | Page Portefeuille non refondue. → **lot 10**. |
+| 091–098 | Valeur/cash/exposition, réconciliation IBKR, tables distinctes, allocation, treemap, contribution, corrélation, concentration | **RÉUSSI** (lot 15) | Sous-vue **Allocation** créée : bande valeur/lignes/plus-gros-titre/HHI, **treemap** des poids, mix par type d'actif, exposition sectorielle avec sa couverture honnête (« 25,6 % de la valeur hors référentiel sectoriel — non répartie »), budget de risque au stop par position, heatmap de corrélations. Tout vient de `/api/portfolio/context` ; **aucun chiffre n'est recalculé dans l'UI**. Réconciliation IBKR et contribution : `renderPnlRecon` et `divBars` existants, vue Synthèse. Captures `lot-15-peuple/`. |
 | 099 | Impact simulé séparé du portefeuille réel | **RÉUSSI** | L'impact du Simulateur porte un bandeau permanent : il décrit la **concentration résultante**, ne calcule ni résultat ni bêta ni repli maximal, et « Vertex ne transmet aucun ordre ». |
 | 100 | Suivi conserve statut workflow et verdict financier séparés | **RÉUSSI** | Suivi a désormais trois sous-vues correspondant aux **trois statuts réellement servis** par `/api/tracking` (ACTIVE, DATA_REQUIRED, STOPPED) — pas un quatrième inventé. La ContextBar sépare explicitement la population (« Idées suivies ») du rendement (« Hypothétique — jamais encaissé »). |
-| 101 | Performance sépare toutes les populations | **À CORRIGER** | Non revérifié. → **lot 11**. |
-| 102–104 | Equity/drawdown même période, benchmark et limites visibles, heatmap mensuelle | **À CORRIGER** | → **lot 11**. |
+| 101 | Performance sépare toutes les populations | **RÉUSSI** (lot 16) | Panneau **« Populations mesurées »** : les cinq populations du contrat nommées côte à côte, chacune avec sa nature de résultat (réalisé / latent / théorique / hypothétique / scénario), sa source et son propriétaire. La ContextBar dit laquelle les indicateurs de la page mesurent, avec son échantillon. Les mesures de discipline ont leur propre conteneur — elles écrasaient la bande des résultats déclarés. Capture `lot-16-peuple/performance-desktop.png`. |
+| 102–104 | Equity/drawdown même période, benchmark et limites visibles, heatmap mensuelle | **RÉUSSI partiellement** (lot 16) | Equity et drawdown **existaient sans conteneur** : `loadEquity` écrivait dans `vx-pf-equity` et `vx-pf-drawdown`, absents du DOM de toute vue, et `equity-chart.js`/`drawdown-chart.js` n'étaient pas servis. Les deux se dessinent désormais sur la même série, avec limites (« dérivé de la série déclarée — pas un indicateur de marché »). **Heatmap mensuelle : DÉCLARÉE ABSENTE** — son code de rendu avait été remplacé par le corps d'un `loadDiscipline()` retiré, et la réécrire supposerait d'agréger des rendements par mois dans l'UI, ce que `performance-center.md` interdit. Besoin consigné. |
 | 105 | Journal conserve sync, backups et liens aux dossiers | **RÉUSSI** | Aucune clé de sync desk touchée ; `test_desk_sync_keys_single_source_of_truth` vert. `/journal` sert le même rendu qu'avant. |
 
 ---
@@ -249,21 +249,28 @@ Ce qu'elles n'ont pas reçu, c'est une refonte de leur **hiérarchie d'informati
 
 | État | Nombre |
 |---|---:|
-| **RÉUSSI** (avec preuve) | 113 |
+| **RÉUSSI** (avec preuve) | 122 |
 | **RÉUSSI partiellement** (limite déclarée) | 8 |
 | **NON APPLICABLE** (justifié) | 9 |
-| **À CORRIGER** (lot nommé ou dette chiffrée) | 19 |
+| **RÉUSSI sur une partie des pages, `À CORRIGER` sur les autres** | 3 |
+| **À CORRIGER** (lot nommé ou dette chiffrée) | 7 |
 | **En attente de décision humaine** | 1 |
 | **Total** | **150** |
 
-*Décompte obtenu en relisant le tableau, pas en l'estimant : 141 lignes, dont
-deux groupées — « 091–098 » couvre huit contrôles et « 102–104 » en couvre
-trois. 113 + 8 + 9 + 19 + 1 = 150.*
+*Décompte obtenu en LISANT le tableau ligne à ligne — 139 lignes, dont des
+plages groupées : « 091–098 » couvre huit contrôles, « 102–104 » en couvre
+trois. Chaque plage est dépliée, chaque numéro de 001 à 150 est attribué une
+fois et une seule ; aucun n'est absent. 122 + 8 + 9 + 3 + 7 + 1 = 150.*
 
-Les 20 `À CORRIGER` restants portent sur **deux pages non refondues dans leur
-contenu** — Portefeuille et Performance — et sur la **dette de composants
-chiffrée** au lot 14 (146 occurrences de tuiles, déjà visuellement unifiées par
-le remappage des jetons). Aucun n'est une régression.
+Les 7 `À CORRIGER` francs restants portent sur **la page Options** (079–081 :
+drawer contrat, term structure, OI/GEX), sur le **registre page → widget**
+(060), sur la **migration des graphiques existants vers `vx2.chart_card`**
+(061), sur **EvidenceZone** (039), et sur la **dette de composants chiffrée**
+au lot 14 (048 : 146 occurrences de tuiles, **déjà visuellement unifiées** par
+le remappage des jetons — migrer ne changerait rien pour l'utilisateur, pour un
+risque réel). Les 3 contrôles mixtes (032–034) sont réussis sur huit des douze
+pages ; il reste Opportunités, Options, Vertex IA et Système. Aucun des dix
+n'est une régression.
 
 ### Ce que la seconde passe a réellement corrigé
 
@@ -280,6 +287,23 @@ des **mensonges structurels**, tous préexistants à la refonte.
 | `render(view)` ignorant son paramètre | Suivi n'avait aucune sous-vue |
 | Emplacements de fraîcheur jamais remplis | Opportunités et Suivi sans provenance |
 
+### Ce que la troisième passe a trouvé — lots 15 à 17
+
+| Défaut | Conséquence réelle |
+|---|---|
+| `loadKpis`, `loadEquity`, `loadMonthlyAndDist` définis, **jamais appelés** | Bande d'indicateurs, courbe d'équité et drawdown morts sur Performance ; cinquième squelette perpétuel |
+| `vx-pf-equity`, `vx-pf-drawdown`, `vx-pf-monthly` absents du DOM de **toute** vue | Trois chargeurs écrivaient dans le vide |
+| `heatmap.js`, `equity-chart.js`, `drawdown-chart.js` non servis sur `/performance` | `VXCharts.heatmapCard` restait `undefined` |
+| Corps de `loadDiscipline()` collé **dans** `loadMonthlyAndDist` | `b is not defined` dès trois clôtures — et plus une ligne dessinant la heatmap |
+| `addEventListener('load', …, {once:true})` après que `load` a tiré | Garde muette : deux blocs attendaient pour toujours, sans rien dire |
+| `.vx-kpi-strip` sans **aucune** règle desktop (seule la surcharge mobile) | Onze tuiles empilées sur toute la largeur — même cause qu'au lot 12 |
+| `neon-glass.css` portait les seules règles de la pastille de régime | « Régime non qualifié Lecture du marché en cours » — une phrase incohérente, produite par un style absent |
+| `VX.fmt.ago(null)` rend « — » dans un pied de carte | Un tiret à l'emplacement d'un âge **se lit comme un âge** — trois pages concernées |
+| `allocBars` suffixait « % » en dur | Le budget de risque, en dollars, s'affichait « 3280,0 % » |
+| Une part de 0,03 % arrondie à « 0,0 % » | Un zéro de façade pour une ligne qui existe |
+| Treemap laissant tomber les tuiles minuscules | Troncature muette, lue comme « tout est là » |
+
 **Aucun de ces défauts n'était détectable** par les contrôles existants :
 zéro débordement, zéro erreur console, zéro bloc vide, suite verte. Il a fallu
-regarder les captures et piloter les pages.
+regarder les captures **et piloter les pages avec des données** — quatre des
+défauts ci-dessus n'apparaissent que sur une page peuplée.

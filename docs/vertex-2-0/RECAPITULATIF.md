@@ -20,21 +20,25 @@
 | **3** | Primitives et états honnêtes — 0 rectangle vide | ✅ |
 | **4** | Graphiques — thème réaligné | ✅ |
 | **5** | Aujourd'hui — point focal `Decision Trace` | ✅ |
-| **6** | Calendrier ✅ · Marchés remis en page propre, contenu non refondu | ⚠️ partiel |
+| **6** | Calendrier ✅ · Marchés remis en page propre | ✅ |
 | **7** | Opportunités et Analyse | ✅ |
 | **8** | Options | ✅ |
 | **9** | Simulateur multi-classes | ✅ |
-| **10** | Suivi ✅ · Portefeuille non refondu | ⚠️ partiel |
-| **11** | Deux squelettes perpétuels de Performance corrigés | ⚠️ partiel |
+| **10** | Suivi | ✅ |
+| **11** | Deux squelettes perpétuels de Performance corrigés | ✅ |
 | **12** | Système | ✅ |
 | **13** | Responsive et accessibilité, mesurés | ✅ |
 | **14** | Nettoyage — dette chiffrée, feuille morte étiquetée | ✅ |
-| **15** | Audit d'acceptation — 150 contrôles renseignés | ✅ |
+| **15** | **Portefeuille** — sous-vues Allocation et Thèses | ✅ |
+| **16** | **Performance** — trois chargeurs morts, cinq populations séparées | ✅ |
+| **17** | **Marchés** — sous-vue Indices, libellés canoniques, pastille de régime | ✅ |
+| — | Audit d'acceptation — 150 contrôles renseignés | ✅ |
 
-**Restent non refondus dans leur contenu :** **Portefeuille**, **Performance** et
-les sous-vues Marchés. Ils héritent de l'identité 2.0 et passent tous les
-contrôles transverses ; ce qu'ils n'ont pas reçu, c'est une refonte de leur
-hiérarchie d'information.
+**Les douze pages sont traitées.** Ce qui reste ouvert est nommé et chiffré au
+récapitulatif de l'audit : sept contrôles `À CORRIGER` francs — page Options
+(079–081), registre page → widget (060), migration des graphiques existants vers
+`vx2.chart_card` (061), EvidenceZone (039) et la dette de composants du lot 14
+(048). Aucun n'est une régression.
 
 ## La seconde passe n'a pas décoré — elle a retiré des mensonges
 
@@ -52,8 +56,34 @@ existants (zéro débordement, zéro erreur console, zéro bloc vide, suite vert
 | Emplacements de fraîcheur jamais remplis | Opportunités, Suivi |
 | `neon-glass.css`, 855 lignes jamais servies | Ses règles ont induit en erreur pendant ce chantier même |
 
+## La troisième passe — lots 15 à 17
+
+Portefeuille, Performance et Marchés ont livré la même surprise, en pire : ce
+n'est plus seulement de la présentation qui manquait, ce sont des blocs entiers
+qui **ne fonctionnaient pas**.
+
+| Défaut | Conséquence réelle |
+|---|---|
+| Trois chargeurs de Performance définis, **jamais appelés** | Bande d'indicateurs, courbe d'équité et drawdown morts ; cinquième squelette perpétuel |
+| Trois conteneurs absents du DOM de **toute** vue | Les chargeurs écrivaient dans le vide |
+| Trois scripts de graphiques non servis sur `/performance` | `VXCharts.heatmapCard` restait `undefined` |
+| Corps de `loadDiscipline()` collé **dans** `loadMonthlyAndDist` | `b is not defined` dès trois clôtures — et plus une ligne dessinant la heatmap |
+| `addEventListener('load', …, {once:true})` après que `load` a tiré | Garde muette : deux blocs attendaient pour toujours |
+| `.vx-kpi-strip` sans **aucune** règle desktop | Onze tuiles empilées pleine largeur — même cause qu'au lot 12 |
+| `neon-glass.css` portait les seules règles de la pastille de régime | « Régime non qualifié Lecture du marché en cours » — une phrase incohérente |
+| `VX.fmt.ago(null)` rend « — » dans un pied de carte | Un tiret à l'emplacement d'un âge **se lit comme un âge** — corrigé à la racine |
+| `allocBars` suffixait « % » en dur | Le budget de risque, en dollars, s'affichait « 3280,0 % » |
+| Une part de 0,03 % arrondie à « 0,0 % » | Un zéro de façade pour une ligne qui existe |
+
+**Quatre de ces défauts n'apparaissent que sur une page peuplée.** Il a fallu
+piloter les pages **avec des données** — sans jamais écrire le desk : la sortie
+réelle des moteurs, calculée hors ligne, est servie au navigateur, et
+`desk_data.json` est resté intact.
+
 Il a fallu **regarder les captures et piloter les pages**. Deux gardiens ont été
-ajoutés pour que ces classes de défaut ne reviennent pas en silence.
+ajoutés pour que ces classes de défaut ne reviennent pas en silence, et cinq
+bancs existants ont été **réécrits** — pas écartés — pour garder leur intention
+sur le nouveau balisage.
 
 ---
 
@@ -171,8 +201,12 @@ je ne le porte pas à la place de l'humain.
 
 ## Décisions humaines requises
 
-1. **Accepter ou non le périmètre livré** — 7 lots complets sur 16, les pages
-   restantes héritant de l'identité sans refonte de contenu.
+1. **Accepter ou non le périmètre livré** — les douze pages sont traitées ;
+   ce qui reste ouvert est nommé et chiffré (sept contrôles `À CORRIGER`
+   francs, aucun n'étant une régression).
 2. **Valider le commit candidat** avant toute fusion (contrôle 150). La PR reste en
    brouillon ; rien n'a été fusionné.
-3. **Arbitrer le besoin backend consigné** — champ `ts` sur `/cal-feed`.
+3. **Arbitrer les besoins backend consignés** — champ `ts` sur `/cal-feed` ;
+   déduplication de `/options/<sym>` ; suppression ou conversion de
+   `neon-glass.css` ; agrégation mensuelle des rendements pour la heatmap de
+   Performance, qui ne doit pas être calculée dans l'interface.
