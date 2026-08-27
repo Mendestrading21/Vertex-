@@ -96,21 +96,41 @@
       });
     },
   };
-  /* Crosshair pointillé vertical au survol (axes cartésiens uniquement). */
+  /* Crosshair pointillé vertical au survol (axes cartésiens uniquement).
+
+     UN SEUL tracé, deux façons de le demander : l'objet `_crossPlugin` pour
+     les graphiques qui prennent la couleur par défaut, et la fabrique
+     `C.crosshairPlugin(couleur)` pour ceux qui la choisissent.
+
+     La fabrique était APPELÉE par `candlestick-chart.js`
+     (`C.crosshairPlugin(C.colors.brand)`) et n'existait PAS : la carte
+     chandeliers de la fiche Analyse levait « C.crosshairPlugin is not a
+     function » à chaque rendu, et le graphique principal du titre ne
+     s'affichait jamais.
+
+     Écrire une seconde implémentation aurait fait diverger les deux tracés au
+     premier ajustement ; la fabrique délègue donc au même dessin. */
+  function _dessinerCroix(chart, couleur) {
+    if (!chart.scales || !chart.scales.x || !chart.chartArea) return;
+    const act = chart.tooltip && chart.tooltip.getActiveElements ? chart.tooltip.getActiveElements() : [];
+    if (!act.length) return;
+    const el0 = act[0].element, x = el0.x, y = el0.y, a = chart.chartArea, c = chart.ctx;
+    c.save(); c.strokeStyle = couleur || 'rgba(255,255,255,.14)'; c.lineWidth = 1; c.setLineDash([3, 3]);
+    c.beginPath(); c.moveTo(x, a.top); c.lineTo(x, a.bottom); c.stroke();
+    if (typeof y === 'number' && y >= a.top && y <= a.bottom) {
+      c.beginPath(); c.moveTo(a.left, y); c.lineTo(a.right, y); c.stroke();
+    }
+    c.restore();
+  }
   const _crossPlugin = {
     id: 'vxcrosshair',
-    afterDraw(chart) {
-      if (!chart.scales || !chart.scales.x || !chart.chartArea) return;
-      const act = chart.tooltip && chart.tooltip.getActiveElements ? chart.tooltip.getActiveElements() : [];
-      if (!act.length) return;
-      const el0 = act[0].element, x = el0.x, y = el0.y, a = chart.chartArea, c = chart.ctx;
-      c.save(); c.strokeStyle = 'rgba(255,255,255,.14)'; c.lineWidth = 1; c.setLineDash([3, 3]);
-      c.beginPath(); c.moveTo(x, a.top); c.lineTo(x, a.bottom); c.stroke();
-      if (typeof y === 'number' && y >= a.top && y <= a.bottom) {
-        c.beginPath(); c.moveTo(a.left, y); c.lineTo(a.right, y); c.stroke();
-      }
-      c.restore();
-    },
+    afterDraw(chart) { _dessinerCroix(chart, null); },
+  };
+  /* La couleur de marque est ARGENT dans Black Glass : on l'attenue pour que
+     la croix reste un repère et ne concurrence pas la donnée. */
+  C.crosshairPlugin = function (couleur) {
+    return { id: 'vxcrosshair-teinte',
+             afterDraw: function (chart) { _dessinerCroix(chart, couleur || null); } };
   };
   function chartDefaults() {
     if (!window.Chart) return;

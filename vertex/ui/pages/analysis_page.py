@@ -823,6 +823,23 @@ async function loadDossier(){
       }
     }
   }catch(e){}
+  /*  `scanTs`, `scanMode` et `scanSource` étaient EMPLOYÉS à trois endroits
+      — la puce de fraîcheur du prix, le pied de la carte ExecutiveEngine et
+      le graphique de scénarios — et déclarés NULLE PART. La fiche levait donc
+      `ReferenceError` avant même de peindre son en-tête.
+
+      Ils sont dérivés de ce que le serveur a réellement rendu :
+        · l'horodatage vient de la décision (`exec.as_of`), qui porte l'heure
+          du scan dont le verdict dérive — pas l'heure du navigateur ;
+        · le mode vient de `/api/live/status`, jamais d'un drapeau de config ;
+        · la source nomme le courtier seulement s'il est vraiment branché.
+
+      `null` quand l'information manque : `VX.updateIndicator` sait rendre
+      « n/d », alors qu'une date inventée se lirait comme une mesure.  */
+  const scanTs=(exec&&exec.as_of)||null;
+  const scanMode=demo?'demo':((status&&status.mode)||'delayed');
+  const scanSource=(status&&status.ibkr)?'IBKR · scan':'scan';
+
   /* Hero */
   ($('an-name')||{}).textContent=(t&&t.company&&(t.company.name||t.company.shortName))||'';
   ($('an-price')||{}).textContent=VX.fmt.nd(d.price!==undefined?VX.fmt.price(d.price):null);
