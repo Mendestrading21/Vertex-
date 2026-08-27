@@ -1,45 +1,79 @@
-/* Vertex Charts — chart-theme-obsidian-copper.js (§35-36)
-   Thème graphique unique OBSIDIAN COPPER DEEP, aligné sur tokens.css :
-   série principale = orange cuivré · benchmark = gris clair · série
-   secondaire = ambre/beige · positif = vert atténué · négatif = rouge
-   corail · options = violet sombre limité. AUCUNE série principale bleue,
-   aucune palette arc-en-ciel automatique. Chargé AVANT chart-core.js. */
+/* Vertex Charts — thème graphique unique.
+   (Nom de fichier HISTORIQUE : « obsidian-copper » ne décrit plus rien. Il est
+   conservé parce que la coque et plusieurs bancs l'épinglent ; le renommer
+   appartient au lot de nettoyage, pas à un lot de contenu.)
+
+   Aligné sur « Vertex Black Glass — Signal Light ». UNE COULEUR = UNE
+   SIGNIFICATION, y compris dans un graphique :
+
+     argent   série principale, structure, sélection
+     gris     benchmark, séries neutres — on distingue par luminance,
+              épaisseur, tiret et marqueur AVANT d'ajouter une teinte
+     vert     positif RÉEL uniquement — jamais une marque, jamais une série
+     rouge    négatif, perte, risque
+     ambre    prudence, incertitude, donnée dégradée
+     violet   OPTIONS exclusivement
+     cyan     crosshair et focus technique — RIEN d'autre
+
+   Les clés historiques (`blue`, `cyan`, `teal`, `plum`, `sand`, `copper`…) sont
+   conservées : des appelants les nomment encore. Seules leurs VALEURS changent,
+   pour qu'aucune ne puisse plus rendre une couleur qui ment.
+
+   Deux de ces alias mentaient réellement :
+     · `blue` rendait #84aa31, le vert de marque abandonné. Une série demandée
+       « bleue » sortait VERTE — la couleur que la doctrine réserve au positif.
+       C'était la valeur par défaut de `C.area()`, donc de toute aire tracée
+       sans couleur explicite.
+     · `cyan` rendait un beige chaud, et servait de couleur à la COURBE
+       D'ÉQUITÉ ainsi qu'aux niveaux de support.
+   Les deux retombent désormais sur l'argent. Le cyan analytique existe sous son
+   propre nom, `crosshair`, et n'est atteignable que délibérément.
+
+   Chargé AVANT chart-core.js. Ne change aucune série, valeur, agrégation ni
+   source : uniquement le rendu. */
 (function () {
   'use strict';
+  var ARGENT = '#c9ced8';
+  var GRIS = '#8f96a2';
   window.VXChartTheme = {
     colors: {
-      brand: '#c9cdd4',       /* série principale : ARGENT neutre (plus de vert identité) */
-      copper: '#3a3f47',
-      copperLight: '#84aa31', /* (hex marque conservé pour cohérence registre) */
-      amber: '#dda23b',       /* série secondaire */
-      beige: '#9aa1a9',       /* série secondaire : gris froid (beige refroidi) */
-      info: '#c9cdd4',        /* information = argent neutre */
-      blue: '#84aa31',        /* alias legacy — plus jamais bleu */
-      cyan: '#c0b79f',        /* alias legacy → beige */
-      violet: '#9c79d0',      /* options & IA (limité) */
+      brand: ARGENT,          /* série principale */
+      neutral: GRIS,          /* benchmark */
+      positive: '#36c889',    /* positif RÉEL */
+      negative: '#ed655c',    /* négatif, perte, risque */
+      warning: '#dda23b',     /* prudence, donnée dégradée */
+      amber: '#dda23b',
+      violet: '#9c79d0',      /* OPTIONS seulement */
       option: '#9c79d0',
-      teal: '#53b9ad',        /* macro / cross-asset / liquidité */
-      plum: '#8f698c',        /* série secondaire distincte */
-      sand: '#c0b79f',
-      steel: '#909b94',
-      stone: '#6d746e',
-      positive: '#36c889',
-      negative: '#ed655c',
-      warning: '#dda23b',
-      neutral: '#8f8a83',     /* benchmark */
-      text: '#b7b3ad',
-      muted: '#817d77',
-      grid: 'rgba(255,255,255,.05)',
-      /* Ordre des séries : argent (primaire neutre), gris benchmark, beige,
-         violet options, ambre, gris pierre. Aucune série verte/bleue. */
-      series: ['#c9cdd4', '#8f8a83', '#9aa1a9', '#9c79d0', '#dda23b', '#6d746e'],
-      sand: '#c0b79f',        /* (hex beige conservé pour le contrat registre) */
+      crosshair: '#65d8e8',   /* cyan analytique — crosshair et focus, rien d'autre */
+
+      /* ── Alias historiques : conservés pour leurs appelants, neutralisés ── */
+      copper: '#242932',      /* ancien accent marque → graphite */
+      copperLight: ARGENT,    /* rendait le vert de marque abandonné */
+      info: ARGENT,
+      blue: ARGENT,           /* n'a jamais été bleu, et n'est plus vert */
+      cyan: ARGENT,           /* le cyan analytique vit sous `crosshair` */
+      teal: '#9aa1ad',
+      plum: '#7f8794',
+      beige: '#9aa1ad',
+      sand: '#9aa1ad',
+      steel: GRIS,
+      stone: '#7f8794',
+
+      text: '#b8bec8',
+      muted: '#9aa1ad',       /* relevé au niveau AA, comme --vx-smoke */
+      grid: 'rgba(222,228,238,.055)',
+
+      /* Ordre des séries : argent, gris, gris pierre, violet (options), ambre
+         (prudence), acier. Aucune série verte, rouge, bleue ni cyan : une
+         couleur sémantique n'apparaît que lorsqu'elle PORTE ce sens. */
+      series: [ARGENT, GRIS, '#7f8794', '#9c79d0', '#dda23b', '#9aa1ad'],
     },
     tooltip: {
-      backgroundColor: '#151719',
-      borderColor: 'rgba(255,255,255,.15)',
-      titleColor: '#f3f1ed',
-      bodyColor: '#b7b3ad',
+      backgroundColor: '#131720',
+      borderColor: 'rgba(222,228,238,.14)',
+      titleColor: '#f5f7fa',
+      bodyColor: '#b8bec8',
     },
   };
 })();

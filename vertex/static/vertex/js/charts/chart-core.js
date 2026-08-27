@@ -396,7 +396,9 @@
   C.levelLines = function (levels) {
     /* levels: [{value,label,kind:'entry'|'stop'|'tp'|'support'|'resistance'}] */
     const colByKind = { entry: C.colors.info, stop: C.colors.negative, tp: C.colors.positive,
-      support: C.colors.cyan, resistance: C.colors.warning };
+      // Un support n'est ni positif ni analytique : c'est un NIVEAU.
+      // Il se lit en argent ; la prudence reste réservée à la résistance.
+      support: C.colors.brand, resistance: C.colors.warning };
     return {
       id: 'vxLevels',
       afterDatasetsDraw(chart) {
