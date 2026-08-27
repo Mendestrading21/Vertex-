@@ -32,13 +32,19 @@
 | **15** | **Portefeuille** — sous-vues Allocation et Thèses | ✅ |
 | **16** | **Performance** — trois chargeurs morts, cinq populations séparées | ✅ |
 | **17** | **Marchés** — sous-vue Indices, libellés canoniques, pastille de régime | ✅ |
+| **18** | **Options** — tiroir contrat, tables équivalentes, boucle infinie corrigée | ✅ |
+| **19** | **Graphiques** — registre mesuré, contrat comblé sur 72 cartes | ✅ |
+| **20** | **Répétitions** — 0 texte explicatif répété sur les 12 pages | ✅ |
 | — | Audit d'acceptation — 150 contrôles renseignés | ✅ |
 
-**Les douze pages sont traitées.** Ce qui reste ouvert est nommé et chiffré au
-récapitulatif de l'audit : sept contrôles `À CORRIGER` francs — page Options
-(079–081), registre page → widget (060), migration des graphiques existants vers
-`vx2.chart_card` (061), EvidenceZone (039) et la dette de composants du lot 14
-(048). Aucun n'est une régression.
+**Les douze pages sont traitées, et il reste UN `À CORRIGER`** : la dette de
+composants du lot 14 (048 — 146 occurrences de tuiles, chiffrées et datées,
+**déjà visuellement unifiées** par le remappage des jetons). Ce n'est pas un
+oubli : migrer ne changerait rien pour l'utilisateur, pour un risque réel dans
+sept pages dont trois font plus de 90 ko.
+
+  129 RÉUSSI · 10 partiels · 9 non applicables · 1 à corriger · 1 décision
+  humaine = 150
 
 ## La seconde passe n'a pas décoré — elle a retiré des mensonges
 
@@ -79,6 +85,24 @@ qui **ne fonctionnaient pas**.
 piloter les pages **avec des données** — sans jamais écrire le desk : la sortie
 réelle des moteurs, calculée hors ligne, est servie au navigateur, et
 `desk_data.json` est resté intact.
+
+## La quatrième passe — lots 18 à 20
+
+| Défaut | Conséquence réelle |
+|---|---|
+| `changed = true` dès qu'une cotation arrive, sans comparer | **Boucle de requêtes infinie** sur `/api/pos-quotes` — jamais déclenchée en démo, systématique avec IBKR connecté |
+| `mark_source`, `spread_pct`, `bid`, `ask`, `ts` récupérés, **seul `mark` lu** | Un prix sans origine ni heure : l'écart avec le relevé du courtier restait inexplicable |
+| `treemap` et `waterfall` ignoraient `unit`, `source`, `question` **en silence** | Le contrat des graphiques ne pouvait pas être tenu là où elles servent, et rien ne le signalait |
+| `d.as_of` inexistant à la racine de `vol_charts` | Quatre cartes promettaient un âge et n'en rendaient aucun |
+| `VX.bus.emit(nom, detail)` lu comme `payload.ts` | La barre affichait « aucune donnée datée » alors que la donnée l'était — ma faute, vue au navigateur |
+| `_headline` rendu en pastille **puis** en titre | « Système partiellement dégradé » lu deux fois, l'un sous l'autre |
+| « À retenir » = `lines.slice(0,3)`, comme la carte voisine | Deux cartes, un seul texte |
+| Trois cartes de Vertex IA, la **phrase identique** | Trois paragraphes qui n'informent pas trois fois |
+
+**Une régression que j'ai introduite, attrapée par un gardien.** `vx2.tabs`
+n'émettait pas `data-view-tab`, dont `options-context.js` se sert pour propager
+le sous-jacent d'un onglet à l'autre : changer d'onglet aurait perdu le symbole
+en silence. Le banc l'a vue ; il reste intact.
 
 Il a fallu **regarder les captures et piloter les pages**. Deux gardiens ont été
 ajoutés pour que ces classes de défaut ne reviennent pas en silence, et cinq
