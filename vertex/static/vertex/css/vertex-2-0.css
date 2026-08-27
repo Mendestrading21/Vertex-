@@ -39,7 +39,17 @@
   --vx-ink:#f5f7fa;
   --vx-silver:#c9ced8;
   --vx-mist:#b8bec8;
-  --vx-smoke:#7a828f;
+  /* `smoke` et `faint` ont été RELEVÉS pour tenir AA (4.5:1) sur la surface la
+     plus claire du produit (#20252f), qui est le cas le pire — un jeton qui
+     passe là passe partout. Aux valeurs précédentes (#7a828f / #5f6672), les
+     méta-textes de 10,5 px tombaient à 3,96:1 et 2,66:1 : lisibles pour qui a
+     une bonne vue, illisibles pour les autres. Mesuré au navigateur sur le
+     texte réellement rendu, fond résolu en remontant les ancêtres — sur une
+     surface en verre, lire le fond de l'élément lui-même donnerait
+     « transparent » et la mesure serait fausse.
+     La hiérarchie ne repose donc plus sur la seule luminosité : elle vient
+     aussi du poids et de la taille, comme la doctrine le demande. */
+  --vx-smoke:#9aa1ad;   /* 5,91:1 sur la surface la plus claire */
 
   /* Sémantique stricte */
   --vx-positive:#36c889;
@@ -94,7 +104,7 @@
   --vx-text-primary:var(--vx-ink);
   --vx-text-secondary:var(--vx-mist);
   --vx-text-muted:var(--vx-smoke);
-  --vx-text-faint:#5f6672;
+  --vx-text-faint:#8f96a2;   /* 5,16:1 sur la surface la plus claire */
 
   /* Verre consommé par .vx-card & co. */
   --vx-glass-1:rgba(20,23,29,.60);

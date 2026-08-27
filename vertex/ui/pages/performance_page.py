@@ -52,8 +52,17 @@ _HEADER = """
 
 _VIEW_CONTENT = {
     'overview': """
-<section class="vx-card vx-card--hero vx-page-lead vx-mt3" id="vx-pf-hero" aria-label="Verdict de discipline">
-  <div class="vx-skeleton" style="height:64px"></div></section>
+<section class="vx2-surface vx-mt3" id="vx-pf-hero" aria-label="Verdict de discipline">
+  <div class="vx2-card-head"><div><h2 class="vx2-card-title">Verdict de discipline</h2>
+    <p class="vx2-card-question">La m&eacute;thode est-elle appliqu&eacute;e&nbsp;?</p></div></div>
+  <div class="vx2-state" data-kind="missing" role="status">
+    <span class="vx2-state-ghost" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+    <p class="vx2-state-title">Verdict de discipline &mdash; calcul non disponible dans Vertex</p>
+    <p class="vx2-state-cause">Aucun moteur ne produit ce verdict. Le chargeur qui devait
+      remplir ce bloc appelait une fonction qui n&rsquo;existait pas&nbsp;; il a &eacute;t&eacute; retir&eacute;.
+      Le bloc affichait depuis un squelette perp&eacute;tuel &mdash; une donn&eacute;e promise qui
+      n&rsquo;arrivait jamais. Rien n&rsquo;est invent&eacute; pour le remplir&nbsp;: les mesures r&eacute;elles
+      de discipline sont ci-dessous.</p></div></section>
 <div class="vx-kpi-strip vx-mt3" id="vx-pf-kpis" data-max-kpis="4" aria-label="Quatre indicateurs de discipline"><div class="vx-skeleton vx-skeleton-kpi"></div></div>
 <div class="vx-hero-grid vx-mt4">
   <section class="vx-card" aria-label="Revue des hypothèses">
@@ -62,7 +71,11 @@ _VIEW_CONTENT = {
     <div id="vx-pf-hypo"><div class="vx-skeleton" style="height:80px"></div></div>
   </section>
   <aside class="vx-insight-rail" aria-label="Prochain axe de travail">
-    <div class="vx-insight" id="vx-pf-next-axis" data-tone="neutral"><div class="vx-skeleton" style="height:80px"></div></div>
+    <div class="vx-insight" id="vx-pf-next-axis" data-tone="neutral">
+      <div class="vx2-state" data-kind="missing" role="status">
+        <p class="vx2-state-title">Prochain axe de travail &mdash; non produit</p>
+        <p class="vx2-state-cause">Aucun moteur de Vertex ne d&eacute;signe d&rsquo;axe de travail.
+          Le besoin est consign&eacute;&nbsp;; il n&rsquo;est pas simul&eacute;.</p></div></div>
   </aside>
 </div>
 <div class="vx-section-stack vx-mt4">

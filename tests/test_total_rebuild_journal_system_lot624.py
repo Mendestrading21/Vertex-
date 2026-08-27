@@ -15,7 +15,16 @@ def _between(text: str, start: str, end: str) -> str:
 
 def test_discipline_leads_with_response_four_kpis_hypotheses_and_next_axis():
     view = performance_page._VIEW_CONTENT['overview']
-    assert 'vx-card--hero vx-page-lead' in view
+    #  VERTEX 2.0 : le hero de discipline portait un SQUELETTE PERPÉTUEL.
+    #  `loadDiscipline()` avait été retirée — elle était appelée et définie nulle
+    #  part, et faisait échouer toute la vue — mais ses deux conteneurs sont
+    #  restés. Le bloc promettait donc une donnée qui n'arrivait jamais.
+    #  Il porte désormais un état honnête sur la surface canonique 2.0
+    #  (`vx2-surface`) : « calcul non disponible dans Vertex », avec sa cause.
+    assert 'id="vx-pf-hero"' in view and 'vx2-surface' in view
+    assert 'calcul non disponible dans Vertex' in view
+    assert 'vx-skeleton' not in view.split('id="vx-pf-hero"', 1)[1][:600], \
+        'le hero ne doit plus porter un squelette qui ne se résout jamais'
     assert 'id="vx-pf-kpis" data-max-kpis="4"' in view
     assert 'id="vx-pf-hypo"' in view
     assert 'id="vx-pf-next-axis"' in view and 'vx-insight-rail' in view

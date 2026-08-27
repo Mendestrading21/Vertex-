@@ -103,10 +103,96 @@ def build_editorial(scan_state: dict) -> dict:
     }
 
 
+
+# ── Vertex 2.0 : le point focal d'Aujourd'hui ────────────────────────────────
+#
+# La page ouvrait sur douze tuiles d'indices de poids RIGOUREUSEMENT ÉGAL. Douze
+# choses également importantes, c'est zéro hiérarchie : rien ne dit par où
+# commencer. Le premier écran porte désormais une DecisionTrace —
+# Donnée → Moteur → Décision → Portefeuille — qui répond en cinq secondes à
+# « où en est-on, et qu'est-ce qui bloque ? ».
+#
+# Elle ne calcule RIEN. Chaque nœud lit `scan_state`, déjà produit par les
+# moteurs. Un nœud sans donnée porte `—` et le ton « missing » : il ne devient
+# ni zéro, ni vert, ni rassurant.
+
+_REGIME_FR = {'TREND': 'Tendance', 'NEUTRAL': 'Neutre', 'CHOP': 'Sans direction',
+              'DOWN': 'Baissier', 'UP': 'Haussier', 'UNKNOWN': 'Indéterminé'}
+
+
+def _trace_aujourdhui(scan_state: dict) -> str:
+    """DecisionTrace du jour, rendue côté serveur depuis `scan_state`."""
+    from vertex.ui import vx2
+
+    st = scan_state or {}
+    m = {**(st.get('market') or {}), **(st.get('market_ctx') or {})}
+    committee = st.get('committee') or {}
+    counts = committee.get('counts') or {}
+
+    # ── Donnée : d'où vient ce qu'on regarde, et de quand ────────────────
+    source = st.get('source')
+    updated = st.get('scan_ts_h') or st.get('updated')
+    if not source or source == 'aucune':
+        n_donnee = {'label': 'Donnée', 'valeur': 'Aucune source',
+                    'meta': 'aucun scan servi', 'tone': 'negative'}
+    else:
+        n_donnee = {'label': 'Donnée', 'valeur': str(source),
+                    'meta': f'mise à jour {updated}' if updated else 'horodatage —',
+                    'tone': 'neutral' if updated else 'caution'}
+
+    # ── Moteur : quel régime a-t-il lu ? ─────────────────────────────────
+    brut = m.get('spy_regime') or m.get('regime')
+    regime = _REGIME_FR.get(str(brut or '').upper(), brut)
+    roro = m.get('roro')
+    if not regime:
+        n_moteur = {'label': 'Moteur', 'valeur': 'Régime indéterminé',
+                    'meta': 'aucun signal de marché', 'tone': 'caution'}
+    else:
+        # Le ton suit ce que le moteur DIT, il ne le réinterprète pas.
+        tone = {'RISK-ON': 'positive', 'RISK-OFF': 'negative'}.get(
+            str(roro or '').upper(), 'neutral')
+        n_moteur = {'label': 'Moteur', 'valeur': str(regime),
+                    'meta': str(roro) if roro else 'orientation —', 'tone': tone}
+
+    # ── Décision : ce que le comité a réellement conclu ───────────────────
+    if counts:
+        achat = counts.get('ACHETER', 0)
+        eviter = counts.get('ÉVITER', counts.get('EVITER', 0))
+        n_decision = {
+            'label': 'Décision',
+            'valeur': (f"{achat} dossier{'s' if achat != 1 else ''} d'achat"
+                       if achat else 'Aucun dossier d\'achat'),
+            'meta': f"{counts.get('ATTENDRE', 0)} en surveillance · {eviter} à éviter",
+            'tone': 'positive' if achat else 'caution'}
+    else:
+        n_decision = {'label': 'Décision', 'valeur': 'Comité sans verdict',
+                      'meta': 'aucun dossier évalué', 'tone': 'missing'}
+
+    # ── Portefeuille : rempli côté client depuis les positions déclarées.
+    # Le serveur ne les connaît pas ici : il ne suppose donc rien.
+    # L'identifiant est porté par le nœud lui-même : `loadPortfolio` le complète
+    # sans que rien n'ait à deviner de quel nœud il s'agit.
+    n_portefeuille = {'label': 'Portefeuille', 'valeur': '—',
+                      'meta': 'lecture des positions…', 'tone': 'missing',
+                      'ident': 'vx-trace-portefeuille'}
+
+    return vx2.decision_trace(
+        [n_donnee, n_moteur, n_decision, n_portefeuille],
+        emplacement='aujourdhui-hero')
+
+
+def _hero_aujourdhui(scan_state: dict) -> str:
+    from vertex.ui import vx2
+    return vx2.surface(
+        _trace_aujourdhui(scan_state),
+        titre='Où en est-on maintenant ?',
+        question='De la donnée au portefeuille, en une lecture.',
+        hero=True)
+
 _CONTENT = """
 <div class="vx-page-header">
-  <div><h1>Dashboard</h1>
-  <div class="vx-sub">Que dois-je comprendre et surveiller aujourd’hui ?</div></div>
+  <div><p class="vx2-eyebrow">Piloter</p><h1>Aujourd’hui</h1>
+  <div class="vx-sub">Que dois-je comprendre, surveiller et revoir maintenant ?</div></div>
   <div class="vx-actions">
     <button class="vx-btn vx-btn-sm vx-btn-ghost" id="vx-context-btn" aria-pressed="false" title="Afficher/replier le contexte marché (Marchés · Pouls · Secteurs · Actus · Mouvements)">+ Contexte marché</button>
     <button class="vx-btn vx-btn-sm vx-btn-ghost" id="vx-customize-btn">Personnaliser</button>
@@ -118,6 +204,7 @@ _CONTENT = """
   </div>
 </div>
 <div id="vx-demo-banner"></div>
+%%HERO%%
 
 <!-- Ancres de section : navigation fluide dans le Dashboard -->
 <style>
@@ -1572,8 +1659,29 @@ async function loadAlerts(){
 }
 
 /* ── Portefeuille + calendrier ── */
+/* Dernier noeud de la DecisionTrace : le serveur ne connait pas les positions
+   declarees, il ne suppose donc rien. Le client les lit et complete le noeud.
+   Aucune valeur n'est calculee ici : on compte des positions deja enregistrees. */
+function majTracePortefeuille(pos){
+  const n=document.getElementById('vx-trace-portefeuille');
+  if(!n)return;
+  const val=n.querySelector('.vx2-trace-value');
+  const meta=n.querySelector('.vx2-trace-meta');
+  if(!pos||!pos.length){
+    n.setAttribute('data-tone','missing');
+    if(val)val.textContent='Aucune position';
+    if(meta)meta.textContent='rien \u00e0 exposer';
+    return;
+  }
+  const opts=pos.filter(t=>t.type&&t.type!=='STK').length;
+  n.setAttribute('data-tone','neutral');
+  if(val)val.textContent=pos.length+(pos.length>1?' positions':' position');
+  if(meta)meta.textContent=opts?(opts+(opts>1?' options':' option')+' incluses'):'actions seulement';
+}
+
 async function loadPortfolio(){
   const pos=(E()&&E().positions())||[];
+  majTracePortefeuille(pos);
   if(!pos.length){
     ($('vx-portfolio')||{}).innerHTML=VX.states.emptyDesk('Aucune position déclarée.',
       '<button class="vx-btn vx-btn-sm" onclick="VXEntities.openAddModal(\'\',\'position\')">Déclarer une position</button>');
@@ -1869,6 +1977,10 @@ VX.bus.on('vx:data-refreshed',()=>{loadBrief();loadRegime();loadRegimeDrivers();
 def render(scan_state: dict | None = None) -> str:
     content = _CONTENT.replace('%%LOADING%%',
                                '<div class="vx-skeleton" style="height:60px"></div>')
-    return render_shell(title='Dashboard', active='briefing', space_label='Dashboard',
+    content = content.replace('%%HERO%%', _hero_aujourdhui(scan_state or {}))
+    # `page_label` reste « Dashboard » : le routeur client et plusieurs bancs s'y
+    # adossent. L'espace, lui, s'appelle Aujourd'hui — c'est ce que l'utilisateur lit.
+    return render_shell(title='Aujourd’hui', active='briefing',
+                        space_label='Aujourd’hui',
                         sub_label='Marchés US', content=content, page_js=_JS,
                         page_label='Dashboard')

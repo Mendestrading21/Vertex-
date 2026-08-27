@@ -172,7 +172,7 @@ def _topbar(space_label: str, sub_label: str = '', space_href: str = '/') -> str
       autocomplete="off" aria-label="Recherche globale" />
     <span class="vx-kbd">⌘K</span></div>
   <div class="vx-topbar-right">
-    <button class="vx-btn vx-btn-sm vx-btn-primary" id="vx-add-btn">{icon('plus', 14)}<span class="vx-hide-mobile">Ajouter</span></button>
+    <button class="vx-btn vx-btn-sm vx-btn-primary" id="vx-add-btn" aria-label="Ajouter une position ou une idée">{icon('plus', 14)}<span class="vx-hide-mobile">Ajouter</span></button>
     <div class="vx-session vx-hide-mobile" id="vx-session">—<br><span class="vx-muted">New York —:—</span></div>
     <button class="vx-btn vx-btn-icon vx-btn-ghost" id="vx-connections-btn"
       aria-label="Connexions" title="Connexions (IBKR, TradingView, Claude, sync)">{icon('plug')}</button>

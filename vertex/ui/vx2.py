@@ -116,8 +116,13 @@ def decision_trace(noeuds: Sequence[Mapping], *, emplacement: str) -> str:
     tout sens si elle décore une sixième surface. L'appel est refusé plutôt
     que silencieusement rendu ailleurs.
 
-    Chaque nœud : `{'label', 'valeur', 'meta', 'tone'}`. Un nœud sans ton
-    reste argent — c'est le défaut, pas une anomalie.
+    Chaque nœud : `{'label', 'valeur', 'meta', 'tone', 'ident'}`. Un nœud sans
+    ton reste argent — c'est le défaut, pas une anomalie.
+
+    `ident` pose un identifiant SUR le nœud, pour qu'un chargeur client puisse
+    le compléter. Il est explicite parce qu'il doit l'être : viser un nœud par
+    remplacement de chaîne (« le premier nœud sans donnée ») écrit dans la
+    mauvaise case dès que deux nœuds partagent le même état.
     """
     if emplacement not in TRACE_EMPLACEMENTS:
         raise ValueError(
@@ -130,7 +135,7 @@ def decision_trace(noeuds: Sequence[Mapping], *, emplacement: str) -> str:
         val_html = _e(str(val)) if val not in (None, '') else ABSENT
         meta = n.get('meta')
         out.append(
-            f'<li class="vx2-trace-node" data-tone="{t}">'
+            f'<li class="vx2-trace-node" data-tone="{t}"{_attr("id", n.get("ident"))}>'
             f'<span class="vx2-trace-dot" aria-hidden="true"></span>'
             f'<span class="vx2-trace-body">'
             f'<span class="vx2-trace-label">{_e(str(n.get("label", "")))}</span>'
