@@ -884,7 +884,10 @@ def render(view: str = 'overview', params: dict | None = None) -> str:
     content = content.replace('%%SYM%%', html.escape(sym)).replace(
         '%%LOADING%%', '<div class="vx-skeleton" style="height:60px"></div>')
     page_js = _JS.replace('%%VIEW%%', view)
-    return render_shell(title='Journal', active='journal',
-                        space_label='Journal', sub_label=label,
+    # Vertex 2.0 : l'espace s'appelle Performance ; le Journal en est une
+    # sous-vue. `page_label` reste « Journal » — plusieurs bancs et le routeur
+    # client s'y adossent, et l'étiquette décrit toujours ce que la vue montre.
+    return render_shell(title='Performance', active='performance',
+                        space_label='Performance', sub_label=label,
                         content=content, page_js=page_js,
                         page_label='Journal')

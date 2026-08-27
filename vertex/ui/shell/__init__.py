@@ -7,19 +7,56 @@ le temps de la bascule des routes.
 """
 from __future__ import annotations
 
-SHELL_VERSION = 'vx-shell-1'
+SHELL_VERSION = 'vx-shell-2'
 
-# Navigation principale (§10). Marchés est FUSIONNÉ dans le Dashboard (/#markets) —
-# plus d'entrée dédiée : le Dashboard porte indices, taux, secteurs, breadth, VIX.
-PRIMARY_NAV = (
-    {'id': 'briefing', 'label': 'Dashboard', 'href': '/', 'icon': 'home'},
-    {'id': 'opportunities', 'label': 'Opportunités', 'href': '/opportunities', 'icon': 'radar'},
-    {'id': 'analysis', 'label': 'Analyse', 'href': '/analysis', 'icon': 'chart'},
-    {'id': 'portfolio', 'label': 'Portefeuille', 'href': '/portfolio', 'icon': 'briefcase'},
-    {'id': 'options', 'label': 'Options', 'href': '/options', 'icon': 'bolt'},
-    {'id': 'journal', 'label': 'Journal', 'href': '/journal', 'icon': 'book'},
+# ── Navigation Vertex 2.0 — groupée par TRAVAIL, pas par architecture ────────
+#
+# La forme précédente alignait sept entrées à plat : l'utilisateur ne distinguait
+# pas ce qu'il consulte tous les matins de ce qu'il explore ponctuellement. Les
+# quatre groupes disent ce à quoi chaque page sert :
+#
+#   Piloter       ce que je regarde maintenant
+#   Explorer      ce que j'étudie
+#   Gérer         ce que je possède et surveille
+#   Intelligence  ce qui explique
+#
+# Système reste épinglé en bas : c'est un utilitaire, pas une étape de travail.
+#
+# Aucune page n'a disparu dans la bascule. Marchés retrouve sa page propre,
+# Journal devient une sous-vue de Performance, Suivis devient Suivi — et les
+# anciennes URL continuent de répondre (voir LEGACY_REDIRECTS dans redesign.py).
+NAV_GROUPS = (
+    {'id': 'piloter', 'label': 'Piloter', 'items': (
+        {'id': 'briefing', 'label': "Aujourd'hui", 'href': '/', 'icon': 'home'},
+        {'id': 'calendar', 'label': 'Calendrier', 'href': '/calendar', 'icon': 'calendar'},
+    )},
+    {'id': 'explorer', 'label': 'Explorer', 'items': (
+        {'id': 'markets', 'label': 'Marchés', 'href': '/markets', 'icon': 'globe'},
+        {'id': 'opportunities', 'label': 'Opportunités', 'href': '/opportunities', 'icon': 'radar'},
+        {'id': 'analysis', 'label': 'Analyse', 'href': '/analysis', 'icon': 'chart'},
+        {'id': 'options', 'label': 'Options', 'href': '/options', 'icon': 'bolt'},
+        {'id': 'simulator', 'label': 'Simulateur', 'href': '/simulator', 'icon': 'sliders'},
+    )},
+    {'id': 'gerer', 'label': 'Gérer', 'items': (
+        {'id': 'portfolio', 'label': 'Portefeuille', 'href': '/portfolio', 'icon': 'briefcase'},
+        {'id': 'follow-up', 'label': 'Suivi', 'href': '/follow-up', 'icon': 'eye'},
+        {'id': 'performance', 'label': 'Performance', 'href': '/performance', 'icon': 'trend'},
+    )},
+    {'id': 'intelligence', 'label': 'Intelligence', 'items': (
+        {'id': 'intelligence', 'label': 'Vertex IA', 'href': '/intelligence', 'icon': 'brain'},
+    )},
+)
+
+#: Utilitaire épinglé — hors groupes de travail.
+PINNED_NAV = (
     {'id': 'system', 'label': 'Système', 'href': '/system', 'icon': 'settings'},
 )
+
+#: Registre PLAT des espaces servis. Reste la source unique pour tout ce qui
+#: itère sur la navigation (tests, mesures QA, palette de commandes) : la
+#: bascule vers des groupes ne devait pas casser ces consommateurs.
+PRIMARY_NAV = tuple(
+    it for g in NAV_GROUPS for it in g['items']) + PINNED_NAV
 
 # Icônes : SVG inline sobres (pas d'emojis comme langage principal).
 _ICONS = {
@@ -41,6 +78,10 @@ _ICONS = {
     'star': '<path d="m12 3 2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z"/>',
     'bolt': '<path d="M13 2 4 14h6l-1 8 9-12h-6l1-8z"/>',
     'book': '<path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19a2 2 0 0 0 2 2h13"/>',
+    'calendar': '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4m8-4v4"/>',
+    'sliders': '<path d="M4 7h10M18 7h2M4 12h4M12 12h8M4 17h12M20 17h0"/>'
+               '<circle cx="16" cy="7" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="17" r="2"/>',
+    'eye': '<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/>',
 }
 
 
@@ -71,15 +112,25 @@ def icon(name: str, size: int = 18) -> str:
             f'stroke-linejoin="round" aria-hidden="true">{_ICONS.get(name, "")}</svg>')
 
 
-def _sidebar(active: str) -> str:
-    items = []
-    for it in PRIMARY_NAV:
-        current = ' aria-current="page"' if it['id'] == active else ''
-        items.append(
-            f'<a class="vx-nav-item" href="{it["href"]}" data-nav-id="{it["id"]}"{current}>'
+def _nav_link(it: dict, active: str) -> str:
+    current = ' aria-current="page"' if it['id'] == active else ''
+    return (f'<a class="vx-nav-item" href="{it["href"]}" data-nav-id="{it["id"]}"{current}>'
             f'{icon(it["icon"])}<span class="vx-nav-label">{it["label"]}</span></a>')
-    nav = ''.join(items[:-1])
-    system_item = items[-1]
+
+
+def _sidebar(active: str) -> str:
+    """Sidebar groupée par travail. Le titre de groupe est un vrai en-tête de
+    liste : il porte le regroupement pour l'œil ET pour un lecteur d'écran."""
+    groups = []
+    for g in NAV_GROUPS:
+        links = ''.join(_nav_link(it, active) for it in g['items'])
+        groups.append(
+            f'<div class="vx-nav-group" role="group" '
+            f'aria-labelledby="vx-navg-{g["id"]}">'
+            f'<p class="vx-nav-group-label" id="vx-navg-{g["id"]}">{g["label"]}</p>'
+            f'{links}</div>')
+    nav = ''.join(groups)
+    system_item = ''.join(_nav_link(it, active) for it in PINNED_NAV)
     return f'''<aside class="vx-sidebar" aria-label="Navigation principale">
   <div class="vx-sidebar-logo"><span class="vx-logo-mark">V</span>
     <span class="vx-logo-name">Vertex</span></div>
@@ -134,10 +185,14 @@ def _topbar(space_label: str, sub_label: str = '', space_href: str = '/') -> str
 
 
 def _mobile_bar(active: str) -> str:
-    order = ('briefing', 'opportunities', 'portfolio', 'analysis', 'performance')
+    """Cinq destinations maximum, et celles du travail quotidien : Aujourd'hui,
+    Opportunités, Portefeuille, Suivi, Performance. Le reste passe par « Plus »."""
+    order = ('briefing', 'opportunities', 'portfolio', 'follow-up', 'performance')
+    by_id = {it['id']: it for it in PRIMARY_NAV}
     links = []
-    for it in PRIMARY_NAV:
-        if it['id'] not in order:
+    for nav_id in order:
+        it = by_id.get(nav_id)
+        if it is None:
             continue
         current = ' aria-current="page"' if it['id'] == active else ''
         links.append(f'<a href="{it["href"]}"{current}>{icon(it["icon"], 20)}'

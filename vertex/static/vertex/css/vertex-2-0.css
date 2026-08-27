@@ -738,3 +738,55 @@ table td,table th{
 }
 /* Aucun débordement horizontal global — contrôle 133. */
 html,body{max-width:100%;overflow-x:clip}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   13) COQUE 2.0 — sidebar groupée par travail
+   La navigation active est ARGENT, jamais une couleur sémantique : colorer
+   « la page où je suis » en vert la ferait lire comme un signal financier.
+   ───────────────────────────────────────────────────────────────────────── */
+.vx-sidebar{
+  background:linear-gradient(180deg,rgba(14,17,22,.72),rgba(9,11,14,.86));
+  border-right:1px solid var(--vx2-line-faint);
+  backdrop-filter:blur(var(--vx-blur-md));
+  -webkit-backdrop-filter:blur(var(--vx-blur-md));
+}
+.vx-sidebar-nav{padding:var(--vx2-s3) var(--vx2-s2) var(--vx2-s5)}
+.vx-nav-group{display:flex;flex-direction:column;gap:1px;margin-bottom:var(--vx2-s4)}
+.vx-nav-group:last-child{margin-bottom:0}
+.vx-nav-group-label{
+  margin:0 0 var(--vx2-s1);padding:0 12px;
+  font-size:10px;font-weight:600;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--vx-text-faint);
+}
+.vx-nav-item{
+  border-radius:var(--vx2-r-control);
+  color:var(--vx-smoke);font-weight:500;font-size:13.5px;
+  transition:background var(--vx-t-fast) var(--vx-ease-out),
+             color var(--vx-t-fast) var(--vx-ease-out);
+}
+.vx-nav-item:hover{background:rgba(255,255,255,.035);color:var(--vx-ink)}
+.vx-nav-item[aria-current="page"]{
+  background:var(--vx-brand-soft);color:var(--vx-ink);font-weight:600;
+}
+.vx-nav-item[aria-current="page"] svg{stroke:var(--vx-silver)}
+.vx-nav-item:focus-visible{outline:2px solid var(--vx-silver);outline-offset:-2px}
+/* Sidebar réduite : les titres de groupe disparaissent avec les libellés, mais
+   une hairline garde la séparation lisible. */
+.vx-app[data-sidebar="collapsed"] .vx-nav-group-label{
+  display:none;
+}
+.vx-app[data-sidebar="collapsed"] .vx-nav-group{
+  padding-top:var(--vx2-s2);border-top:1px solid var(--vx2-line-faint);
+  margin-bottom:var(--vx2-s2);
+}
+.vx-app[data-sidebar="collapsed"] .vx-nav-group:first-child{border-top:0;padding-top:0}
+.vx-logo-name{font-weight:600;letter-spacing:-.01em;color:var(--vx-ink)}
+.vx-logo-mark{
+  background:var(--vx-brand-gradient);color:var(--vx-ink);
+  border:1px solid var(--vx2-line);
+}
+.vx-topbar{
+  border-bottom:1px solid var(--vx2-line-faint);
+  backdrop-filter:blur(var(--vx-blur-md));
+  -webkit-backdrop-filter:blur(var(--vx-blur-md));
+}

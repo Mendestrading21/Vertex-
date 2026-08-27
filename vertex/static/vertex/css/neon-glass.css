@@ -7,10 +7,14 @@
 
    Le thème s'applique à tout espace canonique portant `data-space`, y compris
    Intelligence, sans énumération fragile. Aucun moteur, aucune donnée modifiés.
-   Couverture déclarée : data-space="briefing", data-space="markets",
-   data-space="opportunities", data-space="analysis", data-space="portfolio",
-   data-space="options", data-space="journal", data-space="system" et
-   data-space="intelligence" — la règle effective reste générique.
+   Couverture déclarée (douze espaces Vertex 2.0) : data-space="briefing",
+   data-space="calendar", data-space="markets", data-space="opportunities",
+   data-space="analysis", data-space="options", data-space="simulator",
+   data-space="portfolio", data-space="follow-up", data-space="performance",
+   data-space="intelligence", data-space="system" — la règle effective reste
+   générique, ces noms ne font que déclarer ce qui est servi.
+   Conservés pour les URL historiques encore servies : data-space="journal",
+   data-space="tracking".
    ═══════════════════════════════════════════════════════════════════════════ */
 
 :where(.vx-content[data-space]){

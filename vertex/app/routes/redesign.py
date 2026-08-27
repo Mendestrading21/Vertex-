@@ -11,7 +11,7 @@ from pathlib import Path
 from flask import Blueprint, jsonify, redirect, request, send_from_directory
 
 from vertex.ui.pages import (analysis_page, briefing, design_system_page,
-                             intelligence_page, opportunities_page,
+                             intelligence_page, markets_page, opportunities_page,
                              options_intel_page, performance_page, portfolio_page,
                              system_page, tracking_page)
 
@@ -20,7 +20,6 @@ LEGACY_REDIRECTS = {
     '/daily': '/',
     '/analyse': '/analysis',
     '/news': '/',
-    '/calendar': '/opportunities?view=calendar',
     '/semaine': '/',
     '/brief': '/',
     '/stocks': '/analysis',
@@ -43,7 +42,6 @@ LEGACY_REDIRECTS = {
     '/catalyseurs': '/opportunities?view=calendar',
     '/anomalies': '/opportunities?view=anomalies',
     '/decisions': '/journal?view=journal',
-    '/performance': '/journal',
     '/review': '/intelligence?view=committee',
     '/research': '/intelligence?view=research',
     '/equipe': '/intelligence?view=strategy',
@@ -80,14 +78,16 @@ def make_blueprint(scan_state: dict) -> Blueprint:
     def briefing_route():
         return briefing.render(scan_state=scan_state)
 
+    # ── Marchés (Vertex 2.0) — page de PREMIÈRE CLASSE, à nouveau.
+    # Elle avait été fusionnée dans le Dashboard par redirection d'ancre. La
+    # conséquence : « une visualisation dominante par sous-vue » devenait
+    # impossible, puisque Synthèse, Macro, Secteurs, Participation et Volatilité
+    # partageaient un même écran avec le brief et le portefeuille. Le module
+    # `markets_page` existait déjà et rendait ces cinq sous-vues : la refonte le
+    # remet en service, elle ne le crée pas.
     @bp.route('/markets')
     def markets_route():
-        # Marchés est FUSIONNÉ dans le Dashboard (/) — redirection par ancre pour
-        # préserver les favoris (?view=sectors → /#sectors, etc.). Jamais de 404.
-        anchor = {'overview': '', 'sectors': '#sectors', 'macro': '#markets',
-                  'breadth': '#pulse', 'volatility': '#pulse'}
-        view = request.args.get('view', 'overview')
-        return redirect('/' + anchor.get(view, ''), code=302)
+        return markets_page.render(view=request.args.get('view', 'overview'))
 
     @bp.route('/opportunities')
     def opportunities_route():
@@ -110,8 +110,17 @@ def make_blueprint(scan_state: dict) -> Blueprint:
     # erreurs, statistiques et apprentissage. Rendu par performance_page (mission
     # « mesurer la méthode ») ; la performance de PORTEFEUILLE migrera vers
     # Portefeuille lors de la refonte de contenu. /performance redirige ici.
+    # ── Performance (Vertex 2.0) — « la méthode fonctionne-t-elle, et est-elle
+    # bien appliquée ? ». Le Journal en devient une SOUS-VUE : il mesure la même
+    # chose, à l'échelle de la décision individuelle.
+    #
+    # `/journal` continue de répondre 200 sur exactement le même rendu. Rediriger
+    # aurait été plus propre en apparence, mais l'URL est en favori, en lien dans
+    # le produit et dans une trentaine de bancs : une fonction existante ne doit
+    # pas devenir introuvable pour la commodité d'un plan de nommage.
+    @bp.route('/performance')
     @bp.route('/journal')
-    def journal_route():
+    def performance_route():
         return performance_page.render(view=request.args.get('view', 'overview'),
                                        params=request.args)
 
@@ -146,10 +155,38 @@ def make_blueprint(scan_state: dict) -> Blueprint:
         from vertex.ui.pages import options_symbol_page
         return options_symbol_page.render(sym)
 
-    # ── Suivis (§14-18) — approfondissement du Portefeuille, pas un 9e espace.
+    # ── Calendrier (Vertex 2.0) — surface transversale composée de la SEULE
+    # source d'événements agrégés du produit, `/cal-feed` (résultats + macro +
+    # couverture du calendrier officiel). La vue `/opportunities?view=calendar`
+    # reste servie : cette page ne la remplace pas.
+    # Dividendes, expirations, catalyseurs hors résultats et revues planifiées
+    # n'ont AUCUNE source dans Vertex : la page les déclare absents plutôt que
+    # d'afficher une grille vide qui laisserait croire qu'il n'y a rien.
+    @bp.route('/calendar')
+    def calendar_route():
+        from vertex.ui.pages import calendar_page
+        return calendar_page.render(view=request.args.get('view', 'today'))
+
+    # ── Simulateur (Vertex 2.0) — composition VISUELLE de capacités de
+    # simulation qui existaient déjà et n'étaient réunies nulle part :
+    # `/api/options/simulate` (scénarios cours × temps), `/api/options/analyze`
+    # (payoff multi-jambes, qui accepte aussi une jambe `stock` — capacité
+    # présente et jusqu'ici inexploitée par l'interface) et
+    # `/api/pretrade/check` (concentration résultante).
+    # Aucun moteur, aucun store, aucun ordre n'est créé ici.
+    @bp.route('/simulator')
+    def simulator_route():
+        from vertex.ui.pages import simulator_page
+        return simulator_page.render(view=request.args.get('view', 'simple'))
+
+    # ── Suivi (Vertex 2.0) — « quelles thèses, idées et décisions exigent une
+    # attention ? ». Vue transversale : elle ne possède aucun store, elle compose
+    # watchlist, suivis et revues dont les propriétaires restent inchangés.
+    # `/tracking` reste servi pour la même raison que `/journal`.
+    @bp.route('/follow-up')
     @bp.route('/tracking')
-    def tracking_route():
-        return tracking_page.render()
+    def follow_up_route():
+        return tracking_page.render(view=request.args.get('view', 'attention'))
 
     # ── Design System (§50) — page de référence visuelle « vivante »
     # (OBSIDIAN COPPER). Purement cosmétique : aucune donnée, aucun moteur.

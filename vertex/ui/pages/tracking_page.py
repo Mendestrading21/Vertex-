@@ -58,10 +58,10 @@ _CONTENT = """
 _PAGE_JS = '<script src="/static/vertex/js/pages/tracking.js" defer></script>'
 
 
-def render() -> str:
+def render(view: str = 'attention') -> str:
     content = _STYLE + _HEADER + _CONTENT
     return render_shell(
-        title='Suivis', active='portfolio', space_label='Suivis',
+        title='Suivis', active='follow-up', space_label='Suivi',
         sub_label='Approfondissement du Portefeuille', page_label='tracking',
         content=content, page_js=_PAGE_JS)
 

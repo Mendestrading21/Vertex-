@@ -141,7 +141,9 @@ def test_options_page_renders_as_primary_space(client):
     #  fusionne dans le Dashboard qui porte indices, taux, secteurs,
     #  breadth et VIX. Le commentaire disait deja « fusionne » ; le compte
     #  ne l'avait pas suivi.
-    assert len(re.findall(r'class="vx-nav-item"', html)) == 7
+    #  VERTEX 2.0 : douze pages (onze de travail + Système épinglé), groupées
+    #  en Piloter / Explorer / Gérer / Intelligence.
+    assert len(re.findall(r'class="vx-nav-item"', html)) == 12
 
 
 def test_options_page_subviews(client):

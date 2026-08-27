@@ -45,12 +45,21 @@ def test_primary_navigation_suit_la_constitution():
     entrees, et la huitieme accessible par ancre. C'est cette forme qui est
     conforme ; le banc a ete corrige, pas le produit.
     """
+    #  VERTEX 2.0 — la navigation passe de sept entrées à plat à DOUZE pages
+    #  groupées par travail (Piloter / Explorer / Gérer / Intelligence, plus
+    #  Système épinglé). Marchés retrouve sa page propre au lieu d'une ancre du
+    #  Dashboard, Journal devient une sous-vue de Performance, Suivis devient
+    #  Suivi, et Calendrier et Simulateur apparaissent.
+    #
+    #  Aucune page n'a disparu : /journal et /tracking répondent toujours 200.
     labels = [i['label'] for i in PRIMARY_NAV]
-    assert labels == ['Dashboard', 'Opportunités', 'Analyse', 'Portefeuille',
-                      'Options', 'Journal', 'Système']
+    assert labels == ["Aujourd'hui", 'Calendrier', 'Marchés', 'Opportunités',
+                      'Analyse', 'Options', 'Simulateur', 'Portefeuille',
+                      'Suivi', 'Performance', 'Vertex IA', 'Système']
     assert [i['href'] for i in PRIMARY_NAV] == [
-        '/', '/opportunities', '/analysis', '/portfolio',
-        '/options', '/journal', '/system']
+        '/', '/calendar', '/markets', '/opportunities', '/analysis',
+        '/options', '/simulator', '/portfolio', '/follow-up',
+        '/performance', '/intelligence', '/system']
 
 
 def test_marches_reste_joignable_malgre_la_fusion():
@@ -75,8 +84,23 @@ def test_every_primary_route_returns_200(client):
         assert b'vx-app' in r.data, item['href']
 
 
-def test_markets_redirects_to_dashboard_anchor(client):
-    """L'ancienne page /markets redirige vers l'ancre correspondante du Dashboard."""
+def test_marches_est_a_nouveau_une_page_de_premiere_classe(client):
+    """VERTEX 2.0 — contre-épreuve de la fusion.
+
+    /markets redirigeait vers une ancre du Dashboard. Tant que Marchés partageait
+    un écran avec le brief, le portefeuille et les opportunités, « une
+    visualisation dominante par sous-vue » restait hors d'atteinte. La page
+    existait déjà (`markets_page`, cinq sous-vues) : elle est remise en service,
+    pas réécrite."""
+    r = client.get('/markets')
+    assert r.status_code == 200
+    assert b'data-space="markets"' in r.data
+    for view in ('overview', 'sectors', 'macro', 'breadth', 'volatility'):
+        assert client.get(f'/markets?view={view}').status_code == 200, view
+
+
+def _ancien_test_markets_redirects_to_dashboard_anchor(client):
+    """Conservé sans être exécuté : trace de la forme précédente."""
     for url, loc in (('/markets', '/'), ('/markets?view=sectors', '/#sectors'),
                      ('/markets?view=macro', '/#markets'),
                      ('/markets?view=breadth', '/#pulse'),
@@ -341,7 +365,7 @@ def test_service_worker_bumped(client):
     r = client.get('/sw.js')
     assert r.status_code == 200
     body = r.get_data(as_text=True)
-    assert 'td-shell-v220' in body, 'le shell a changé — la version du cache doit suivre'
+    assert 'td-shell-v221' in body, 'le shell a changé — la version du cache doit suivre'
     assert 'td-shell-v49' not in body
 
 
