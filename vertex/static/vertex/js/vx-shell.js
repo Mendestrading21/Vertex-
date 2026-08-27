@@ -295,19 +295,39 @@
   $('vx-refresh-btn')?.addEventListener('click', function () { VX.refresh.runAll(this); });
 
   /* ── Command palette (§14) ───────────────────────────────────────── */
-  /* 8 espaces canoniques (PR n°2) + approfondissements joignables. */
+  /* VERTEX 2.0 — les DOUZE pages, dans l'ordre de la navigation, plus leurs
+     approfondissements joignables. Une page absente d'ici est une page que la
+     recherche globale ne trouve pas : le contrôle 028 de l'audit ne tolère
+     aucun écart entre ce que la sidebar propose et ce que la palette atteint.
+     Les entrées historiques (Journal, Suivis) restent listées sous leur nouveau
+     nom : leurs URL répondent toujours, et quelqu'un peut encore les chercher
+     par l'ancien mot. */
   const PAGES = [
-    ['Dashboard', '/'], ['Dashboard · Marchés', '/#markets'], ['Dashboard · Secteurs', '/#sectors'],
-    ['Dashboard · Pouls (volatilité & breadth)', '/#pulse'], ['Dashboard · Mouvements', '/#topflop'],
+    ['Aujourd\'hui', '/'], ['Aujourd\'hui · Marchés', '/#markets'],
+    ['Aujourd\'hui · Secteurs', '/#sectors'],
+    ['Aujourd\'hui · Pouls (volatilité & breadth)', '/#pulse'],
+    ['Aujourd\'hui · Mouvements', '/#topflop'],
+    ['Calendrier', '/calendar'], ['Calendrier · Semaine', '/calendar?view=week'],
+    ['Calendrier · Agenda', '/calendar?view=agenda'],
+    ['Calendrier · Macro', '/calendar?view=macro'],
+    ['Calendrier · Portefeuille', '/calendar?view=portfolio'],
+    ['Marchés', '/markets'], ['Marchés · Macro', '/markets?view=macro'],
+    ['Marchés · Secteurs', '/markets?view=sectors'],
+    ['Marchés · Volatilité', '/markets?view=volatility'],
     ['Opportunités', '/opportunities'], ['Opportunités · Options', '/opportunities?view=options'],
-    ['Opportunités · Anomalies', '/opportunities?view=anomalies'], ['Opportunités · Calendrier', '/opportunities?view=calendar'],
-    ['Analyse', '/analysis'],
+    ['Opportunités · Anomalies', '/opportunities?view=anomalies'],
+    ['Opportunités · Calendrier', '/opportunities?view=calendar'],
+    ['Analyse', '/analysis'], ['Analyse · Comité', '/intelligence?view=committee'],
+    ['Options', '/options'], ['Options · Volatilité', '/options?view=volatility'],
+    ['Simulateur', '/simulator'], ['Simulateur · Avancé', '/simulator?view=avance'],
+    ['Simulateur · Comparer', '/simulator?view=comparer'],
     ['Portefeuille', '/portfolio'], ['Portefeuille · Watchlist', '/portfolio?view=watchlist'],
     ['Portefeuille · Risque', '/portfolio?view=risk'],
-    ['Options', '/options'], ['Options · Volatilité', '/options?view=volatility'],
-    ['Journal', '/journal'], ['Journal · Décisions', '/journal?view=journal'],
-    ['Journal · Track Record', '/journal?view=track-record'], ['Journal · Suivis', '/tracking'],
-    ['Analyse · Comité', '/intelligence?view=committee'],
+    ['Suivi', '/follow-up'], ['Suivi · Suivis (ancienne URL)', '/tracking'],
+    ['Performance', '/performance'], ['Performance · Journal', '/performance?view=journal'],
+    ['Performance · Track Record', '/performance?view=track-record'],
+    ['Performance · Journal (ancienne URL)', '/journal'],
+    ['Vertex IA', '/intelligence'],
     ['Système', '/system'], ['Système · Connexions', '/system?view=connections'],
     ['Système · Archive', '/system?view=archive'], ['Système · Design System', '/design-system'],
   ];

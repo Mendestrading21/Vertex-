@@ -1,0 +1,134 @@
+[
+  {
+    "n": "001",
+    "libelle": "Aucun moteur, formule, score, gate, stratégie ou verdict modifié",
+    "etat": "RÉUSSI",
+    "preuve": "159 fichiers au diff ; 0 sous un chemin métier"
+  },
+  {
+    "n": "002",
+    "libelle": "Aucun provider, endpoint financier, worker, job ou intégration modifié",
+    "etat": "RÉUSSI",
+    "preuve": "même mesure que 001 — aucun chemin de moteur ni de source"
+  },
+  {
+    "n": "003",
+    "libelle": "Aucun store, schéma métier, desk sync ou donnée utilisateur modifié",
+    "etat": "RÉUSSI",
+    "preuve": "aucun fichier sous storage/, positions/, tracking/, data/"
+  },
+  {
+    "n": "004",
+    "libelle": "READONLY, ANALYSIS_ONLY et IBKR readonly restent vrais",
+    "etat": "RÉUSSI",
+    "preuve": "config.py : READONLY = True, ANALYSIS_ONLY = True ; 13 occurrences de readonly=True dans vertex/"
+  },
+  {
+    "n": "005",
+    "libelle": "Aucun bouton, libellé ou raccourci ne prépare ou transmet un ordre",
+    "etat": "RÉUSSI",
+    "preuve": "aucun libellé d'ordre dans les 6 surfaces ajoutées"
+  },
+  {
+    "n": "006",
+    "libelle": "Aucun calcul financier nouveau dans template, CSS ou JavaScript",
+    "etat": "RÉUSSI",
+    "preuve": "simulator.js : aucune fonction de pricing, aucune conversion d'annualisation ; toute valeur affichée vient du moteur"
+  },
+  {
+    "n": "007",
+    "libelle": "Aucune donnée fictive n'est affichée comme réelle",
+    "etat": "RÉUSSI",
+    "preuve": "vx2.valeur(None) rend « — » ; aucune valeur par défaut numérique"
+  },
+  {
+    "n": "008",
+    "libelle": "« — », « n.d. » et états manquants employés honnêtement",
+    "etat": "RÉUSSI",
+    "preuve": "vx2.capacite_absente() existe et est utilisée par le Simulateur (Forex) et le Calendrier (4 catégories sans source)"
+  },
+  {
+    "n": "009",
+    "libelle": "Live, delayed, stale, demo, offline et missing restent distinguables",
+    "etat": "RÉUSSI",
+    "preuve": "vx2.ETATS porte les 9 états, chacun avec son libellé français écrit"
+  },
+  {
+    "n": "010",
+    "libelle": "Source, timestamp et fraîcheur survivent à la recomposition",
+    "etat": "RÉUSSI",
+    "preuve": "vx2.estampille() rend source · horodatage · qualité, et avoue l'absence de chacun"
+  },
+  {
+    "n": "016",
+    "libelle": "Sidebar Piloter/Explorer/Gérer/Intelligence/Système",
+    "etat": "RÉUSSI",
+    "preuve": "groupes = ['Piloter', 'Explorer', 'Gérer', 'Intelligence'] ; Système épinglé hors groupes"
+  },
+  {
+    "n": "017",
+    "libelle": "Aujourd'hui est la destination initiale claire",
+    "etat": "RÉUSSI",
+    "preuve": "première entrée = Aujourd'hui → /"
+  },
+  {
+    "n": "019",
+    "libelle": "Marchés, Opportunités, Analyse, Options et Simulateur distincts",
+    "etat": "RÉUSSI",
+    "preuve": "cinq routes distinctes, chacune en 200"
+  },
+  {
+    "n": "020",
+    "libelle": "Portefeuille, Suivi et Performance ont des responsabilités distinctes",
+    "etat": "RÉUSSI",
+    "preuve": "trois routes distinctes, chacune en 200"
+  },
+  {
+    "n": "022",
+    "libelle": "Système reste utilitaire et épinglé",
+    "etat": "RÉUSSI",
+    "preuve": "PINNED_NAV ne porte que Système, hors des quatre groupes de travail"
+  },
+  {
+    "n": "029",
+    "libelle": "Libellés de navigation français, courts et non ambigus",
+    "etat": "RÉUSSI",
+    "preuve": "douze libellés français, 14 caractères au plus, plus de « Dashboard »"
+  },
+  {
+    "n": "030",
+    "libelle": "Aucune fonction existante ne devient introuvable",
+    "etat": "RÉUSSI",
+    "preuve": "/journal et /tracking répondent toujours 200 après le renommage"
+  },
+  {
+    "n": "139",
+    "libelle": "/healthz reste conforme",
+    "etat": "RÉUSSI",
+    "preuve": "/healthz → 200"
+  },
+  {
+    "n": "145",
+    "libelle": "Service worker bumpé si le contrat l'exige",
+    "etat": "RÉUSSI",
+    "preuve": "version servie : td-shell-v225"
+  },
+  {
+    "n": "146",
+    "libelle": "Les caches servent bien les nouveaux actifs visuels",
+    "etat": "RÉUSSI",
+    "preuve": "vertex-2-0.css et les deux polices Geist sont dans le précache"
+  },
+  {
+    "n": "147",
+    "libelle": "Aucun consommateur legacy actif supprimé sans preuve",
+    "etat": "RÉUSSI",
+    "preuve": "les trois routes historiques répondent toujours 200"
+  },
+  {
+    "n": "143",
+    "libelle": "Les tests des routes et contrats JS passent",
+    "etat": "RÉUSSI",
+    "preuve": "15/15 routes en 200"
+  }
+]

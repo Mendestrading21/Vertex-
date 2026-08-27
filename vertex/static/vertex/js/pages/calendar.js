@@ -90,18 +90,29 @@
     });
   }
 
-  var VERDICTS = {
-    ACHETER: 'Acheter', RENFORCER: 'Renforcer', ATTENDRE: 'Attendre',
-    EVITER: 'Éviter', 'ÉVITER': 'Éviter', ALLEGER: 'Alléger',
-    'ALLÉGER': 'Alléger', VENDRE: 'Vendre'
-  };
+  /* Le vocabulaire des verdicts appartient au MOTEUR, pas à cette page.
+     La coque l'injecte déjà dans `window.__VXVOCAB` depuis
+     `vertex.engines.recommendation.vocab_js()`. Le recopier ici en ferait une
+     seconde vérité, libre de dériver le jour où un verdict est renommé — et
+     Vertex n'a qu'une source par vérité. Sans vocabulaire disponible, le
+     verdict brut est affiché tel quel : jamais traduit à l'aveugle. */
+  function libelleVerdict(v) {
+    if (!v) return null;
+    try {
+      var voc = window.__VXVOCAB;
+      if (typeof voc === 'string') voc = JSON.parse(voc);
+      var e = voc && (voc[v] || voc[String(v).toUpperCase()]);
+      if (e && e.label) return e.label;
+    } catch (e) { /* vocabulaire absent : on rend le verdict brut */ }
+    return String(v);
+  }
 
   function ligneEvenement(e) {
     var metas = [];
     metas.push(e.kind);
     if (e.approx) metas.push('date approximative');
     if (e.importance) metas.push('importance ' + e.importance);
-    if (e.verdict) metas.push('verdict du moteur : ' + (VERDICTS[e.verdict] || e.verdict));
+    if (e.verdict) metas.push('verdict du moteur : ' + libelleVerdict(e.verdict));
     if (e.note) metas.push(e.note);
     return '<li class="vx-cal-ev" data-expose="' + (e.expose ? '1' : '0') + '">'
       + (e.approx ? badge('stale', 'Approx.') : badge('live', 'Confirmé'))
