@@ -250,9 +250,13 @@ def create_app(*, root_path: str | None = None) -> Any:
         resp.headers.setdefault('Referrer-Policy', 'strict-origin-when-cross-origin')
         resp.headers.setdefault('Permissions-Policy',
                                 'camera=(), microphone=(), geolocation=()')
-        #  Données personnelles (trades, positions, journal) : jamais stockées
-        #  par un cache intermédiaire ou partagé.
-        if request.path.startswith('/api/desk'):
+        #  Données personnelles (trades, positions, portefeuille, suivi,
+        #  journal) : jamais stockées par un cache intermédiaire ou partagé.
+        #  Contrôle 025 de l'audit-150 : seul /api/desk était couvert — les
+        #  autres surfaces de patrimoine partaient sans directive.
+        _PERSONNEL = ('/api/desk', '/api/positions', '/api/portfolio',
+                      '/api/tracking', '/api/journal', '/api/track-record')
+        if request.path.startswith(_PERSONNEL):
             resp.headers['Cache-Control'] = 'no-store'
         if request.is_secure or request.headers.get('X-Forwarded-Proto') == 'https':
             resp.headers.setdefault('Strict-Transport-Security',
