@@ -113,12 +113,19 @@ FICHIER = 'terminal.py'
 # domaine « hebdo » pouvait donc rester « jamais synchronisé » pendant que la
 # page Système affichait le job en vert. La famille passe de 12 à 11 parce que
 # ce cas n'en était pas un : l'erreur est désormais nommée, pas avalée.
+#  MISE À JOUR (lot 42, publications atomiques) : 34 -> 33. Le `pass` retiré
+#  est celui du tilt stratégie (`_strat_tilt(mctx)`), classé « absence
+#  honnête » : son échec sautait l'écriture et l'état gardait la valeur
+#  précédente PAR OMISSION. Le lot 42 publiant par blocs atomiques, l'omission
+#  ne suffit plus — la reprise de la valeur précédente est désormais EXPLICITE
+#  (`_tilt = scan_state.get('strat_tilt')`), même sémantique, dite au lieu
+#  d'avalée. La famille passe de 11 à 10.
 FAMILLES = {
     'nettoyage/fermeture': 6,
     'journal/persistance': 9,
     'import/config optionnel': 1,
     'infra thread': 2,
-    'absence honnête': 11,
+    'absence honnête': 10,
     'examinés de près': 2,
     #  Fusion Black Glass : arrivés de `vertex-live`, classés ici parce qu'une
     #  notification perdue ou un enrichissement absent ne rend AUCUNE donnée
@@ -132,7 +139,7 @@ FAMILLES = {
 #  persistee laissant max-pain vide), quatre best-effort — chaine de
 #  demo, deux notifications SSE, arrondi du spot. Classement complet en
 #  tete de `test_pass_et_contexte_lot379.py`.
-TOTAL_PASS = 34
+TOTAL_PASS = 33
 
 # Fenêtre de fraîcheur de l'overlay IBKR. Au-delà, une valeur périmée serait
 # présentée comme du temps réel : c'est la borne d'honnêteté du mécanisme.

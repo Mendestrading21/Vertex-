@@ -126,7 +126,10 @@ def test_le_scan_expose_sa_source():
     l'interface — de savoir que la session en cours n'est pas réelle."""
     arbre = _arbre(TERMINAL)
     src = open(TERMINAL, encoding='utf-8').read()
-    assert "scan_state['source'] = 'demo'" in src, (
+    #  Lot 42 — le marquage n'est plus une écriture éparse mais une clé du bloc
+    #  publié atomiquement : `{'source': 'demo'} if DEMO_MODE` dans _publier.
+    #  Même invariant (une session démo se DIT démo), forme de publication saine.
+    assert "'source': 'demo'" in src, (
         'le scan ne marque plus sa source en mode démo : plus rien ne '
         'distingue une session de démonstration d\'une session réelle')
     #  #779/G1 — `data_source` est SERVI par `/scan`, qui a quitte terminal.py

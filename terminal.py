@@ -536,8 +536,30 @@ _demo_options_board = _demo.demo_options_board
 _annotate_swing = _swing.annotate
 
 
+def _generation(etat):
+    """Génération du prochain scan — monotone, portée par chaque publication.
+    Sans try/except ni repli chiffré (invariant lot 385) : un `scan_gen`
+    corrompu repart de zéro par typage, pas par un chiffre posé en except."""
+    prec = etat.get('scan_gen')
+    return (prec if isinstance(prec, int) and not isinstance(prec, bool) else 0) + 1
+
+
+def _publier(etat, phase, gen, bloc):
+    """Publication ATOMIQUE du scan (lot 42). UN seul dict.update C-level par
+    phase — aucun entrelacement de bytecode entre les clés d'un même bloc —
+    estampillé `scan_gen` + `scan_phase` ('partiel' → 'complet' ; 'erreur').
+    Les lecteurs (routes Flask, autres threads) savent CE qu'ils lisent :
+    avant, les dérivés (analytics, réconciliation, tilt…) étaient posés à
+    l'unité entre deux générations — un état déchiré, indétectable."""
+    b = dict(bloc)
+    b['scan_gen'] = gen
+    b['scan_phase'] = phase
+    etat.update(b)
+
+
 def _scan_once():
     try:
+        _gen = _generation(scan_state)
         # En DÉMO : on ne scanne que 20 titres → rapide sur le CPU bridé du cloud,
         # suffisant pour visualiser toutes les données. Hors démo : univers complet.
         syms_scan = UNIVERSE[:DEMO_UNIVERSE_N] if DEMO_MODE else UNIVERSE
@@ -564,15 +586,16 @@ def _scan_once():
         with METRICS.timer('scan.download'):
             if DEMO_MODE:
                 data = _demo_universe(_syms)
-                scan_state['source'] = 'demo'
             else:
                 data = _download_universe(_syms)
         if BENCH not in data:
-            scan_state['error'] = 'market_data_unavailable'
-            scan_state['source_health'] = {
-                'scan': 'DEGRADED', 'market': 'UNAVAILABLE',
-                'options': 'NOT_COLLECTED', 'fundamentals': 'NOT_COLLECTED',
-            }
+            _publier(scan_state, 'erreur', _gen, {
+                'error': 'market_data_unavailable',
+                **({'source': 'demo'} if DEMO_MODE else {}),
+                'source_health': {
+                    'scan': 'DEGRADED', 'market': 'UNAVAILABLE',
+                    'options': 'NOT_COLLECTED', 'fundamentals': 'NOT_COLLECTED',
+                }})
             return
         bc = data[BENCH]['Close'].dropna()
         bench_ret = (float(bc.iloc[-1]) / float(bc.iloc[-63]) - 1) if len(bc) > 63 else 0.0
@@ -682,10 +705,9 @@ def _scan_once():
         else:
             _results = [_safe_one(s) for s in syms_scan]
         #  Un scan qui perd TOUS ses titres n'est pas un scan sain.
-        scan_state['titres_en_echec'] = (
-            {'n': len(_echecs_titres), 'total': len(syms_scan),
-             'exemples': dict(list(_echecs_titres.items())[:5])}
-            if _echecs_titres else None)
+        _te = ({'n': len(_echecs_titres), 'total': len(syms_scan),
+                'exemples': dict(list(_echecs_titres.items())[:5])}
+               if _echecs_titres else None)
         for _r in _results:   # assemblage sur le thread principal (ordre préservé par map ; rows re-trié après)
             if _r is None:
                 continue
@@ -781,19 +803,23 @@ def _scan_once():
         # PUBLICATION ANTICIPÉE : sur le CPU bridé du cloud gratuit, le backtest + les
         # recommandations sont lents. On allume tout de suite cockpit/scores/indices
         # (déjà calculés), les blocs lourds suivent dans le même scan ci-dessous.
-        scan_state.update({'rows': rows, 'detail': detail, 'indices': indices, 'commodities': commodities, 'macro': macro, 'internals': internals,
-                           'breadth': breadth, 'spy': spy, 'market': market_status(),
-                           'universe_n': len(syms_scan), 'scanned_n': len(rows),
-                           'scan_ts': time.time(),
-                           'updated': datetime.now().strftime('%H:%M:%S'), 'error': None})
+        _publier(scan_state, 'partiel', _gen,
+                 {'rows': rows, 'detail': detail, 'indices': indices, 'commodities': commodities, 'macro': macro, 'internals': internals,
+                  'breadth': breadth, 'spy': spy, 'market': market_status(),
+                  'universe_n': len(syms_scan), 'scanned_n': len(rows),
+                  'titres_en_echec': _te,
+                  **({'source': 'demo'} if DEMO_MODE else {}),
+                  'scan_ts': time.time(),
+                  'updated': datetime.now().strftime('%H:%M:%S'), 'error': None})
         if DEMO_MODE:                                  # VITRINE : board d'options synthétique
             try:
                 _db = _demo_options_board(rows, detail)
                 _annotate_swing(_db, detail)
-                scan_state['options_board'] = _db
-                scan_state['options_as_of'] = time.time()
                 _attach_vehicle(rows, _db)
-                scan_state['options_chain_full'] = _demo.demo_chain_full(rows, detail)  # chaîne large synthétique (grille/surface/skew)
+                _publier(scan_state, 'partiel', _gen,
+                         {'options_board': _db, 'options_as_of': time.time(),
+                          # chaîne large synthétique (grille/surface/skew)
+                          'options_chain_full': _demo.demo_chain_full(rows, detail)})
             except Exception:
                 pass
         # PREUVES PAR TITRE : qualité, provenance et réconciliation sont produites
@@ -803,11 +829,9 @@ def _scan_once():
             _packets, _reconciliations = _scan_evidence.build_scan(
                 detail, data, scan_state.get('source'), scan_state.get('options_board') or [],
                 scan_state.get('options_as_of'))
-            scan_state['analytics_packets'] = _packets
-            scan_state['reconciliation_by_symbol'] = _reconciliations
         except Exception:
-            scan_state['analytics_packets'] = []
-            scan_state['reconciliation_by_symbol'] = {}
+            _packets, _reconciliations = [], {}
+        # (_packets/_reconciliations rejoignent la publication 'complet' — lot 42)
         try:
             pf = backtest(data)
         except Exception:
@@ -838,9 +862,9 @@ def _scan_once():
         except Exception:
             mctx = scan_state.get('market_ctx')
         try:
-            scan_state['strat_tilt'] = _strat_tilt(mctx)               # tilt stratégie selon le climat
+            _tilt = _strat_tilt(mctx)                  # tilt stratégie selon le climat
         except Exception:
-            pass
+            _tilt = scan_state.get('strat_tilt')       # publié avec le bloc 'complet'
         # RECOMMANDATIONS : moteur de décision IBKR (/40 + niveau + timing) sur tout l'univers
         recs = []
         fstate = scan_state.get('fundamentals') or {}
@@ -888,32 +912,36 @@ def _scan_once():
             comite = committee.evaluate(rows, detail, market=mctx, top_n=12)
         except Exception:
             comite = scan_state.get('committee')
-        scan_state.update({'rows': rows, 'detail': detail, 'portfolio': pf, 'daily': daily_brief,
-                           'anomalies': anoms, 'sectors': secs, 'market_ctx': mctx, 'indices': indices,
-                           'commodities': commodities, 'macro': macro, 'internals': internals,
-                           'recommendations': recs, 'strategy': strat, 'committee': comite,
-                           'breadth': breadth, 'spy': spy, 'market': market_status(),
-                           'source_health': {
-                               'scan': 'AVAILABLE',
-                               'market': 'AVAILABLE' if data is not None else 'UNAVAILABLE',
-                               'options': 'AVAILABLE' if scan_state.get('options_board') else 'NOT_COLLECTED',
-                               'fundamentals': 'AVAILABLE' if fsym else 'NOT_COLLECTED',
-                               'yfinance_budget': _SOURCE_BUDGET_STATE['yfinance'],
-                               'stooq_budget': _SOURCE_BUDGET_STATE['stooq'],
-                           },
-                           'universe_n': len(syms_scan), 'scanned_n': len(rows),
-                           'scan_ts': time.time(),
-                           'updated': datetime.now().strftime('%H:%M:%S'), 'error': None})
+        _publier(scan_state, 'complet', _gen,
+                 {'rows': rows, 'detail': detail, 'portfolio': pf, 'daily': daily_brief,
+                  'anomalies': anoms, 'sectors': secs, 'market_ctx': mctx, 'indices': indices,
+                  'commodities': commodities, 'macro': macro, 'internals': internals,
+                  'recommendations': recs, 'strategy': strat, 'committee': comite,
+                  'analytics_packets': _packets, 'reconciliation_by_symbol': _reconciliations,
+                  'strat_tilt': _tilt, 'titres_en_echec': _te,
+                  'breadth': breadth, 'spy': spy, 'market': market_status(),
+                  'source_health': {
+                      'scan': 'AVAILABLE',
+                      'market': 'AVAILABLE' if data is not None else 'UNAVAILABLE',
+                      'options': 'AVAILABLE' if scan_state.get('options_board') else 'NOT_COLLECTED',
+                      'fundamentals': 'AVAILABLE' if fsym else 'NOT_COLLECTED',
+                      'yfinance_budget': _SOURCE_BUDGET_STATE['yfinance'],
+                      'stooq_budget': _SOURCE_BUDGET_STATE['stooq'],
+                  },
+                  'universe_n': len(syms_scan), 'scanned_n': len(rows),
+                  'scan_ts': time.time(),
+                  'updated': datetime.now().strftime('%H:%M:%S'), 'error': None})
         try:
             _apply_ibkr_indices()   # overlay indices/VIX TEMPS RÉEL IBKR par-dessus le différé yfinance
         except Exception:
             pass
     except Exception:
-        scan_state['error'] = 'scan_failed'
-        scan_state['source_health'] = {
-            'scan': 'DEGRADED', 'market': 'UNKNOWN',
-            'options': 'UNKNOWN', 'fundamentals': 'UNKNOWN',
-        }
+        _publier(scan_state, 'erreur', _generation(scan_state), {
+            'error': 'scan_failed',
+            'source_health': {
+                'scan': 'DEGRADED', 'market': 'UNKNOWN',
+                'options': 'UNKNOWN', 'fundamentals': 'UNKNOWN',
+            }})
 
 
 _SCAN_LOCK = threading.Lock()
