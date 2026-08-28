@@ -33,7 +33,7 @@ from flask import Blueprint, jsonify
 
 from vertex.ai import briefs as _ai
 from vertex.app import rescan_gate
-from vertex.app.config import IBKR_ENABLED
+from vertex.app.config import DEMO_MODE, IBKR_ENABLED
 from vertex.app.state import scan_age, scan_state
 from vertex.data.universe import (_ASIA_SET, _DOW30, _EU_SET, _NDX100, _RUT_SET,
                                   _SP500_SET, UNIVERSE)
@@ -174,11 +174,15 @@ def api_rescan():
         reponse.status_code = 429
         reponse.headers['Retry-After'] = str(attente)
         return reponse
+    #  Lot 32 : le compte annoncé est celui que la boucle va RÉELLEMENT
+    #  scanner — en démo elle prend UNIVERSE[:20], pas les 517 titres.
+    from vertex.data.constants import DEMO_UNIVERSE_N
+    n_scan = DEMO_UNIVERSE_N if DEMO_MODE else len(UNIVERSE)
     return jsonify({
-        'ok': True, 'status': 'rescan_queued', 'universe': len(UNIVERSE),
+        'ok': True, 'status': 'rescan_queued', 'universe': n_scan,
         'cooldown_seconds': rescan_gate.COOLDOWN_S,
         'msg': 'Re-scan lancé — recalcul des %d titres (≈10-30 s). '
-               'Recharge dans un instant.' % len(UNIVERSE),
+               'Recharge dans un instant.' % n_scan,
     })
 
 

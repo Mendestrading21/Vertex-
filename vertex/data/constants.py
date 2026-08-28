@@ -23,6 +23,7 @@ BUILD = 'VERTEX-1.0'
 # (session_id dérivé de scan_ts). Cadence voulue par l'utilisateur : une analyse
 # posée, pas un ticker qui clignote. (Le prix live éventuel IBKR reste un overlay séparé.)
 REFRESH_SEC = 1800          # 30 min : cadence de la session d'analyse
+DEMO_UNIVERSE_N = 20        # mode démo : la boucle scanne UNIVERSE[:N] (vitrine rapide)
 
 # Seuils de fraîcheur des données (secondes) pour /api/system-status.
 # Alignés sur la cadence de 30 min : une donnée n'est « rassise » que si le
@@ -32,5 +33,5 @@ STALE_SCAN_SEC = 2100       # scan « rassis » seulement si le cycle 30 min est
 STALE_QUOTES_SEC = 120      # cotations live rassies au-delà de 2 min (overlay live, indépendant)
 STALE_OPTIONS_SEC = 2100    # board d'options rassis au-delà du cycle de session (>35 min)
 
-__all__ = ['BENCH', 'R', 'BUILD', 'REFRESH_SEC',
+__all__ = ['BENCH', 'R', 'BUILD', 'REFRESH_SEC', 'DEMO_UNIVERSE_N',
            'STALE_SCAN_SEC', 'STALE_QUOTES_SEC', 'STALE_OPTIONS_SEC']

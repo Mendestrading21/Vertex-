@@ -59,7 +59,7 @@ from vertex.app.weekly_selection import CHEMIN as WEEKLY_PATH  # noqa: E402
 # ─── Univers, constantes & config : extraits en modules dédiés (refonte institutionnelle) ───
 #     Responsabilité unique par module ; terminal.py ne fait plus que consommer la donnée.
 from vertex.data.universe import *  # noqa: F401,F403  (tickers, indices, secteurs, industries)
-from vertex.data.constants import BENCH, R, BUILD, REFRESH_SEC  # noqa: F401
+from vertex.data.constants import BENCH, R, BUILD, REFRESH_SEC, DEMO_UNIVERSE_N  # noqa: F401
 from vertex.app.config import IBKR_ENABLED, DEMO_MODE  # noqa: F401
 from vertex.services import persist as _persist
 from vertex.observability.metrics import METRICS  # télémétrie perf (timers scan) — §37
@@ -546,7 +546,7 @@ def _scan_once():
     try:
         # En DÉMO : on ne scanne que 20 titres → rapide sur le CPU bridé du cloud,
         # suffisant pour visualiser toutes les données. Hors démo : univers complet.
-        syms_scan = UNIVERSE[:20] if DEMO_MODE else UNIVERSE
+        syms_scan = UNIVERSE[:DEMO_UNIVERSE_N] if DEMO_MODE else UNIVERSE
         #  LE CONTEXTE DE MARCHE PASSE EN TETE, et ce n'est pas cosmetique.
         #
         #  Mesure du 26 aout 2026, sur le desk de l'utilisateur : Dow, S&P,

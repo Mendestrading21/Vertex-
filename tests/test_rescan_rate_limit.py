@@ -30,7 +30,12 @@ def test_rescan_first_request_is_queued_and_preserves_market_state(monkeypatch):
         assert response.status_code == 200
         assert payload['ok'] is True
         assert payload['status'] == 'rescan_queued'
-        assert payload['universe'] == len(terminal.UNIVERSE)
+        #  Lot 32 : le compte annoncé est celui que la boucle va RÉELLEMENT
+        #  scanner — 20 en démo, l'univers entier sinon.
+        from vertex.app.config import DEMO_MODE
+        from vertex.data.constants import DEMO_UNIVERSE_N
+        attendu = DEMO_UNIVERSE_N if DEMO_MODE else len(terminal.UNIVERSE)
+        assert payload['universe'] == attendu
         assert rescan_gate.EVENEMENT.is_set()
         assert terminal.scan_state == sentinel
     finally:

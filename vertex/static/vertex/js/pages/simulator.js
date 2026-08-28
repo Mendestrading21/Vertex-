@@ -351,7 +351,16 @@
         if (p.mid) qs.set('mid', p.mid);
         var r = await fetch('/api/options/simulate?' + qs.toString(), { credentials: 'same-origin' });
         var d = await r.json();
-        if (!r.ok) { erreur(d && d.error ? d.error : 'Le moteur a refusé la simulation.'); return; }
+        if (!r.ok) {
+          /* le message brut de l'API (« parametres invalides (sym, strike,
+             dte, mid requis) ») parlait les champs du serveur — le refus
+             nomme ceux de l'INTERFACE. */
+          erreur((d && d.error && /invalides/.test(d.error))
+            ? 'Une simulation d’option demande Strike, Horizon (jours) et la prime au mid. '
+              + 'Reprends-les depuis le scanner ou la chaîne (« Simuler ce contrat »).'
+            : (d && d.error ? d.error : 'Le moteur a refusé la simulation.'));
+          return;
+        }
         res = rendreOption(d);
       } else {
         // Action / ETF : une jambe `stock`. La quantité est saisie ; le prix
@@ -452,6 +461,27 @@
       + 'jamais des prévisions.</span></div>';
   }
 
+  /* Parcours du blueprint : « Options -> Simuler le contrat ». Le contexte
+     (classe, sym, right, strike, dte, mid) arrive par l'URL depuis un CLIC
+     explicite — on préremplit et on lance. Aucun paramètre n'est inventé :
+     ce qui manque reste vide et le refus honnête s'applique. */
+  function prefillDepuisContexte() {
+    var q = new URLSearchParams(location.search);
+    if (!q.get('sym')) return;
+    var pose = function (id, val) { var el = $('#' + id); if (el && val != null && val !== '') el.value = val; };
+    if (q.get('classe') === 'action') {
+      var ba = document.querySelector('[data-sim-classe="action"]');
+      if (ba) ba.click();
+    }
+    pose('sim-sym', String(q.get('sym') || '').toUpperCase());
+    pose('sim-right', q.get('right'));
+    pose('sim-strike', q.get('strike'));
+    pose('sim-dte', q.get('dte'));
+    pose('sim-mid', q.get('mid'));
+    pose('sim-quantite', q.get('quantite'));
+    lancer();
+  }
+
   function boot() {
     var f = $('#vx-sim-form');
     if (f) {
@@ -479,6 +509,8 @@
     });
     // État initial : la classe Options est active, ses champs sont visibles.
     $$('[data-sim-bloc="option"]').forEach(function (b) { b.classList.add('is-on'); });
+
+    prefillDepuisContexte();
 
     var cmp = document.querySelector('[data-sim-comparer]');
     if (cmp) {

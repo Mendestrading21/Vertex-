@@ -55,6 +55,20 @@
       + '<div class="vx-meta" style="margin-top:.3rem">P(doubler) = P(valeur terminale ≥ 2× coût), '
       + 'modèle lognormal non calibré — estimation, pas une promesse · hors-mandat affiché, jamais filtré en silence.</div>';
 
+    /* Action primaire du blueprint : « Simuler le contrat ». Le lien porte les
+       parametres REELS du candidat (prime mid = cost/100, le cout est par
+       contrat) — rien n'est invente : sans cout, pas de mid transmis et le
+       simulateur refusera honnetement. */
+    function simLink(c) {
+      var mid = (c.cost != null && isFinite(c.cost)) ? (Number(c.cost) / 100) : null;
+      var q = new URLSearchParams({ classe: 'option', sym: c.sym || '',
+        right: (String(c.type || '').toUpperCase() === 'PUT') ? 'P' : 'C',
+        strike: c.strike != null ? c.strike : '', dte: c.dte != null ? c.dte : '' });
+      if (mid) q.set('mid', String(Math.round(mid * 100) / 100));
+      return '<a class="vx-btn vx-btn-sm" href="/simulator?' + q.toString()
+        + '">Simuler ce contrat \u2192</a>';
+    }
+
     function openCandidate(index) {
       var c = candidates[index]; if (!c || !window.VX || !VX.shell) return;
       var dp = c.double_prob;
@@ -73,6 +87,7 @@
         + '<div class="vx-kv"><span>Spread</span><b>' + (c.spread_pct != null ? num(c.spread_pct, 1) + ' %' : 'n/d') + '</b></div>'
         + '<div class="vx-kv"><span>Mandat</span><b>' + mandate + '</b></div>'
         + '<div class="vx-kv"><span>Probabilité de doubler</span><b>' + probability + '</b></div></div>'
+        + simLink(c)
         + '<p class="vx-meta">Modèle lognormal non calibré. Cette lecture ne déclenche aucun ordre.</p></div>';
       VX.shell.openDrawer((c.sym || 'Contrat') + ' · détail LEAPS', body, { variant: 'summary' });
     }
