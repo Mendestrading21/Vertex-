@@ -28,7 +28,13 @@
     { k: 'theta', label: 'Θ', num: true, d: 2 },
     { k: 'vega', label: 'V', num: true, d: 2 },
     { k: 'iv', label: 'IV', num: true, fmt: function (c) { return c.iv != null ? VX.fmt.num(c.iv, 0) + ' %' : '—'; } },
-    { k: 'mid', label: 'Prime', num: true, fmt: function (c) { var m = c.mid != null ? c.mid : c.premium; return m != null ? VX.fmt.num(m, 2) : '—'; } },
+    { k: 'mid', label: 'Prime', num: true, fmt: function (c) {
+      /* mid/premium absents mais cost present : cost = prime x 100
+         (multiplicateur US) — une CONVERSION exacte, pas une estimation.
+         Sans elle, la ligne affichait Prime « — » a cote de son propre
+         montant en Risque max (mesure : 3 443 $ / prime vide). */
+      var m = c.mid != null ? c.mid : (c.premium != null ? c.premium : (c.cost != null ? c.cost / 100 : null));
+      return m != null ? VX.fmt.num(m, 2) : '—'; } },
     { k: 'be', label: 'Seuil', num: true, d: 2, title: 'Break-even (seuil de rentabilité à l\'échéance)' },
     { k: 'risk', label: 'Risque max', num: true, fmt: function (c) { return c.cost != null ? VX.fmt.price(c.cost) + ' $' : '—'; }, title: 'Prime payée = perte maximale d\'un achat' },
     { k: 'swing_ret', label: 'Rendt', num: true, fmt: function (c) { return c.swing_ret != null ? '+' + VX.fmt.num(c.swing_ret, 0) + ' %' : '—'; }, title: 'Rendement potentiel du contrat si le sous-jacent atteint la cible (net/prime, moteur swing)' },
