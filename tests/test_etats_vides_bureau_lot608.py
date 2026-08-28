@@ -55,7 +55,7 @@ _ZONES_MOTEUR = [
     ('vertex/ui/pages/system_page.py',      'Liste des moteurs indisponible.'),
     ('vertex/ui/pages/performance_page.py', 'il en faut 5 par verdict pour publier une fiabilité'),
     ('vertex/ui/pages/analysis_page.py',    'Série de prix indisponible pour ce titre.'),
-    ('vertex/ui/pages/opportunities_page.py', 'Aucun titre scanné'),
+    ('vertex/ui/pages/opportunities_page.py', 'Aucun titre scoré dans le scan courant'),
 ]
 
 
@@ -64,14 +64,35 @@ def _lire(rel):
 
 
 def _appel_avant(src, fragment):
-    """Le nom de l'état (`empty` / `emptyDesk`) qui précède ce fragment."""
+    """Le nom de l'état (`empty` / `emptyDesk`) qui précède ce fragment.
+
+    VERTEX 2.0 — deux mécanismes coexistent, et ce gardien tient les deux.
+    Les zones historiques passent par `VX.states.empty*`. Les zones refondues
+    écrivent directement un bloc `vx2-state` avec son `data-kind`, parce
+    qu'elles portent en plus une CAUSE et une action sûre, que `VX.states.empty`
+    ne sait pas rendre.
+
+    Ce qui est gardé est inchangé : une zone alimentée par un MOTEUR ne doit
+    jamais imputer son vide au bureau. `data-kind="empty"` vaut donc `empty`,
+    et un bloc 2.0 qui parlerait de synchro du bureau ressortirait comme tel.
+    """
     i = src.index(fragment)
-    amont = src[max(0, i - 400):i]
+    amont = src[max(0, i - 700):i]
     m = None
-    for m in re.finditer(r"VX\.states\.(emptyDesk|empty)\(", amont):
+    for m in re.finditer(r'VX\.states\.(emptyDesk|empty)\(', amont):
         pass
-    assert m is not None, 'aucun VX.states.empty* en amont de : ' + fragment[:40]
-    return m.group(1)
+    if m is not None:
+        return m.group(1)
+    m2 = None
+    for m2 in re.finditer(r'data-kind="(empty|missing|error|stale|partial)"', amont):
+        pass
+    assert m2 is not None, (
+        'ni VX.states.empty*, ni bloc vx2-state en amont de : ' + fragment[:40])
+    #  Un bloc 2.0 qui mentionnerait le bureau serait la faute que ce banc
+    #  surveille : on la fait ressortir sous le nom attendu.
+    if 'bureau' in amont.lower() or 'synchronis' in amont.lower():
+        return 'emptyDesk'
+    return 'empty' 
 
 
 # ── 1. L'état existe et se tait quand tout va bien ──────────────────────────

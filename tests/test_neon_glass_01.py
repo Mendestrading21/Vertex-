@@ -47,8 +47,12 @@ def test_glass_covers_all_eight_spaces():
     100 %). Chaque espace doit apparaître dans le scope CSS ; les règles .vx-card
     restent scopées (jamais globales)."""
     css = _read(CSS)
-    for space in ('briefing', 'markets', 'opportunities', 'analysis',
-                  'portfolio', 'options', 'journal', 'system'):
+    #  VERTEX 2.0 : douze espaces servis. La règle effective est générique
+    #  (`:where(.vx-content[data-space])`) — ce test vérifie que la COUVERTURE
+    #  DÉCLARÉE du fichier suit ce que le produit sert réellement.
+    for space in ('briefing', 'calendar', 'markets', 'opportunities', 'analysis',
+                  'options', 'simulator', 'portfolio', 'follow-up',
+                  'performance', 'intelligence', 'system'):
         assert f'data-space="{space}"' in css, f'espace non couvert par le glass : {space}'
     # aucune règle .vx-card hors scope (toujours précédée du sélecteur .vx-content:is(...))
     for line in css.splitlines():
@@ -119,7 +123,7 @@ def test_all_spaces_carry_glass(client):
     code = _read(CSS)
     for path, space in (('/opportunities', 'opportunities'),
                         ('/portfolio', 'portfolio'), ('/analysis', 'analysis'),
-                        ('/options', 'options'), ('/journal', 'journal'),
+                        ('/options', 'options'), ('/journal', 'performance'),
                         ('/system', 'system')):
         html = client.get(path).get_data(as_text=True)
         assert f'data-space="{space}"' in html, f'{path} sans attribut d\'espace'

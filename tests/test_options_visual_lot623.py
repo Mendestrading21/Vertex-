@@ -1,6 +1,8 @@
 """LOT 623 — Options : contexte unique, hiérarchie graphique et détails."""
 from __future__ import annotations
 
+import re
+
 from html.parser import HTMLParser
 from pathlib import Path
 
@@ -49,15 +51,38 @@ def test_every_options_view_has_one_global_symbol_context(client):
         assert '/static/vertex/js/pages/options-context.js' in html
 
 
-def test_legacy_views_are_visually_attached_to_structure(client):
-    for view in ('overview', 'radar', 'scenarios'):
-        html = _html(client, view)
-        assert 'data-view-tab="structure"' in html
-        assert 'data-view-tab="structure">Structure</a>' in html
-        # Structure est le seul tab actif, pas un écran sans contexte sélectionné.
-        prefix = html.split('data-view-tab="structure"')[0]
-        assert 'aria-selected="true"' in prefix[-120:]
+def test_aucune_vue_servie_n_est_orpheline(client):
+    """VERTEX 2.0 — la garantie est PLUS FORTE, pas plus faible.
 
+    Trois vues — `overview`, `radar`, `scenarios` — étaient SERVIES (routes 200,
+    contenu intact) mais **cachées de la barre d'onglets** : aucun chemin de
+    l'interface n'y menait. Le banc d'origine se contentait de vérifier qu'elles
+    empruntaient le contexte visuel de Structure, faute de mieux.
+
+    Elles ont désormais chacune leur onglet, sous le nom du contrat — `radar`
+    EST le Scanner qu'il réclame. Ce banc garde la propriété générale : toute
+    vue servie est atteignable, et elle se marque courante quand on y est.
+    """
+    from vertex.ui.pages import options_intel_page as page
+    for vid, label in page._ALL_VIEWS:
+        html = _html(client, vid)
+        assert 'data-view-tab="%s"' % vid in html, (
+            '%s est servie mais n\'a aucun onglet : aucun chemin de '
+            'l\'interface n\'y mène' % vid)
+        #  Un seul onglet courant, et c'est le sien.
+        courants = re.findall(r'aria-current="page"[^>]*>([^<]+)', html)
+        assert courants == [label], (vid, courants)
+
+
+def test_plus_aucune_vue_n_est_declaree_orpheline():
+    """`_LEGACY_VIEWS` doit rester vide : une vue hors barre est inatteignable."""
+    from vertex.ui.pages import options_intel_page as page
+    assert page._LEGACY_VIEWS == (), (
+        'une vue est de nouveau servie hors de la barre d\'onglets : '
+        'elle serait inatteignable depuis l\'interface')
+    assert page._VIEW_PARENT == {}, (
+        'une vue emprunte de nouveau le contexte d\'une autre plutôt que '
+        'd\'avoir le sien')
 
 def test_options_removed_embedded_style_and_implementation_language():
     source = PAGE.read_text(encoding='utf-8')

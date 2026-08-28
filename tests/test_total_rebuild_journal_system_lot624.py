@@ -15,8 +15,21 @@ def _between(text: str, start: str, end: str) -> str:
 
 def test_discipline_leads_with_response_four_kpis_hypotheses_and_next_axis():
     view = performance_page._VIEW_CONTENT['overview']
-    assert 'vx-card--hero vx-page-lead' in view
+    #  VERTEX 2.0 : le hero de discipline portait un SQUELETTE PERPÉTUEL.
+    #  `loadDiscipline()` avait été retirée — elle était appelée et définie nulle
+    #  part, et faisait échouer toute la vue — mais ses deux conteneurs sont
+    #  restés. Le bloc promettait donc une donnée qui n'arrivait jamais.
+    #  Il porte désormais un état honnête sur la surface canonique 2.0
+    #  (`vx2-surface`) : « calcul non disponible dans Vertex », avec sa cause.
+    assert 'id="vx-pf-hero"' in view and 'vx2-surface' in view
+    assert 'calcul non disponible dans Vertex' in view
+    assert 'vx-skeleton' not in view.split('id="vx-pf-hero"', 1)[1][:600], \
+        'le hero ne doit plus porter un squelette qui ne se résout jamais'
     assert 'id="vx-pf-kpis" data-max-kpis="4"' in view
+    #  Les mesures de discipline ont leur propre conteneur : elles ecrasaient
+    #  la bande des resultats declares, melangeant deux populations dans un
+    #  meme emplacement.
+    assert 'id="vx-pf-discipline"' in view
     assert 'id="vx-pf-hypo"' in view
     assert 'id="vx-pf-next-axis"' in view and 'vx-insight-rail' in view
 
@@ -43,8 +56,11 @@ def test_declared_results_and_engine_history_are_progressively_disclosed():
 
 def test_chronology_has_a_clean_toolbar_and_historical_sources_stay_separate():
     labels = dict(performance_page._VIEWS)
-    assert labels['journal'] == 'Chronologie'
-    assert labels['track-record'] == 'Historique'
+    #  VERTEX 2.0 : les onglets prennent les libelles canoniques de
+    #  `navigation-and-pages.md` §10. La sous-vue est la meme, son URL aussi.
+    assert labels['journal'] == 'Journal'
+    assert labels['track-record'] == 'Signaux théoriques'
+    assert labels['real'] == 'Trades réels'
 
     chronology = performance_page._VIEW_CONTENT['journal']
     assert 'Chronologie des d&eacute;cisions' in chronology
@@ -52,17 +68,36 @@ def test_chronology_has_a_clean_toolbar_and_historical_sources_stay_separate():
     assert chronology.index('vx-pf-filter') < chronology.index('vx-pf-journal')
     assert 'Timeline' not in chronology
 
-    history = performance_page._VIEW_CONTENT['track-record']
-    assert 'data-source-kind="engine"' in history
-    assert 'data-source-kind="declared"' in history
-    assert 'Moteur &middot; verdicts th&eacute;oriques' in history
-    assert 'Journal &middot; trades d&eacute;clar&eacute;s' in history
-    assert 'Aucun chiffre ne passe' in history
+    #  VERTEX 2.0 — la garantie est PLUS FORTE qu'avant, pas plus faible.
+    #
+    #  Les deux populations cohabitaient dans une seule vue, séparées par une
+    #  phrase (« Aucun chiffre ne passe de l'une à l'autre »). Une phrase
+    #  demande au lecteur de se méfier ; deux vues le dispensent de le faire.
+    #  Le contrat les réclame séparées, et deux vues ne se mélangent pas.
+    moteur = performance_page._VIEW_CONTENT['track-record']
+    declare = performance_page._VIEW_CONTENT['real']
+
+    #  Chacune ne porte QUE sa population.
+    assert 'data-source-kind="engine"' in moteur
+    assert 'data-source-kind="declared"' not in moteur
+    assert 'data-source-kind="declared"' in declare
+    assert 'data-source-kind="engine"' not in declare
+
+    #  Chacune NOMME sa population, plutôt que de laisser deviner.
+    assert 'verdicts rendus par les moteurs' in moteur
+    assert 'trades que vous avez d&eacute;clar&eacute;s' in declare
+
+    #  Et chacune renvoie à l'autre : séparer sans dire où est l'autre moitié
+    #  ferait croire que la page ne mesure qu'une chose.
+    assert '?view=real' in moteur
+    assert '?view=track-record' in declare
 
 
 def test_system_readonly_is_compact_and_connections_matrix_precedes_details():
     header = system_page._header('connections')
-    assert 'vx-page-header vx-page-lead' in header
+    #  VERTEX 2.0 : l'en-tete passe par `vx2.page_header` + `vx2.context_bar`.
+    #  L'intention — un en-tete canonique, compact, avant la matrice — tient.
+    assert 'vx2-header' in header
     assert 'vx-readonly-shield' in header and '<b>READONLY</b>' in header
     assert 'vx-insight vx-mb3' not in header
 

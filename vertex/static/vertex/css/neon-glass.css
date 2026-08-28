@@ -1,3 +1,28 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   ⚠  CETTE FEUILLE N'EST PAS SERVIE.
+
+   Vérifié au navigateur : sur `/`, `/analysis/<sym>`, `/system`, `/options` et
+   `/portfolio`, dix-neuf feuilles CSS sont demandées — celle-ci n'en fait pas
+   partie. La coque (`vertex/ui/shell/__init__.py`) ne la référence pas, et
+   aucune autre feuille ne l'importe.
+
+   POURQUOI CE BANDEAU PLUTÔT QU'UNE SUPPRESSION.
+   Le danger d'un fichier mort n'est pas qu'il pèse : c'est qu'on le lise comme
+   la vérité. Cela s'est produit pendant la refonte 2.0 — en cherchant pourquoi
+   la carte de verdict du dossier Analyse n'avait aucun style, on trouve ici des
+   règles `.vx-verdict-card`, et l'on conclut à tort qu'elles s'appliquent.
+   Elles ne s'appliquent pas.
+
+   Cinq bancs lisent encore ce fichier comme registre de règles de design
+   (`test_neon_glass_01`, `test_analysis_visual_lot619`, `test_perf_lot72`,
+   `test_reconstruction_today`, `test_options_visual_lot623`). Le supprimer
+   exigerait de les supprimer aussi — donc de retirer de la couverture, ce qui
+   est pire que de garder un fichier inerte clairement étiqueté.
+
+   La suppression est une DÉCISION HUMAINE, consignée dans
+   `docs/vertex-2-0/LOT-14-NETTOYAGE.md`.
+   ══════════════════════════════════════════════════════════════════════════ */
+
 /* ═══════════════════════════════════════════════════════════════════════════
    VERTEX OBSIDIAN COPPER — Graph System
    Fond graphite · surfaces calmes · identité cuivre sourcée depuis tokens.css.
@@ -7,10 +32,14 @@
 
    Le thème s'applique à tout espace canonique portant `data-space`, y compris
    Intelligence, sans énumération fragile. Aucun moteur, aucune donnée modifiés.
-   Couverture déclarée : data-space="briefing", data-space="markets",
-   data-space="opportunities", data-space="analysis", data-space="portfolio",
-   data-space="options", data-space="journal", data-space="system" et
-   data-space="intelligence" — la règle effective reste générique.
+   Couverture déclarée (douze espaces Vertex 2.0) : data-space="briefing",
+   data-space="calendar", data-space="markets", data-space="opportunities",
+   data-space="analysis", data-space="options", data-space="simulator",
+   data-space="portfolio", data-space="follow-up", data-space="performance",
+   data-space="intelligence", data-space="system" — la règle effective reste
+   générique, ces noms ne font que déclarer ce qui est servi.
+   Conservés pour les URL historiques encore servies : data-space="journal",
+   data-space="tracking".
    ═══════════════════════════════════════════════════════════════════════════ */
 
 :where(.vx-content[data-space]){

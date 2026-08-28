@@ -1,0 +1,41 @@
+[
+  {
+    "route": "/options",
+    "console": [],
+    "pageerrors": [],
+    "shots": {
+      "desktop": "docs/vertex-2-0/preuves/lot-18-apres/options-desktop.png",
+      "mobile": "docs/vertex-2-0/preuves/lot-18-apres/options-mobile.png"
+    },
+    "overflow": {
+      "desktop": 0,
+      "mobile": 0
+    }
+  },
+  {
+    "route": "/options?view=volatility",
+    "console": [],
+    "pageerrors": [],
+    "shots": {
+      "desktop": "docs/vertex-2-0/preuves/lot-18-apres/options-view-volatility-desktop.png",
+      "mobile": "docs/vertex-2-0/preuves/lot-18-apres/options-view-volatility-mobile.png"
+    },
+    "overflow": {
+      "desktop": 0,
+      "mobile": 0
+    }
+  },
+  {
+    "route": "/options?view=positions",
+    "console": [],
+    "pageerrors": [],
+    "shots": {
+      "desktop": "docs/vertex-2-0/preuves/lot-18-apres/options-view-positions-desktop.png",
+      "mobile": "docs/vertex-2-0/preuves/lot-18-apres/options-view-positions-mobile.png"
+    },
+    "overflow": {
+      "desktop": 0,
+      "mobile": 0
+    }
+  }
+]

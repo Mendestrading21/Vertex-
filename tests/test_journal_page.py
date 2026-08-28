@@ -43,4 +43,8 @@ def test_route_serves_journal():
     assert r.status_code == 200 and b'vx-app' in r.data
     # l'ancienne URL /performance redirige désormais vers /journal
     rp = c.get('/performance')
-    assert rp.status_code == 301 and rp.headers['Location'].split('?')[0] == '/journal'
+    #  VERTEX 2.0 : Performance devient l'espace canonique et /performance le
+    #  sert directement (200). /journal reste servi à l'identique — une URL en
+    #  favori et dans une trentaine de bancs ne devient pas introuvable pour la
+    #  commodité d'un plan de nommage.
+    assert rp.status_code == 200 and b'vx-app' in rp.data

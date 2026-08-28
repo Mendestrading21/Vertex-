@@ -1,0 +1,28 @@
+[
+  {
+    "route": "/options",
+    "console": [],
+    "pageerrors": [],
+    "shots": {
+      "desktop": "docs/vertex-2-0/preuves/lot-08-apres/options-desktop.png",
+      "mobile": "docs/vertex-2-0/preuves/lot-08-apres/options-mobile.png"
+    },
+    "overflow": {
+      "desktop": 0,
+      "mobile": 0
+    }
+  },
+  {
+    "route": "/options/dossier/AAPL",
+    "console": [],
+    "pageerrors": [],
+    "shots": {
+      "desktop": "docs/vertex-2-0/preuves/lot-08-apres/options-dossier-AAPL-desktop.png",
+      "mobile": "docs/vertex-2-0/preuves/lot-08-apres/options-dossier-AAPL-mobile.png"
+    },
+    "overflow": {
+      "desktop": 0,
+      "mobile": 0
+    }
+  }
+]

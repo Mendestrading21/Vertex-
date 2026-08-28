@@ -11,29 +11,48 @@ Données réelles uniquement — « — » honnête si absent.
 from __future__ import annotations
 
 
+from vertex.ui import vx2
 from vertex.ui.shell import json_for_script, render_shell
 
-_VIEWS = (('screener', 'Screener'), ('options', 'Options'),
-          ('portfolio', 'Portefeuille'), ('anomalies', 'Anomalies'),
-          ('calendar', 'Calendrier'))
+# Le contrat réclame des sous-vues Actions et ETF. Vertex sait classer un
+# instrument — `vertex.market.instrument_profile.build()` — mais ce verdict
+# n'est PAS servi sur les lignes du scan : seul `/api/analysis` le porte, et
+# pour un symbole à la fois.
+#
+# On ne recrée donc pas la règle dans l'interface. On lit son RÉFÉRENTIEL
+# curé — deux listes statiques du produit — et l'écran DIT ce que cette
+# couverture vaut. Un titre hors des deux listes n'est pas classé de force :
+# il est compté à part, et nommé.
+def _referentiel_classes() -> dict:
+    from vertex.market import instrument_profile as _ip
+    from vertex.market import sectors as _sec
+    return {
+        'etf': sorted(set(_ip.BROAD_ETFS) | set(_ip.ETF_SECTOR_PROXY)),
+        'actions': sorted(_sec.SECTOR_MAP),
+    }
 
-# Anciennes vues → nouvelles (liens internes historiques : radar/stocks)
-_VIEW_ALIASES = {'radar': 'screener', 'stocks': 'screener'}
+
+_VIEWS = (('screener', 'Radar'), ('stocks', 'Actions'), ('etf', 'ETF'),
+          ('options', 'Options'), ('anomalies', 'Anomalies'),
+          ('calendar', 'Catalyseurs'), ('portfolio', 'Positions × moteur'))
+
+# `stocks` menait au Radar ; il a désormais sa propre vue, et c'est la même
+# table filtrée — un lien historique arrive donc au bon endroit, en mieux.
+_VIEW_ALIASES = {'radar': 'screener'}
 
 
 def _tabs(view: str) -> str:
-    return ('<div class="vx-tabs" role="tablist">'
-            + ''.join(f'<a class="vx-tab" role="tab" aria-selected='
-                      f'"{"true" if v == view else "false"}" '
-                      f'href="/opportunities?view={v}">{label}</a>'
-                      for v, label in _VIEWS) + '</div>')
+    return vx2.tabs([{'label': label, 'href': f'/opportunities?view={v}',
+                      'actif': v == view} for v, label in _VIEWS],
+                    libelle='Sous-vues des Opportunités')
 
 
 _CONTENT = """
-<div class="vx-page-header vx-page-lead"><div><h1>Opportunités</h1>
-<div class="vx-sub">Quelles opportunités méritent réellement une analyse ?</div></div>
-<div class="vx-actions vx-toolbar"><span id="op-fresh" style="align-self:center"></span><button class="vx-btn vx-btn-sm"
+<div class="vx-page-header vx-page-lead"><div><p class="vx2-eyebrow">Explorer</p><h1>Opportunités</h1>
+<div class="vx-sub">Quels dossiers méritent une analyse maintenant&nbsp;?</div></div>
+<div class="vx-actions vx-toolbar"><button class="vx-btn vx-btn-sm"
   onclick="VXEntities.openAddModal()">+ Ajouter</button></div></div>
+<div class="vx2-contextbar" id="op-context" role="group" aria-label="Contexte du scan"><span class="vx2-stamp">Lecture du scan…</span></div>
 %%TABS%%
 <style>
   /* Barre de filtres du screener : collante, lisible, réactive */
@@ -127,7 +146,7 @@ _JS = r"""
 <script>
 (function(){
 'use strict';
-const VIEW=%%VIEW%%;const PARAMS=%%PARAMS%%;
+const VIEW=%%VIEW%%;const PARAMS=%%PARAMS%%;const CLASSES=%%CLASSES%%;
 const $=(id)=>document.getElementById(id);
 function esc(s){return String(s??'').replace(/[<>&"']/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[c]));}
 const OUT=['Rejetée','Radar','À surveiller','Proche','Actionnable','Invalidée'];
@@ -153,7 +172,82 @@ function bucketCls(b){var s=String(b||'').toLowerCase();
   return'';}
 /* playbook peut être une chaîne OU un objet moteur → toujours une chaîne sûre */
 function pbStr(pb){return (pb&&typeof pb==='object')?(pb.name||pb.label||pb.key||pb.type||''):(pb||'');}
+/* ── SIX AIDES APPELEES ET DEFINIES NULLE PART ─────────────────────────
+   `VERD_FR`, `verdictDir`, `verdictWord`, `pbText`, `pbIcon` et `heatCell`
+   etaient appelees par la carte d'opportunite, le filtre de setup, le donut
+   des verdicts, la revue de position et la table des anomalies — et
+   introuvables dans TOUT le depot. Chacun de ces chemins levait un
+   `ReferenceError` qui remplacait le corps entier de la page.
+
+   Invisible en demo : le scan y rend zero ligne, donc aucun ne s'execute.
+   Trouve en injectant un scan fictif dans le navigateur.
+
+   Elles vivent ICI, au niveau du module — un premier placement les avait
+   enfermees dans la portee du Radar, et les vues Anomalies et Positions
+   levaient encore. Le balayage peuple l'a montre.
+
+   Aucune ne calcule ni n'invente : elles LISENT ce que le serveur attache
+   deja. Un champ absent reste absent. */
+const VERD_FR=(function(){
+  /* Le libelle vient du vocabulaire CANONIQUE (`recommendation.vocab_js()`).
+     Une table ecrite a la main divergerait du moteur au premier verdict
+     ajoute, en silence. */
+  const v=window.__VXVOCAB||{},out={};
+  Object.keys(v).forEach(function(k){const e=v[k];out[k]=(e&&(e.label||e[0]))||k;});
+  return out;
+})();
+/* Direction de la jauge : le TON est canonique, on ne redecide pas ici si un
+   verdict est haussier. */
+function verdictDir(dec){
+  const e=(window.__VXVOCAB||{})[dec];const t=String((e&&e.tone)||'');
+  if(t.indexOf('green')>=0)return 'up';
+  if(t.indexOf('red')>=0)return 'down';
+  return '';
+}
+function verdictWord(dec){return VERD_FR[dec]||dec||'';}
+/* Playbook : `strategy_fit._playbook_of` l'attache cote serveur. `pbStr`
+   existait deja pour en extraire le nom — on le REUTILISE plutot que d'en
+   ecrire un second qui divergerait. */
+function pbText(r){return pbStr(r&&r.playbook);}
+function pbIcon(r){const p=r&&r.playbook;return (p&&p.ic)||'';}
+/* Cellule chauffee par seuils. Les seuils viennent de l'APPELANT, deja ecrits
+   dans chaque table. Une valeur absente ne recoit AUCUNE couleur : un tiret
+   gris, jamais un vert par defaut. */
+function heatCell(v,opt){
+  opt=opt||{};const n=Number(v);
+  if(v==null||!isFinite(n))
+    return '<td data-label="'+esc(opt.label||'')+'" class="vx-num">'
+      +'<span class="vx2-absent">—</span></td>';
+  const ton=n>=(opt.good!=null?opt.good:70)?'vx-pos'
+    :n>=(opt.mid!=null?opt.mid:40)?'vx-warn':'vx-neg';
+  return '<td data-label="'+esc(opt.label||'')+'" class="vx-num">'
+    +'<span class="vx-mono '+ton+'">'+VX.fmt.num(n,0)+'</span></td>';
+}
 function metaMode(scan){return scan&&scan.data_source==='demo'?'fallback':'delayed';}
+
+/* ContextBar — univers, dernier scan, source et mode. Rendue MEME quand le
+   scan est vide : « aucun titre » sans dire d'ou vient ce vide oblige a
+   deviner si la cause est la source, le moteur ou le rendu. */
+function paintContext(scan){
+  const el=$('op-context'); if(!el)return;
+  const nd='<span class="vx2-absent">\u2014</span>';
+  const rows=(scan&&scan.rows)||[];
+  const src=(scan&&scan.source)||null;
+  const ts=(scan&&(scan.scan_ts_h||scan.scan_ts||scan.updated))||null;
+  const demo=scan&&scan.data_source==='demo';
+  const badge=demo?'<span class="vx2-badge" data-state="demo">D\u00e9mo</span>'
+    :(src?'<span class="vx2-badge" data-state="delayed">Diff\u00e9r\u00e9e</span>'
+         :'<span class="vx2-badge" data-state="missing">Indisponible</span>');
+  const grp=(label,contenu)=>'<div class="vx2-context-group">'
+    +'<span class="vx2-context-label">'+label+'</span>'+contenu+'</div>';
+  const sep='<span class="vx2-context-sep" aria-hidden="true"></span>';
+  el.innerHTML=[
+    grp('Univers','<span class="vx2-mono">'+(rows.length?VX.fmt.nd(rows.length)+' titres':nd)+'</span>'),
+    grp('Dernier scan','<span class="vx2-mono">'+(ts?esc(String(ts)):nd)+'</span>'),
+    grp('Source','<span class="vx2-stamp"><b>'+(src?esc(String(src)):'\u2014')+'</b></span>'),
+    grp('Fra\u00eecheur',badge)
+  ].join(sep);
+}
 /* Debounce : les curseurs tirent input en rafale — on repeint au calme (120 ms). */
 function debounce(fn,ms){let t=null;return function(){const a=arguments,c=this;
   clearTimeout(t);t=setTimeout(()=>fn.apply(c,a),ms||120);};}
@@ -242,10 +336,50 @@ function rail52(v){
 }
 
 /* ═════════ SCREENER (vue par défaut) — de 515 titres à UNE décision ═════════ */
-async function renderScreener(){
+/* CLASSE D'INSTRUMENT — sous-vues Actions et ETF.
+   Vertex sait classer un instrument, mais ce verdict n'est PAS servi sur les
+   lignes du scan. On ne recree donc pas la regle ici : on lit son REFERENTIEL
+   cure, injecte par la page, et l'ecran DIT ce que cette couverture vaut.
+   Un titre hors des deux listes n'est jamais classe de force. */
+const _ETF=new Set(CLASSES.etf||[]), _ACT=new Set(CLASSES.actions||[]);
+function classeDe(sym){
+  const s=String(sym||'').toUpperCase();
+  return _ETF.has(s)?'ETF':(_ACT.has(s)?'ACTION':'NON_CLASSE');
+}
+async function renderScreener(classe){
   const scan=await VX.fetch('/scan',{ttl:120000});
-  const rows=(scan.rows||[]).filter(r=>r.score!==undefined);
-  if(!rows.length){($('op-body')||{}).innerHTML=VX.states.empty('Aucun titre scanné — lancer un scan depuis Système.');return;}
+  paintContext(scan);
+  let rows=(scan.rows||[]).filter(r=>r.score!==undefined);
+  let bandeau='';
+  if(classe){
+    const total=rows.length;
+    const nonClasses=rows.filter(r=>classeDe(r.symbol)==='NON_CLASSE').length;
+    rows=rows.filter(r=>classeDe(r.symbol)===classe);
+    const nom=classe==='ETF'?'ETF':'actions';
+    bandeau='<div class="vx2-banner" data-kind="prudence" role="status"><span>'
+      +'<b>'+rows.length+'</b> '+nom+' sur '+total+' ligne(s) scorée(s). '
+      +'Le classement vient du <b>référentiel curé</b> de Vertex '
+      +'('+(_ETF.size)+' ETF, '+(_ACT.size)+' actions au référentiel sectoriel), '
+      +'pas d’un champ servi par le scan : '
+      +(nonClasses?('<b>'+nonClasses+'</b> ligne(s) restent non classées et n’apparaissent '
+                    +'dans aucune des deux vues — elles sont visibles au '
+                    +'<a href="/opportunities?view=screener">Radar</a>.')
+                 :'aucune ligne non classée.')
+      +'</span></div>';
+  }
+  if(!rows.length){
+    ($('op-body')||{}).innerHTML='<div class="vx2-state" data-kind="empty" role="status">'
+      +'<span class="vx2-state-ghost" aria-hidden="true"><i></i><i></i><i></i><i></i></span>'
+      +'<p class="vx2-state-title">'+(classe
+          ?('Aucun '+(classe==='ETF'?'ETF':'titre action')+' scoré dans le scan courant')
+          :'Aucun titre scoré dans le scan courant')+'</p>'
+      +'<p class="vx2-state-cause">L’entonnoir n’a rien à classer : le dernier scan '
+      +'n’a produit aucune ligne portant un score. La barre de contexte '
+      +'ci-dessus dit de quelle source et de quand il date.</p>'
+      +'<div class="vx2-state-actions">'
+      +'<a class="vx2-btn" href="/system?view=data">Ouvrir Système → Données</a></div>'
+      +'</div>';
+    return;}
   const detail=scan.detail||{};
   const byId={};rows.forEach(r=>{if(r&&r.symbol)byId[r.symbol]=r;});   // index partagé (dossier express, revue…)
   const sectors=[...new Set(rows.map(r=>r.sector).filter(Boolean))].sort();
@@ -299,7 +433,7 @@ async function renderScreener(){
     return f;
   }
   /* ── Squelette de la vue ── */
-  ($('op-body')||{}).innerHTML=demoBanner(scan)+`
+  ($('op-body')||{}).innerHTML=demoBanner(scan)+bandeau+`
     <div class="vx-screenbar" role="group" aria-label="Filtres du screener">
       <span class="vx-meta" style="flex-basis:100%;display:flex;flex-wrap:wrap;gap:.4rem;align-items:center">
         <button class="vx-btn vx-btn-sm vx-btn-ghost" id="op-reset">Réinitialiser les filtres</button>
@@ -463,7 +597,7 @@ async function renderScreener(){
          <button class="vx-btn vx-btn-sm vx-btn-primary" data-open-analysis="${esc(d.sym)}">Analyse</button>
          <button class="vx-btn vx-btn-sm" onclick="VXEntities.openAddModal('${esc(d.sym)}','follow')">Suivre</button>
          <button class="vx-btn vx-btn-sm" onclick="VXEntities.openAddModal('${esc(d.sym)}','alert')">Alerte</button>
-         <a class="vx-btn vx-btn-sm" href="/options/${esc(d.sym)}">Options</a></div>`;
+         <a class="vx-btn vx-btn-sm" href="/options/dossier/${esc(d.sym)}">Options</a></div>`;
     /* Visuels quant du tiroir (mêmes moteurs que la fiche Analyse — data déjà dans le scan) */
     (function(){
       if(!window.VXCharts)return;
@@ -476,7 +610,7 @@ async function renderScreener(){
       const mc=v.mc||{},bs=v.bootstrap||{},mcEl=document.getElementById('op-sel-mc');
       if(mcEl&&bs.p05!=null&&bs.p95!=null&&VXCharts.card){
         const tp1=mc.p_tp1_first,stopf=mc.p_stop_before_tp1;
-        VXCharts.card('op-sel-mc',{title:'Dispersion Monte-Carlo',
+        VXCharts.card('op-sel-mc',{title:'Dispersion Monte-Carlo',unit:'%',
           question:'Fourchette réaliste du rendement sur l’horizon ?',
           conclusion:(tp1!=null?'TP1 avant stop '+Math.round(tp1*100)+'% · stop '+Math.round((stopf||0)*100)+'%':''),
           height:150,source:'Monte-Carlo · bootstrap',timestamp:Date.now(),mode:'delayed',limits:'MODEL_ESTIMATE',
@@ -514,7 +648,7 @@ async function renderScreener(){
       .sort((a,b)=>b[1]-a[1]).slice(0,9);
     if(!entries.length){host.innerHTML='<div class="vx-card">'+VX.states.empty('Aucun secteur dans les résultats filtrés.')+'</div>';return;}
     VXCharts.sectorCard('op-sectors',{
-      title:'Secteurs des résultats',question:'Où se concentrent les titres retenus par TES filtres ?',
+      title:'Secteurs des résultats',unit:'titres',question:'Où se concentrent les titres retenus par TES filtres ?',
       conclusion:entries[0][0]+' en tête ('+entries[0][1]+' de score moyen · '+entries[0][2]+' titres)',
       labels:entries.map(e=>e[0]+' ('+e[2]+')'),values:entries.map(e=>e[1]),height:240,
       source:scan.source,timestamp:scan.scan_ts||scan.updated,mode:metaMode(scan),
@@ -561,7 +695,7 @@ async function renderScreener(){
         <button class="vx-btn vx-btn-sm" data-inspect="${r.symbol}" title="Aperçu rapide">Aperçu</button>
         <button class="vx-btn vx-btn-sm" onclick="VXEntities.openAddModal('${r.symbol}','follow')">Suivre</button>
         <button class="vx-btn vx-btn-sm" onclick="VXEntities.openAddModal('${r.symbol}','alert')">Alerte</button>
-        <a class="vx-btn vx-btn-sm vx-btn-ghost" href="/options/${r.symbol}">Options</a>
+        <a class="vx-btn vx-btn-sm vx-btn-ghost" href="/options/dossier/${r.symbol}">Options</a>
       </div></div>`;
   }
   /* ── Top cartes des résultats (highlight 6) ── */
@@ -646,7 +780,7 @@ async function renderScreener(){
       return {value:v||null,label:v?String(v):'—',title:sec+' · '+b+' : '+v+' titre(s)'};})}))
       .sort((a,b)=>{const t=(x)=>OUT.reduce((acc,bb,i)=>acc+(cnt[x.raw+'|'+bb]||0)*(OUT.length-i),0);return t(b)-t(a);});
     VXCharts.heatmapCard('op-heat',{
-      title:'Carte secteur × statut',question:'Dans quels secteurs vivent les dossiers les plus avancés ?',
+      title:'Carte secteur × statut',unit:'titres',question:'Dans quels secteurs vivent les dossiers les plus avancés ?',
       conclusion:'Colonne Actionnable = prêt · cliquer une cellule applique les deux filtres.',
       columns:OUT,rows:rows2,min:0,max:Math.max(4,...Object.values(cnt)),
       fmt:(v)=>v==null?'—':String(v),
@@ -663,14 +797,14 @@ async function renderScreener(){
           persist();syncBar();applyAll();});
       });});
   }
-  /* ── Donut verdicts des résultats ── */
+/* ── Donut verdicts des résultats ── */
   function paintVerdicts(f){
     const host=$('op-verdicts');if(!host)return;
     const cnt={};f.forEach(r=>{const v=VERD_FR[r.verdict]||r.verdict||'n/d';cnt[v]=(cnt[v]||0)+1;});
     const ks=Object.keys(cnt);
     if(!ks.length){host.innerHTML='<div class="vx-card">'+VX.states.empty('Aucun verdict.')+'</div>';return;}
     const tone={'ACHAT':'#36c889','SURVEILLER':'#c0b79f','ATTENDRE':'#dda23b','ÉVITER':'#ed655c'};
-    VXCharts.donutCard('op-verdicts',{title:'Verdicts des résultats',
+    VXCharts.donutCard('op-verdicts',{title:'Verdicts des résultats',unit:'titres',
       question:'Que pense le moteur de TA sélection ?',
       labels:ks,values:ks.map(k=>cnt[k]),colors:ks.map(k=>tone[k]||'#8f8a83'),height:200,
       source:scan.source,timestamp:scan.scan_ts||scan.updated,mode:metaMode(scan)});
@@ -730,6 +864,7 @@ async function renderScreener(){
 /* ═════════ OPTIONS : screener du board réel ═════════ */
 async function renderOptions(){
   const scan=await VX.fetch('/scan',{ttl:120000});
+  paintContext(scan);
   const board=(scan.options_board||[]);
   window.__opCompare=function(symWanted){
     /* Plages NON chevauchantes : ≥0.45 défensif · 0.30-0.45 principal · 0.18-0.30 convexe */
@@ -802,7 +937,7 @@ async function renderOptions(){
       <label class="rng">échéance ≤ <input type="range" data-fk="maxDte" min="0" max="400" step="20" value="0"><b>∞</b></label>
       <label class="rng">prime ≤ <input type="range" data-fk="maxCost" min="0" max="6000" step="250" value="0"><b>∞</b></label>
       <button class="vx-chip" data-ft="exclStale" aria-pressed="false">⏸ exclure hors séance</button>
-      <input class="vx-input" data-fk="sym" style="width:110px;text-transform:uppercase" placeholder="Ticker" value="${esc(state.sym)}">
+      <input class="vx-input" data-fk="sym" style="width:110px;text-transform:uppercase" placeholder="Ticker" value="${esc(state.sym)}" aria-label="Filtrer par ticker">
       <button class="vx-btn vx-btn-sm vx-btn-soft" onclick="window.__opCompare&&window.__opCompare(document.querySelector('[data-fk=sym]').value.toUpperCase())">Comparer 3 contrats</button>
       <a class="vx-btn vx-btn-sm vx-btn-ghost" href="/options">Desk options →</a>
       <span class="vx-meta vx-right" id="op-opt-count"></span>
@@ -1007,12 +1142,12 @@ async function renderOptions(){
                <i style="display:block;height:100%;width:${Math.max(3,Math.min(100,pc))}%;background:${pc>=70?'var(--vx-positive)':pc>=40?'var(--vx-warning)':'var(--vx-negative)'};border-radius:99px"></i></span>
              <b class="vx-mono" style="font-size:10px;flex:0 0 40px;text-align:right">${got}/${max2}</b></div>`;}).join('')}`:''}
        <div class="vx-flex vx-wrap vx-mt2" style="gap:.3rem">
-         <a class="vx-btn vx-btn-sm vx-btn-primary" href="/options/${esc(c.sym)}">Dossier options</a>
+         <a class="vx-btn vx-btn-sm vx-btn-primary" href="/options/dossier/${esc(c.sym)}">Dossier options</a>
          <button class="vx-btn vx-btn-sm" data-open-analysis="${esc(c.sym)}">Fiche action</button></div>`;
     $('op-contract').hidden=false;
     $('op-contract').open=true;
     $('op-contract').scrollIntoView({behavior:'smooth',block:'nearest'});
-    VXCharts.payoffCard('op-payoff',{title:`${c.sym} ${c.strike} ${c.type} ${c.exp}`,
+    VXCharts.payoffCard('op-payoff',{title:`${c.sym} ${c.strike} ${c.type} ${c.exp}`,unit:'$ par contrat',
       question:'Que rapporte/coûte ce contrat à l’échéance ?',
       conclusion:`Breakeven ${VX.fmt.nd(c.be)} · prime ${VX.fmt.nd(c.cost)}`,
       spot:spot,strike:c.strike,premium:c.cost,right:c.type==='PUT'?'P':'C',breakeven:c.be,height:210,
@@ -1031,11 +1166,11 @@ async function renderOptions(){
         question:'Que vaut le contrat selon le spot et le temps ?',
         conclusion:`R:R simulé ${VX.fmt.nd(s.sim.reward_risk)} · perte planifiée ${VX.fmt.nd(s.sim.worst_planned_loss_pct)} %`,
         source:'scenario_pricer',timestamp:Date.now(),mode:'delayed'});
-      VXCharts.thetaCard('op-theta',s.sim,{title:'Décomposition temps',
+      VXCharts.thetaCard('op-theta',s.sim,{title:'Décomposition temps',unit:'$ par jour',
         question:'Combien coûte chaque jour d’attente ?',
         conclusion:'Réévaluer après 5-8 séances sans mouvement',
         height:190,source:'scenario_pricer',timestamp:Date.now(),mode:'delayed'});
-      VXCharts.ivSensitivityCard('op-iv',s.sim,{title:'Sensibilité IV',
+      VXCharts.ivSensitivityCard('op-iv',s.sim,{title:'Sensibilité IV',unit:'$',
         question:'Que se passe-t-il si la volatilité implicite bouge ?',
         conclusion:'IV -20 % à +20 % au scénario BASE',height:190,
         source:'scenario_pricer',timestamp:Date.now(),mode:'delayed'});
@@ -1050,6 +1185,7 @@ async function renderOptions(){
 /* ═════════ PORTEFEUILLE : mes positions × le moteur + candidats ═════════ */
 async function renderPortfolio(){
   const scan=await VX.fetch('/scan',{ttl:120000});
+  paintContext(scan);
   const rows=(scan.rows||[]);
   const byId={};rows.forEach(r=>{byId[r.symbol]=r;});
   const pos=(window.VXEntities?VXEntities.positions():[])||[];
@@ -1124,7 +1260,7 @@ async function renderPortfolio(){
       ${pbText(r)?`<div class="vx-meta vx-mt1" style="white-space:normal;line-height:1.4">${esc(pbText(r))}</div>`:''}
       <div class="vx-flex vx-mt2" style="gap:.3rem">
         <button class="vx-btn vx-btn-sm vx-btn-primary" data-open-analysis="${esc(h.p.sym)}">Analyser</button>
-        <a class="vx-btn vx-btn-sm vx-btn-ghost" href="/options/${esc(h.p.sym)}">Options</a>
+        <a class="vx-btn vx-btn-sm vx-btn-ghost" href="/options/dossier/${esc(h.p.sym)}">Options</a>
         <button class="vx-btn vx-btn-icon vx-btn-ghost" data-entity-menu="${esc(h.p.sym)}" aria-label="Actions">⋯</button></div>
     </div>`;}).join('')+'</div>';
   /* Risque du panier — chiffres RÉELS du moteur de risque (/api/command.risk) */
@@ -1155,7 +1291,7 @@ async function renderPortfolio(){
     const cnt={};held.forEach(h=>{const sec2=(h.r&&h.r.sector)||'Hors scan';cnt[sec2]=(cnt[sec2]||0)+1;});
     const ks=Object.keys(cnt);
     if(ks.length&&window.VXCharts&&VXCharts.donutCard){
-      VXCharts.donutCard('op-pf-sect-card',{title:'Secteurs du portefeuille',
+      VXCharts.donutCard('op-pf-sect-card',{title:'Secteurs du portefeuille',unit:'% du portefeuille',
         question:'Suis-je concentré sur un seul thème ?',
         labels:ks,values:ks.map(k=>cnt[k]),height:200,
         source:'positions déclarées × scan',timestamp:Date.now(),mode:'delayed'});
@@ -1183,13 +1319,14 @@ async function renderPortfolio(){
 /* ═════════ ANOMALIES ═════════ */
 async function renderAnomalies(){
   const scan=await VX.fetch('/scan',{ttl:120000});
+  paintContext(scan);
   const all=(scan.rows||[]).filter(r=>(r.anomalies||[]).length);
   let lvl='';let q='';
   ($('op-body')||{}).innerHTML=demoBanner(scan)+`
     <div class="vx-screenbar">
       ${['ALERTE','ACTIF','CALME'].map(l=>`<button class="vx-chip" data-lvl="${l}" aria-pressed="false"
         style="${l==='ALERTE'?'color:var(--vx-negative)':l==='ACTIF'?'color:var(--vx-warning)':''}">${l==='ALERTE'?'🔴':l==='ACTIF'?'🟠':'⚪'} ${l}</button>`).join('')}
-      <input class="vx-input" id="op-anom-q" style="width:110px;text-transform:uppercase" placeholder="Ticker">
+      <input class="vx-input" id="op-anom-q" style="width:110px;text-transform:uppercase" placeholder="Ticker" aria-label="Filtrer les anomalies par ticker">
       <button class="vx-chip" data-ag="Données">Qualité des données</button>
       <span class="vx-meta vx-right" id="op-anom-count"></span>
     </div>
@@ -1253,6 +1390,9 @@ async function renderAnomalies(){
 /* ═════════ CALENDRIER ═════════ */
 async function renderCalendar(){
   try{
+    /* Cette vue lit /cal-feed ; le scan n'est demande que pour la barre de
+       contexte, afin qu'elle ne soit pas la seule sous-vue sans provenance. */
+    VX.fetch('/scan',{ttl:120000}).then(paintContext).catch(()=>{});
     const cal=await VX.fetch('/cal-feed',{ttl:300000});
     const positions=(window.VXEntities?window.VXEntities.positions():[]).map(p=>String(p.sym).toUpperCase());
     let cat='',mine=false,horizon=0;
@@ -1277,7 +1417,7 @@ async function renderCalendar(){
         .filter(i=>!mine||(i.sym&&positions.includes(i.sym))||(i.cat==='macro'&&positions.length))
         .sort((a,b)=>String(a.when).localeCompare(String(b.when)));
       (document.getElementById('op-cal-count')||{}).textContent=items.length+' événement(s)';
-      VXCharts.timelineCard('op-cal',{title:'Calendrier des catalyseurs',
+      VXCharts.timelineCard('op-cal',{title:'Calendrier des catalyseurs',unit:'événements',
         question:'Quels événements peuvent faire bouger les dossiers ?',
         items:items.slice(0,40),source:'calendrier moteur',timestamp:cal.ts||Date.now(),mode:'delayed',
         emptyText:'Aucun événement sur ce filtre.'});
@@ -1294,7 +1434,10 @@ async function renderCalendar(){
   }catch(e){($('op-body')||{}).innerHTML=VX.states.error('Calendrier indisponible');}
 }
 
-const RENDER={screener:renderScreener,options:renderOptions,portfolio:renderPortfolio,
+const RENDER={screener:()=>renderScreener(null),
+  stocks:()=>renderScreener('ACTION'),
+  etf:()=>renderScreener('ETF'),
+  options:renderOptions,portfolio:renderPortfolio,
   anomalies:renderAnomalies,calendar:renderCalendar};
 function boot(){(RENDER[VIEW]||renderScreener)().catch(e=>{
   ($('op-body')||{}).innerHTML=VX.states.error('Chargement impossible : '+e.message);});}
@@ -1319,7 +1462,8 @@ def render(view: str = 'screener', params=None) -> str:
     #  L'integration de `vertex-live` avait rapporte ici les appels nus de cette
     #  branche, qui n'a jamais eu le durcissement du 372. Y ajouter `import json`
     #  aurait fait disparaitre l'erreur ET rouvert la faille.
-    js = (_JS.replace('%%VIEW%%', json_for_script(view))
+    js = (_JS.replace('%%CLASSES%%', json_for_script(_referentiel_classes()))
+          .replace('%%VIEW%%', json_for_script(view))
           .replace('%%PARAMS%%', json_for_script(p)))
     label = dict(_VIEWS)[view]
     return render_shell(title=f'Opportunités · {label}', active='opportunities',

@@ -1,0 +1,28 @@
+[
+  {
+    "route": "/",
+    "console": [],
+    "pageerrors": [],
+    "shots": {
+      "desktop": "docs/vertex-2-0/preuves/lot-05-apres/accueil-desktop.png",
+      "mobile": "docs/vertex-2-0/preuves/lot-05-apres/accueil-mobile.png"
+    },
+    "overflow": {
+      "desktop": 0,
+      "mobile": 0
+    }
+  },
+  {
+    "route": "/performance",
+    "console": [],
+    "pageerrors": [],
+    "shots": {
+      "desktop": "docs/vertex-2-0/preuves/lot-05-apres/performance-desktop.png",
+      "mobile": "docs/vertex-2-0/preuves/lot-05-apres/performance-mobile.png"
+    },
+    "overflow": {
+      "desktop": 0,
+      "mobile": 0
+    }
+  }
+]

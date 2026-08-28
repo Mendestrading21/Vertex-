@@ -97,12 +97,47 @@
     });
   }
 
+  /* Sous-vue demandee. Les trois sections restent dans le DOM : un seul appel
+     reseau les remplit toutes, et masquer coute moins qu'un second aller-retour. */
+  function vueCourante() {
+    var el = document.querySelector('[data-trk-view]');
+    return (el && el.getAttribute('data-trk-view')) || 'attention';
+  }
+  function appliquerVue() {
+    var v = vueCourante();
+    var montre = {
+      attention: ['vx-trk-summary', 'vx-trk-chart', 'vx-trk-active'],
+      active: ['vx-trk-summary', 'vx-trk-chart', 'vx-trk-active'],
+      archives: ['vx-trk-summary', 'vx-trk-stopped']
+    }[v] || ['vx-trk-summary', 'vx-trk-chart', 'vx-trk-active'];
+    ['vx-trk-summary', 'vx-trk-chart', 'vx-trk-active', 'vx-trk-stopped']
+      .forEach(function (id) {
+        var el = document.getElementById(id);
+        if (el) el.hidden = montre.indexOf(id) === -1;
+      });
+  }
+
+  /* La fraicheur : `/api/tracking` ne porte pas d'horodatage. On l'AVOUE plutot
+     que d'afficher l'heure du navigateur — c'est le raccourci que trois pages
+     du produit prennent avec `cal.ts || Date.now()`, et il rend une fraicheur
+     toujours verte, et fausse. */
+  function peindreFraicheur(d) {
+    var el = document.getElementById('vx-trk-fresh');
+    if (!el) return;
+    var n = (d && d.summary && d.summary.total) || 0;
+    el.innerHTML = '<span class="vx2-badge" data-state="missing">'
+      + (n ? n + ' suivi' + (n > 1 ? 's' : '') + ' \u00b7 horodatage non fourni'
+          : 'Aucun suivi enregistr\u00e9') + '</span>';
+  }
+
   function loadActive() {
+    appliquerVue();
     var sEl = document.getElementById('vx-trk-summary-body');
     var aEl = document.getElementById('vx-trk-active-body');
     var xEl = document.getElementById('vx-trk-stopped-body');
     get('/api/tracking').then(function (d) {
       var items = (d && d.trackings) || [];
+      peindreFraicheur(d);
       if (sEl) sEl.innerHTML = summaryHtml((d && d.summary) || {});
       var active = items.filter(function (t) { return t.status === 'ACTIVE' || t.status === 'DATA_REQUIRED'; });
       var stopped = items.filter(function (t) { return t.status === 'STOPPED'; });
@@ -127,7 +162,13 @@
               '</td><td>' + pct(f.return_pct) + '</td><td>' + pct(f.mfe_pct) + '</td><td>' + pct(f.mae_pct) +
               '</td><td>' + esc(f.final_decision || '—') + '</td></tr>';
           }).join(''));
-      } else if (xEl) { xEl.innerHTML = '<div class="vx-empty">Aucun suivi clôturé.</div>'; }
+      } else if (xEl) {
+        xEl.innerHTML = '<div class="vx2-state" data-kind="empty" role="status">'
+          + '<span class="vx2-state-ghost" aria-hidden="true"><i></i><i></i><i></i><i></i></span>'
+          + '<p class="vx2-state-title">Aucun suivi cl\u00f4tur\u00e9</p>'
+          + '<p class="vx2-state-cause">Aucune id\u00e9e suivie n\u2019a encore \u00e9t\u00e9 arr\u00eat\u00e9e. '
+          + 'Les archives se remplissent quand un suivi prend fin.</p></div>';
+      }
     }).catch(function (e) {
       if (aEl) aEl.innerHTML = '<div class="vx-error-banner">⚠ ' + esc(e.message) + '</div>';
     });

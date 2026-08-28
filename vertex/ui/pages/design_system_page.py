@@ -100,6 +100,119 @@ _DS_CSS = """
 """
 
 
+# ── Galerie Vertex 2.0 ──────────────────────────────────────────────────────
+# Les primitives de `vertex.ui.vx2` rendues avec leur VRAI balisage, pour que
+# la refonte ait une surface de contrôle unique (Definition of Done : « démontré
+# sur /design-system si réutilisable »). Aucune donnée réelle ici — les valeurs
+# sont des exemples de MISE EN FORME, jamais présentées comme des mesures.
+
+def _galerie_2_0() -> str:
+    from vertex.ui import vx2
+
+    trace = vx2.decision_trace([
+        {'label': 'Donnée', 'valeur': 'Indisponible', 'meta': 'source —',
+         'tone': 'missing'},
+        {'label': 'Moteur', 'valeur': 'Régime indéterminé', 'meta': 'v4',
+         'tone': 'caution'},
+        {'label': 'Décision', 'valeur': 'Risque neuf bloqué', 'tone': 'negative'},
+        {'label': 'Portefeuille', 'valeur': 'Aucun impact', 'tone': 'neutral'},
+    ], emplacement='analyse-hero')
+
+    etats = ''.join([
+        vx2.badge_etat(k) for k in
+        ('live', 'delayed', 'stale', 'demo', 'offline', 'partial', 'missing',
+         'error', 'option')])
+
+    metriques = vx2.metric_strip([
+        {'label': 'Positif réel', 'valeur': vx2.valeur('+2,4 %', tone='positive'),
+         'meta': 'moteur · exemple'},
+        {'label': 'Négatif réel', 'valeur': vx2.valeur('-1,1 %', tone='negative'),
+         'meta': 'moteur · exemple'},
+        {'label': 'Prudence', 'valeur': vx2.valeur('Différée', tone='caution'),
+         'meta': 'fraîcheur'},
+        {'label': 'Options', 'valeur': vx2.valeur('0,42', tone='option'),
+         'meta': 'delta · exemple'},
+        {'label': 'Donnée absente', 'valeur': vx2.valeur(None),
+         'meta': 'jamais remplacée par zéro'},
+    ])
+
+    tbl = vx2.table(
+        colonnes=[{'titre': 'Instrument', 'sticky': True},
+                  {'titre': 'Dernier', 'num': True, 'unite': 'USD'},
+                  {'titre': 'Variation', 'num': True, 'unite': '%'},
+                  {'titre': 'Fraîcheur'}],
+        lignes=[
+            ['<b>EXEMPLE.A</b>', vx2.valeur('182,40'),
+             vx2.valeur('+1,20', tone='positive'), vx2.badge_etat('delayed')],
+            ['<b>EXEMPLE.B</b>', vx2.valeur('64,05'),
+             vx2.valeur('-0,80', tone='negative'), vx2.badge_etat('stale')],
+            ['<b>EXEMPLE.C</b>', vx2.valeur(None), vx2.valeur(None),
+             vx2.badge_etat('missing')],
+        ],
+        libelle='Exemple de table financière du design system',
+        cartes_mobile=vx2.rowcard(
+            titre='EXEMPLE.A', aparte=vx2.badge_etat('delayed'),
+            cellules=[{'label': 'Dernier', 'valeur': vx2.valeur('182,40')},
+                      {'label': 'Variation',
+                       'valeur': vx2.valeur('+1,20', tone='positive')}]))
+
+    etats_vides = (
+        vx2.etat(titre='Aucune donnée de marché',
+                 cause='Les sources externes sont injoignables depuis cet '
+                       'environnement. Aucune valeur n\'est fabriquée pour '
+                       'combler l\'absence.',
+                 kind='empty',
+                 actions=vx2.bouton('Ouvrir Système', href='/system',
+                                    variante='ghost'))
+        + '<div style="height:12px"></div>'
+        + vx2.capacite_absente(
+            quoi='Attribution de performance par facteur',
+            pourquoi='Aucun moteur de Vertex ne produit cette décomposition. '
+                     'La refonte visuelle ne développe aucun calcul : le '
+                     'besoin est consigné plutôt que simulé.')
+        + '<div style="height:12px"></div>'
+        + vx2.bandeau('Couverture partielle : 3 des 8 dimensions sont '
+                      'alimentées.', kind='caution'))
+
+    controles = (
+        vx2.bouton('Ouvrir le dossier', variante='primary')
+        + ' ' + vx2.bouton('Ajouter au suivi')
+        + ' ' + vx2.bouton('Voir la méthode', variante='ghost')
+        + '<div style="height:12px"></div>'
+        + vx2.chip('Toutes', actif=True) + ' ' + vx2.chip('Actions')
+        + ' ' + vx2.chip('ETF') + ' ' + vx2.chip('Options')
+        + '<div style="height:12px"></div>'
+        + vx2.champ(ident='ds-demo-montant', label='Montant investi',
+                    controle='<input class="vx2-input" id="ds-demo-montant" '
+                             'inputmode="decimal" placeholder="10 000">',
+                    aide='Montant en devise du compte. Distinct d\'une '
+                         'quantité de titres.'))
+
+    return (
+        _sec2('Decision Trace — la signature',
+              'Donnée → Moteur → Décision → Portefeuille · cinq emplacements canoniques',
+              trace)
+        + _sec2('États de donnée', 'le mot porte le sens, la couleur ne fait que redoubler',
+                f'<div style="display:flex;gap:8px;flex-wrap:wrap">{etats}</div>', span='6')
+        + _sec2('Provenance', 'source · horodatage · qualité',
+                vx2.estampille(source='moteur Vertex', horodatage='—',
+                               qualite='exemple'), span='6')
+        + _sec2('MetricCard — famille unique', 'remplace vx-kpi / vx-metric / vx-stat / vx-stat-xl',
+                metriques)
+        + _sec2('Table financière', 'chiffres tabulaires · en-tête collant · colonne clé collante',
+                tbl)
+        + _sec2('États honnêtes', 'vide · capacité absente · couverture partielle',
+                etats_vides, span='6')
+        + _sec2('Contrôles', 'boutons, chips, champs', controles, span='6'))
+
+
+def _sec2(title, sub, body, span='12') -> str:
+    subh = (f'<span class="vx2-card-question">{sub}</span>' if sub else '')
+    return (f'<section class="vx2-surface vx-col-{span}" aria-label="{title}">'
+            f'<div class="vx2-card-head"><h3 class="vx2-card-title">{title}</h3>'
+            f'{subh}</div>{body}</section>')
+
+
 def _content() -> str:
     def sec(title, sub, body, span='12'):
         subh = f'<span class="vx-card-title" style="color:var(--vx-text-muted);font-weight:500">{sub}</span>' if sub else ''
@@ -246,6 +359,16 @@ def _content() -> str:
             + sec('Jauges · anneaux · barres', 'visualisations intégrées', gauge, span='6')
             + sec('États', 'chargement · vide · périmé', states)
             + sec('Rayons & élévation', 'formes & profondeur', radii)
+            + '<section class="vx-card vx-col-12"><div class="vx-card-header">'
+              '<span class="vx-card-title">Vertex 2.0 — Black Glass, Signal Light</span>'
+              '<span class="vx-card-title" style="color:var(--vx-text-muted);'
+              'font-weight:500">primitives canoniques de la refonte visuelle</span>'
+              '</div><div class="vx-card-body"><p class="vx2-question">'
+              'Ci-dessous, les primitives de <code>vertex.ui.vx2</code> rendues '
+              'avec leur vrai balisage. Les valeurs sont des exemples de mise en '
+              'forme : aucune n\u2019est une mesure et aucune n\u2019est pr\u00e9sent\u00e9e '
+              'comme r\u00e9elle.</p></div></section>'
+            + _galerie_2_0()
             + '</div>')
 
 
@@ -257,7 +380,10 @@ document.addEventListener('click', function(e){
   if(!el) return;
   var cls = el.getAttribute('data-ds-copy') || '';
   try{ if(navigator.clipboard) navigator.clipboard.writeText('.' + cls.split(' ').join('.')); }catch(_){}
-  if(window.vxToast) window.vxToast('Classe copiée : ' + cls);
+  /* Meme defaut qu'au simulateur : le nom global appele n'existe pas, la
+     garde le rendait silencieux. Le helper servi est `VX.toast`. */
+  if(window.VX && typeof VX.toast === 'function')
+    VX.toast('Classe copiée : ' + cls, 'success');
 });
 </script>"""
 

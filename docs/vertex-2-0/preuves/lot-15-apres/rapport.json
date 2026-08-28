@@ -1,0 +1,41 @@
+[
+  {
+    "route": "/portfolio?view=team",
+    "console": [],
+    "pageerrors": [],
+    "shots": {
+      "desktop": "docs/vertex-2-0/preuves/lot-15-apres/portfolio-view-team-desktop.png",
+      "mobile": "docs/vertex-2-0/preuves/lot-15-apres/portfolio-view-team-mobile.png"
+    },
+    "overflow": {
+      "desktop": 0,
+      "mobile": 0
+    }
+  },
+  {
+    "route": "/portfolio?view=allocation",
+    "console": [],
+    "pageerrors": [],
+    "shots": {
+      "desktop": "docs/vertex-2-0/preuves/lot-15-apres/portfolio-view-allocation-desktop.png",
+      "mobile": "docs/vertex-2-0/preuves/lot-15-apres/portfolio-view-allocation-mobile.png"
+    },
+    "overflow": {
+      "desktop": 0,
+      "mobile": 0
+    }
+  },
+  {
+    "route": "/portfolio?view=theses",
+    "console": [],
+    "pageerrors": [],
+    "shots": {
+      "desktop": "docs/vertex-2-0/preuves/lot-15-apres/portfolio-view-theses-desktop.png",
+      "mobile": "docs/vertex-2-0/preuves/lot-15-apres/portfolio-view-theses-mobile.png"
+    },
+    "overflow": {
+      "desktop": 0,
+      "mobile": 0
+    }
+  }
+]

@@ -103,10 +103,96 @@ def build_editorial(scan_state: dict) -> dict:
     }
 
 
+
+# ── Vertex 2.0 : le point focal d'Aujourd'hui ────────────────────────────────
+#
+# La page ouvrait sur douze tuiles d'indices de poids RIGOUREUSEMENT ÉGAL. Douze
+# choses également importantes, c'est zéro hiérarchie : rien ne dit par où
+# commencer. Le premier écran porte désormais une DecisionTrace —
+# Donnée → Moteur → Décision → Portefeuille — qui répond en cinq secondes à
+# « où en est-on, et qu'est-ce qui bloque ? ».
+#
+# Elle ne calcule RIEN. Chaque nœud lit `scan_state`, déjà produit par les
+# moteurs. Un nœud sans donnée porte `—` et le ton « missing » : il ne devient
+# ni zéro, ni vert, ni rassurant.
+
+_REGIME_FR = {'TREND': 'Tendance', 'NEUTRAL': 'Neutre', 'CHOP': 'Sans direction',
+              'DOWN': 'Baissier', 'UP': 'Haussier', 'UNKNOWN': 'Indéterminé'}
+
+
+def _trace_aujourdhui(scan_state: dict) -> str:
+    """DecisionTrace du jour, rendue côté serveur depuis `scan_state`."""
+    from vertex.ui import vx2
+
+    st = scan_state or {}
+    m = {**(st.get('market') or {}), **(st.get('market_ctx') or {})}
+    committee = st.get('committee') or {}
+    counts = committee.get('counts') or {}
+
+    # ── Donnée : d'où vient ce qu'on regarde, et de quand ────────────────
+    source = st.get('source')
+    updated = st.get('scan_ts_h') or st.get('updated')
+    if not source or source == 'aucune':
+        n_donnee = {'label': 'Donnée', 'valeur': 'Aucune source',
+                    'meta': 'aucun scan servi', 'tone': 'negative'}
+    else:
+        n_donnee = {'label': 'Donnée', 'valeur': str(source),
+                    'meta': f'mise à jour {updated}' if updated else 'horodatage —',
+                    'tone': 'neutral' if updated else 'caution'}
+
+    # ── Moteur : quel régime a-t-il lu ? ─────────────────────────────────
+    brut = m.get('spy_regime') or m.get('regime')
+    regime = _REGIME_FR.get(str(brut or '').upper(), brut)
+    roro = m.get('roro')
+    if not regime:
+        n_moteur = {'label': 'Moteur', 'valeur': 'Régime indéterminé',
+                    'meta': 'aucun signal de marché', 'tone': 'caution'}
+    else:
+        # Le ton suit ce que le moteur DIT, il ne le réinterprète pas.
+        tone = {'RISK-ON': 'positive', 'RISK-OFF': 'negative'}.get(
+            str(roro or '').upper(), 'neutral')
+        n_moteur = {'label': 'Moteur', 'valeur': str(regime),
+                    'meta': str(roro) if roro else 'orientation —', 'tone': tone}
+
+    # ── Décision : ce que le comité a réellement conclu ───────────────────
+    if counts:
+        achat = counts.get('ACHETER', 0)
+        eviter = counts.get('ÉVITER', counts.get('EVITER', 0))
+        n_decision = {
+            'label': 'Décision',
+            'valeur': (f"{achat} dossier{'s' if achat != 1 else ''} d'achat"
+                       if achat else 'Aucun dossier d\'achat'),
+            'meta': f"{counts.get('ATTENDRE', 0)} en surveillance · {eviter} à éviter",
+            'tone': 'positive' if achat else 'caution'}
+    else:
+        n_decision = {'label': 'Décision', 'valeur': 'Comité sans verdict',
+                      'meta': 'aucun dossier évalué', 'tone': 'missing'}
+
+    # ── Portefeuille : rempli côté client depuis les positions déclarées.
+    # Le serveur ne les connaît pas ici : il ne suppose donc rien.
+    # L'identifiant est porté par le nœud lui-même : `loadPortfolio` le complète
+    # sans que rien n'ait à deviner de quel nœud il s'agit.
+    n_portefeuille = {'label': 'Portefeuille', 'valeur': '—',
+                      'meta': 'lecture des positions…', 'tone': 'missing',
+                      'ident': 'vx-trace-portefeuille'}
+
+    return vx2.decision_trace(
+        [n_donnee, n_moteur, n_decision, n_portefeuille],
+        emplacement='aujourdhui-hero')
+
+
+def _hero_aujourdhui(scan_state: dict) -> str:
+    from vertex.ui import vx2
+    return vx2.surface(
+        _trace_aujourdhui(scan_state),
+        titre='Où en est-on maintenant ?',
+        question='De la donnée au portefeuille, en une lecture.',
+        hero=True)
+
 _CONTENT = """
 <div class="vx-page-header">
-  <div><h1>Dashboard</h1>
-  <div class="vx-sub">Que dois-je comprendre et surveiller aujourd’hui ?</div></div>
+  <div><p class="vx2-eyebrow">Piloter</p><h1>Aujourd’hui</h1>
+  <div class="vx-sub">Que dois-je comprendre, surveiller et revoir maintenant ?</div></div>
   <div class="vx-actions">
     <button class="vx-btn vx-btn-sm vx-btn-ghost" id="vx-context-btn" aria-pressed="false" title="Afficher/replier le contexte marché (Marchés · Pouls · Secteurs · Actus · Mouvements)">+ Contexte marché</button>
     <button class="vx-btn vx-btn-sm vx-btn-ghost" id="vx-customize-btn">Personnaliser</button>
@@ -118,6 +204,7 @@ _CONTENT = """
   </div>
 </div>
 <div id="vx-demo-banner"></div>
+%%HERO%%
 
 <!-- Ancres de section : navigation fluide dans le Dashboard -->
 <style>
@@ -980,6 +1067,7 @@ function loadMainChart(scan){
   const mm=(data,label,color,dash)=>{const dd=cut(data);
     return (dd&&dd.some(x=>x!=null))?[{label,data:dd,borderColor:color,borderWidth:1.2,borderDash:dash,pointRadius:0,tension:.2,fill:false}]:[];};
   VXCharts.card('vx-market-chart',{
+    unit:'points d’indice',
     title:(hasSpy?'S&P 500 (SPY) — tendance & moyennes'
           :(hasIdx?'S&P 500 — tendance & moyennes'
                   :'Marché — série de référence · '+key+' (S&P 500 absent du scan)')),
@@ -1037,7 +1125,7 @@ function loadCompare(scan){
   const finPct=(x)=>{const b=x.spark[x.spark.length-len];const v=x.spark[x.spark.length-1];
     return (b&&v!=null)?(v/b-1)*100:null;};
   VXCharts.card('vx-market-compare',{
-    title:'Qui mène ?',timeframe:len+' points',
+    title:'Qui mène ?',unit:'%',timeframe:len+' points',
     question:'Large caps, tech ou small caps ?',
     conclusion:(function(){
       const ranked=sets.map(x=>({n:x.n,f:finPct(x)})).filter(x=>x.f!=null).sort((a,b)=>b.f-a.f);
@@ -1071,7 +1159,7 @@ function loadYield(scan){
   const spread=(t10&&t3&&t10.value!=null&&t3.value!=null)?(t10.value-t3.value):null;
   const cc=VXCharts.colors;
   VXCharts.card('vx-yield',{
-    title:'Courbe des taux US',timeframe:'clôture',
+    title:'Courbe des taux US',unit:'%',timeframe:'clôture',
     question:'Normale ou inversée ?',
     conclusion:spread!=null?('Spread 10a-3m '+(spread>=0?'+':'')+spread.toFixed(2)+' pt — '+(spread<0?'INVERSÉE (signal de récession)':'pentue / normale')):'—',
     height:H_STD,source:(scan&&scan.source)||'scan',timestamp:scan&&(scan.scan_ts||scan.updated),mode:modeOf(scan),
@@ -1152,7 +1240,7 @@ function loadSectorsBlock(scan){
   }
   /* Rotation en barres (score moyen par secteur, clic = opportunités du secteur) */
   VXCharts.sectorCard('vx-rotation',{
-    title:'Rotation sectorielle',question:'Où va le capital en ce moment ?',
+    title:'Rotation sectorielle',unit:'%',question:'Où va le capital en ce moment ?',
     conclusion:'Leader : '+(sectors[0].sector||'n/d'),
     labels:sectors.slice(0,9).map(s=>s.sector),
     values:sectors.slice(0,9).map(s=>s.avg_score??s.score??0),height:H_HERO,
@@ -1163,7 +1251,7 @@ function loadSectorsBlock(scan){
       confirm:'Leadership stable sur plusieurs séances.',invalidate:'Rotation défensive brutale.'}});
   /* Heatmap : variation, score, RVOL, titres — lignes cliquables */
   VXCharts.heatmapCard('vx-sectors-heat',{
-    title:'Performance et momentum par secteur',
+    title:'Performance et momentum par secteur',unit:'%',
     question:'Quels secteurs attirent le capital aujourd’hui ?',
     conclusion:'Vert = flux entrant, rouge = flux sortant (variation moyenne du jour).',
     columns:['Var. moyenne %','Score','Vol. relatif','Titres'],
@@ -1181,7 +1269,10 @@ function loadSectorsBlock(scan){
     const cc3=VXCharts.colors;
     const col=(ch)=>ch==null?cc3.neutral:(ch>=0.3?cc3.positive:ch<=-0.3?cc3.negative:cc3.warning);
     const w=(treeEl.clientWidth)||900;
-    VXCharts.treemap(treeEl,{width:w,height:300,
+    VXCharts.treemap(treeEl,{width:w,height:300,unit:'titres par secteur',
+      question:'Où le capital scanné se concentre-t-il, et quels secteurs montent ?',
+      source:(scan&&scan.source)||'scan',timestamp:scan&&(scan.scan_ts||scan.updated),mode:mode,
+      limits:'aire = nombre de titres scannés · couleur = variation moyenne',
       items:sectors.map(x=>({label:x.sector||'n/d',value:(x.n||x.avg_score||1),
         sub:(x.avg_change!=null?((x.avg_change>=0?'+':'')+Number(x.avg_change).toFixed(1)+'%'):''),
         color:col(x.avg_change)})),
@@ -1312,7 +1403,7 @@ function loadPulseExtra(scan){
   const tEl=$('vx-breadth-trend');
   if(tEl){
     if(H.length>2&&window.VXCharts&&VXCharts.card&&VXCharts.multiLine){
-      VXCharts.card('vx-breadth-trend',{title:'Tendance de participation',
+      VXCharts.card('vx-breadth-trend',{title:'Tendance de participation',unit:'% de titres',
         question:'La participation s\u2019améliore-t-elle ou se dégrade-t-elle ?',
         conclusion:(H[H.length-1].a50>=H[0].a50?'En amélioration':'En dégradation')+' sur '+H.length+' séances',
         height:H_STD,source:(scan&&scan.source)||'scan',timestamp:scan&&(scan.scan_ts||scan.updated),mode,
@@ -1350,7 +1441,10 @@ function loadPulseExtra(scan){
   const wEl=$('vx-health-wf');
   if(wEl){
     if(window.VXCharts&&VXCharts.waterfall&&inter.health!=null&&inter.pct_a50!=null){
-      VXCharts.waterfall('vx-health-wf',{ariaLabel:'Composition de la santé du marché',
+      VXCharts.waterfall('vx-health-wf',{ariaLabel:'Composition de la santé du marché',unit:'points de santé (0-100)',
+        question:'Qu’est-ce qui compose la santé du marché aujourd’hui ?',
+        source:(scan&&scan.source)||'scan',timestamp:scan&&(scan.scan_ts||scan.updated),mode:mode,
+        limits:'contributions pondérées des internes du marché',
         items:[
           {label:'> moy. 50 j',value:0.30*(inter.pct_a50||0)},
           {label:'> moy. 200 j',value:0.25*(inter.pct_a200||0)},
@@ -1474,7 +1568,7 @@ async function loadOpportunities(){
       if(o.dte!=null)facts.push(`<b>${o.dte}</b> j`);
       if(o.breakeven!=null)facts.push(`point mort <b>${VX.fmt.nd(o.breakeven)}</b>`);
       return `
-      <button class="vx-mover" onclick="location.href='/options/${esc(o.symbol)}'" aria-label="Dossier options ${esc(o.symbol)}" style="border-left:3px solid var(--vx-violet)">
+      <button class="vx-mover" onclick="location.href='/options/dossier/${esc(o.symbol)}'" aria-label="Dossier options ${esc(o.symbol)}" style="border-left:3px solid var(--vx-violet)">
         <div class="vx-flex" style="justify-content:space-between;gap:6px;align-items:center"><span class="mv-sym">${esc(o.symbol)}</span>
           <span class="vx-badge" style="color:${isPut?'var(--vx-negative)':'var(--vx-positive)'}">${esc((o.dir||'CALL').toUpperCase())}</span>
           <span class="vx-badge" style="color:var(--vx-violet)">${esc(o.label||'')}</span>${moneyTag}</div>
@@ -1548,10 +1642,20 @@ function loadFunnel(scan){
 /* ── ALERTES ── */
 async function loadAlerts(){
   try{
-    const [mine,cmd]=await Promise.all([
+    /*  `fired` etait LU et defini NULLE PART : `fired.fields` levait un
+        ReferenceError a chaque chargement, que la page ait des donnees ou non.
+        Le `catch` en dessous l'avalait et affichait « Alertes indisponibles » —
+        un etat d'apparence honnete qui masquait un bug. La carte Alertes de la
+        page d'accueil n'a donc JAMAIS fonctionne.
+
+        Le serveur sert pourtant exactement la forme attendue :
+        `/api/alerts/status` -> {fired:{…}}. Le fetch qui devait l'alimenter
+        n'avait simplement jamais ete ecrit. */
+    const [mine,cmd,fired]=await Promise.all([
       Promise.resolve((E()&&E().alerts())||[]),
-      VX.fetch('/api/command',{ttl:30000}).catch(()=>({}))]);
-    const firedMap=fired.fired||{};
+      VX.fetch('/api/command',{ttl:30000}).catch(()=>({})),
+      VX.fetch('/api/alerts/status',{ttl:30000}).catch(()=>({}))]);
+    const firedMap=(fired&&fired.fired)||{};
     const srv=((cmd&&cmd.alerts)||[]).map(a=>{
       const icon=a[0]||'⚠', danger=(icon==='🔴');
       return `<div class="vx-flex" style="padding:6px 0;border-bottom:1px dashed var(--vx-border-soft)">
@@ -1568,12 +1672,37 @@ async function loadAlerts(){
       </div>`;}).join('');
     ($('vx-alerts')||{}).innerHTML=((srv+rows)||VX.states.empty('Aucune alerte active.'))
       +'<div class="vx-mt2"><button class="vx-btn vx-btn-sm vx-btn-ghost" onclick="VXEntities.openAddModal(\'\',\'alert\')">+ Créer une alerte</button></div>';
-  }catch(e){($('vx-alerts')||{}).innerHTML=VX.states.error('Alertes indisponibles');}
+  }catch(e){
+    /*  Nommer la cause : un « indisponible » nu se lit comme une absence de
+        donnee alors que c'etait un defaut de code. Un an durant, personne
+        n'avait de quoi faire la difference. */
+    ($('vx-alerts')||{}).innerHTML=VX.states.error('Alertes indisponibles — '+(e&&e.message?e.message:'cause inconnue'));}
 }
 
 /* ── Portefeuille + calendrier ── */
+/* Dernier noeud de la DecisionTrace : le serveur ne connait pas les positions
+   declarees, il ne suppose donc rien. Le client les lit et complete le noeud.
+   Aucune valeur n'est calculee ici : on compte des positions deja enregistrees. */
+function majTracePortefeuille(pos){
+  const n=document.getElementById('vx-trace-portefeuille');
+  if(!n)return;
+  const val=n.querySelector('.vx2-trace-value');
+  const meta=n.querySelector('.vx2-trace-meta');
+  if(!pos||!pos.length){
+    n.setAttribute('data-tone','missing');
+    if(val)val.textContent='Aucune position';
+    if(meta)meta.textContent='rien \u00e0 exposer';
+    return;
+  }
+  const opts=pos.filter(t=>t.type&&t.type!=='STK').length;
+  n.setAttribute('data-tone','neutral');
+  if(val)val.textContent=pos.length+(pos.length>1?' positions':' position');
+  if(meta)meta.textContent=opts?(opts+(opts>1?' options':' option')+' incluses'):'actions seulement';
+}
+
 async function loadPortfolio(){
   const pos=(E()&&E().positions())||[];
+  majTracePortefeuille(pos);
   if(!pos.length){
     ($('vx-portfolio')||{}).innerHTML=VX.states.emptyDesk('Aucune position déclarée.',
       '<button class="vx-btn vx-btn-sm" onclick="VXEntities.openAddModal(\'\',\'position\')">Déclarer une position</button>');
@@ -1665,7 +1794,7 @@ async function loadSession(){
         `<button class="vx-chip" data-calr="${id}" aria-pressed="${id===CAL_RANGE}">${l}</button>`).join('')+'</span>';
     const filtCtl=[['all','Tous'],['macro','Macro'],['earnings','Résultats'],['mine','Mes actions']].map(([id,l])=>
         `<button class="vx-chip" data-calf="${id}" aria-pressed="${id===CAL_FILTER}">${l}</button>`).join('');
-    VXCharts.timelineCard('vx-calendar',{title:'Calendrier & catalyseurs',
+    VXCharts.timelineCard('vx-calendar',{title:'Calendrier & catalyseurs',unit:'événements',
       question:'Quels catalyseurs arrivent '+(CAL_RANGE==='day'?'aujourd’hui':'cette semaine')+' ?',
       controlsHtml:rangeCtl+filtCtl,
       items,source:'calendrier moteur',timestamp:cal.ts||Date.now(),mode:'delayed',
@@ -1705,7 +1834,7 @@ async function loadEssential(scan){
   const roro=String(sum.roro||'').toUpperCase();
   const aWord=roro==='RISK-ON'?'APPÉTIT':roro==='RISK-OFF'?'PRUDENCE':(roro==='NEUTRE'?'NEUTRE':'—');
   const aTone=roro==='RISK-ON'?'pos':roro==='RISK-OFF'?'neg':'';
-  const aSub=roro==='RISK-ON'?'l’argent va vers les actifs risqués':roro==='RISK-OFF'?'les investisseurs privilégient la sécurité':(roro==='NEUTRE'?'ni appétit ni aversion marqués':'lecture indisponible');
+  const aSub=roro==='RISK-ON'?'l’argent va vers les actifs risqués':roro==='RISK-OFF'?'les investisseurs privilégient la sécurité':(roro==='NEUTRE'?'ni appétit ni aversion marqués':'appétit pour le risque non fourni');
   const vix=sum.vix;
   const vWord=vix==null?'—':(vix<15?'CALME':vix<25?'NORMALE':'NERVEUSE');
   const vTone=vix==null?'':(vix<15?'pos':vix<25?'':'neg');
@@ -1728,10 +1857,16 @@ async function loadEssential(scan){
   const ups=rows.filter(r=>r.change>0).sort((a,b)=>b.change-a.change);
   const downs=rows.filter(r=>r.change<0).sort((a,b)=>a.change-b.change);
   const mv=(r,pos)=>r?`<button class="vx-chip" data-open-analysis="${esc(r.symbol)}" style="color:${pos?'var(--vx-positive)':'var(--vx-negative)'}"><b>${esc(r.symbol)}</b>&nbsp;${VX.fmt.pct(r.change,1)}</button>`:'';
-  const lines=((ed&&ed.lines)||[]).slice(0,3);
+  /*  « A retenir » rendait `ed.lines.slice(0,3)` — exactement les memes
+      premieres lignes que « Essentiels de la journee » dans la carte Brief,
+      juste a cote. Deux cartes, un seul texte : l'utilisateur lisait la meme
+      phrase deux fois sur un ecran. Cette carte garde ce qu'elle SEULE porte,
+      cinq mesures lisibles d'un coup d'oeil, et renvoie au proprietaire de la
+      prose.  */
+  const nLignes=((ed&&ed.lines)||[]).length;
   el.innerHTML=
-    `<div class="vx-statrow">${tile('Tendance',tWord,tSub,tTone,spxSpark)}${tile('Ambiance',aWord,aSub,aTone)}${tile('Volatilité',vWord,vSub,vTone,vixSpark)}${tile('Participation',bWord,bSub,bTone)}${tile('Secteur fort',bs?esc(bs):'—',bs?'meneur du jour':'lecture indisponible',bs?'brand':'')}</div>`
-    +(lines.length?`<div class="vx-mt3"><span class="vx-metric-k" style="display:block;margin-bottom:6px">À retenir</span>${lines.map(l=>`<div class="vx-flex" style="gap:8px;padding:4px 0;align-items:flex-start"><span style="flex:0 0 6px;height:6px;border-radius:99px;background:var(--vx-brand);margin-top:6px"></span><span class="vx-dim" style="font-size:13px">${esc(l)}</span></div>`).join('')}</div>`:'')
+    `<div class="vx-statrow">${tile('Tendance',tWord,tSub,tTone,spxSpark)}${tile('Ambiance',aWord,aSub,aTone)}${tile('Volatilité',vWord,vSub,vTone,vixSpark)}${tile('Participation',bWord,bSub,bTone)}${tile('Secteur fort',bs?esc(bs):'—',bs?'meneur du jour':'aucun secteur classé par le scan',bs?'brand':'')}</div>`
+    +(nLignes?`<p class="vx2-stamp vx-mt3">La lecture rédigée — ${nLignes} ligne${nLignes>1?'s':''} — vit dans <b>Brief du marché</b>, ci-dessous.</p>`:'')
     /* « Mouvements du jour » retiré — doublon avec la section Top 10 (épuré : seulement l'essentiel) */
     +sessionLine(scan);
   const meta=$('vx-ess-meta');
@@ -1869,6 +2004,10 @@ VX.bus.on('vx:data-refreshed',()=>{loadBrief();loadRegime();loadRegimeDrivers();
 def render(scan_state: dict | None = None) -> str:
     content = _CONTENT.replace('%%LOADING%%',
                                '<div class="vx-skeleton" style="height:60px"></div>')
-    return render_shell(title='Dashboard', active='briefing', space_label='Dashboard',
+    content = content.replace('%%HERO%%', _hero_aujourdhui(scan_state or {}))
+    # `page_label` reste « Dashboard » : le routeur client et plusieurs bancs s'y
+    # adossent. L'espace, lui, s'appelle Aujourd'hui — c'est ce que l'utilisateur lit.
+    return render_shell(title='Aujourd’hui', active='briefing',
+                        space_label='Aujourd’hui',
                         sub_label='Marchés US', content=content, page_js=_JS,
                         page_label='Dashboard')

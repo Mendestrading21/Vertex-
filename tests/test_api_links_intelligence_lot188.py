@@ -53,20 +53,32 @@ def test_chaque_endpoint_fetche_existe_dans_l_app():
 
 # ── intelligence_page : les invariants jamais gardés ─────────────────────────
 
-def test_les_6_vues_rendent_200_avec_le_bon_onglet_actif():
+def test_les_vues_rendent_200_avec_le_bon_onglet_actif():
+    """VERTEX 2.0 — deux choses ont changé, l'exigence est la même.
+
+    L'ordre suit `navigation-and-pages.md` §11, et deux sous-vues que le
+    contrat réclamait ont été ajoutées : Brief quotidien et Décisions.
+
+    Les onglets sont désormais de VRAIS liens dans un `<nav>`, pas un
+    `role="tablist"` : l'attribut correct pour « la page courante » est alors
+    `aria-current="page"`. Ce qui est gardé n'a pas bougé — chaque vue répond
+    200 et un SEUL onglet est marqué actif, le bon.
+    """
     c = terminal.app.test_client()
-    assert [v for v, _ in VIEWS] == ['analyst', 'committee', 'strategy',
-                                     'impacts', 'research', 'memory']
+    assert [v for v, _ in VIEWS] == ['analyst', 'brief', 'committee', 'decisions',
+                                     'research', 'memory', 'strategy', 'impacts']
     for vid, label in VIEWS:
-        html = c.get('/intelligence?view=%s' % vid).get_data(as_text=True)
-        actif = re.findall(r'aria-selected="true"[^>]*>([^<]+)', html)
+        r = c.get('/intelligence?view=%s' % vid)
+        assert r.status_code == 200, vid
+        html = r.get_data(as_text=True)
+        actif = re.findall(r'aria-current="page"[^>]*>([^<]+)', html)
         assert actif == [label], vid                # un seul onglet actif, le bon
 
 
 def test_vue_inconnue_retombe_sur_la_vue_par_defaut():
     c = terminal.app.test_client()
     html = c.get('/intelligence?view=zzz').get_data(as_text=True)
-    actif = re.findall(r'aria-selected="true"[^>]*>([^<]+)', html)
+    actif = re.findall(r'aria-current="page"[^>]*>([^<]+)', html)
     assert actif == [dict(VIEWS)[_DEFAULT_VIEW]]    # jamais une page cassée
 
 

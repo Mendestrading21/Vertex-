@@ -1,0 +1,62 @@
+{
+  "/": {
+    "orphelines": [],
+    "non_fermees": []
+  },
+  "/calendar": {
+    "orphelines": [],
+    "non_fermees": []
+  },
+  "/markets": {
+    "orphelines": [],
+    "non_fermees": []
+  },
+  "/opportunities": {
+    "orphelines": [],
+    "non_fermees": []
+  },
+  "/analysis": {
+    "orphelines": [],
+    "non_fermees": []
+  },
+  "/analysis/AAPL": {
+    "orphelines": [],
+    "non_fermees": []
+  },
+  "/options": {
+    "orphelines": [],
+    "non_fermees": []
+  },
+  "/options/dossier/AAPL": {
+    "orphelines": [],
+    "non_fermees": []
+  },
+  "/simulator": {
+    "orphelines": [],
+    "non_fermees": []
+  },
+  "/portfolio": {
+    "orphelines": [],
+    "non_fermees": []
+  },
+  "/follow-up": {
+    "orphelines": [],
+    "non_fermees": []
+  },
+  "/performance": {
+    "orphelines": [],
+    "non_fermees": []
+  },
+  "/intelligence": {
+    "orphelines": [],
+    "non_fermees": []
+  },
+  "/system": {
+    "orphelines": [],
+    "non_fermees": []
+  },
+  "/design-system": {
+    "orphelines": [],
+    "non_fermees": []
+  }
+}

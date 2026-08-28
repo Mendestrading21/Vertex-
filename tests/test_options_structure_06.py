@@ -35,7 +35,9 @@ def test_options_new_views_registered():
     src = _read(PAGE)
     assert "('structure', 'Structure')" in src
     assert "('leaps', 'LEAPS')" in src
-    assert "('positions', 'Mes positions')" in src
+    #  VERTEX 2.0 : libellé canonique de `navigation-and-pages.md` §6.
+    #  La clé d'URL ne change pas.
+    assert "('positions', 'Positions')" in src
     # défaut = structure (Carte-Verdict d'abord)
     assert "def render(view: str = 'structure')" in src
 
@@ -55,7 +57,8 @@ def test_options_pages_render_200(client):
         assert r.status_code == 200, v
     # défaut sans view = 200 + h1 Options
     r = client.get('/options')
-    assert r.status_code == 200 and '<h1>Options</h1>' in r.get_data(as_text=True)
+    assert (r.status_code == 200
+            and '<h1 class="vx2-title">Options</h1>' in r.get_data(as_text=True))
 
 
 # ── Carte-Verdict (LOT A) ────────────────────────────────────────────────

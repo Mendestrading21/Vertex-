@@ -11,16 +11,60 @@ Invariant produit affirmé partout : READONLY — aucun ordre possible
 from __future__ import annotations
 
 from vertex.app.config import AUTH_ON
-from vertex.ui.shell import render_shell
+from vertex.ui import vx2
+from vertex.ui.shell import json_for_script, render_shell
 
+# Les huit sous-vues de `navigation-and-pages.md` §12. Trois portaient deja
+# leur contenu sous un autre nom — `automations` EST la vue des jobs,
+# `settings` EST celle des preferences — et deux manquaient vraiment.
+# Les cles d'URL historiques restent valables (voir `_ALIAS`).
 VIEWS = (
     ('connections', 'Connexions'),
     ('data', 'Données'),
-    ('automations', 'Automatisations'),
-    ('settings', 'Réglages'),
-    ('archive', 'Archive'),
+    ('jobs', 'Jobs'),
+    ('alerts', 'Alertes techniques'),
+    ('preferences', 'Préférences'),
+    ('security', 'Sécurité'),
+    ('archives', 'Archives'),
 )
+# Le Design System est une PAGE a lui, deja routee. Le contrat le range parmi
+# les sous-vues de Systeme : il y figure comme onglet, et pointe vers elle —
+# la dupliquer serait pire que l'y renvoyer.
+_ONGLET_EXTERNE = ('/design-system', 'Design System')
+
+# Une adresse partagee hier ne doit pas tomber ailleurs sans un mot.
+_ALIAS = {'automations': 'jobs', 'settings': 'preferences', 'archive': 'archives'}
 _DEFAULT_VIEW = 'connections'
+
+
+# Ce que le contrat range dans « Alertes techniques » et que Vertex ne produit
+# pas. On l'avoue ici plutôt que d'inventer un moteur dans un template.
+_ABSENCES_ALERTES = (
+    '<div class="vx2-strip">'
+    + vx2.capacite_absente(
+        quoi='Historique des alertes',
+        pourquoi='Le serveur expose des compteurs cumulés depuis le démarrage, '
+                 'pas un journal daté : Vertex ne conserve pas la suite des '
+                 'alertes passées.')
+    + vx2.capacite_absente(
+        quoi='Seuils et règles d’escalade',
+        pourquoi='Aucun moteur ne définit de seuil technique ni de politique '
+                 'd’escalade ; les compteurs sont descriptifs.')
+    + '</div>')
+
+# L'engagement produit, écrit noir sur blanc là où on vient le vérifier.
+_JAMAIS = (
+    '<ul class="vx2-jamais">'
+    '<li>Vertex ne transmet <b>aucun ordre</b>, ni en réel ni en simulé.</li>'
+    '<li>Le lien courtier est ouvert en <b>lecture seule</b> ; aucun chemin '
+    'd’exécution n’existe dans le code servi.</li>'
+    '<li>Aucune valeur de clé ni de secret ne transite par l’interface — '
+    'seul leur <b>statut</b> est affiché.</li>'
+    '<li>Aucune donnée financière n’est inventée : une donnée absente reste '
+    'absente.</li>'
+    '<li>Les préférences d’affichage restent <b>locales à ce navigateur</b> ; '
+    'elles ne touchent ni les moteurs ni le desk.</li>'
+    '</ul>')
 
 
 def _lock_card(auth_on: bool) -> str:
@@ -80,25 +124,39 @@ def _lock_card(auth_on: bool) -> str:
 
 
 def _tabs(active: str) -> str:
-    tabs = ''.join(
-        f'<a class="vx-tab" role="tab" href="?view={vid}" '
-        f'aria-selected="{"true" if vid == active else "false"}">{label}</a>'
-        for vid, label in VIEWS)
-    # Référence visuelle (§50) — lien vers la page Design System, à droite.
-    ds = ('<a class="vx-tab" href="/design-system" style="margin-left:auto;color:var(--vx-copper-light)" '
-          'title="Référence visuelle BLACK GLASS">Design System</a>')
-    return f'<nav class="vx-tabs" role="tablist" aria-label="Sous-vues Système">{tabs}{ds}</nav>'
+    """Les sept sous-vues, plus le Design System qui pointe vers sa page.
+
+    L'onglet Design System portait `color:var(--vx-copper-light)` en style
+    en ligne — un jeton de la palette Obsidian Copper abandonnée, qui ne se
+    résout plus. Il prend l'apparence commune : rien ne justifie qu'un onglet
+    se distingue par une couleur que la palette ne connaît pas.
+    """
+    items = [{'label': label, 'href': f'?view={vid}', 'actif': vid == active}
+             for vid, label in VIEWS]
+    href, label = _ONGLET_EXTERNE
+    items.append({'label': label, 'href': href, 'actif': False,
+                  'attrs': ' title="Référence visuelle — page dédiée"'})
+    return vx2.tabs(items, libelle='Sous-vues du Système')
 
 
 def _header(active: str) -> str:
-    return f'''<div class="vx-page-header vx-page-lead">
-  <div class="vx-page-lead__main"><h1>Système</h1>
-  <div class="vx-sub">Le système est-il en bonne santé et branché sur du réel ?</div></div>
-  <span class="vx-readonly-shield vx-page-lead__meta" id="vx-readonly-invariant">
-    <b>READONLY</b> &middot; analyse uniquement <span id="vx-readonly-confirm" class="vx-meta"></span>
-  </span>
-</div>
-{_tabs(active)}'''
+    return (
+        vx2.page_header(
+            surtitre='Utilitaire', titre='Système',
+            question='Vertex est-il sain, alimenté et correctement configuré ?')
+        + vx2.context_bar([
+            {'label': 'Invariant', 'contenu':
+                '<span class="vx-readonly-shield" id="vx-readonly-invariant">'
+                '<b>READONLY</b> · analyse uniquement '
+                '<span id="vx-readonly-confirm" class="vx-meta"></span></span>'},
+            {'label': 'Portée', 'contenu':
+                '<span class="vx2-stamp">Santé, sources, tâches et préférences '
+                '— <b>aucune donnée de marché</b></span>'},
+            {'label': 'Santé globale', 'contenu':
+                '<span id="vx-sys-ctx-sante">'
+                + vx2.badge_etat('missing', texte='Lecture…') + '</span>'},
+        ])
+        + _tabs(active))
 
 
 _VIEW_CONTENT = {
@@ -200,7 +258,7 @@ _VIEW_CONTENT = {
   </details>
 </div>''',
 
-    'automations': '''
+    'jobs': '''
 <div class="vx-page-lead vx-mt4"><div><h2>Automatisations</h2><div class="vx-sub">Ce qui tourne, ce qui d&eacute;marre et ce qui reste &agrave; configurer.</div></div></div>
 <div class="vx-hero-grid vx-mt4">
   <section class="vx-card vx-col-7" aria-label="Jobs de fond">
@@ -218,7 +276,7 @@ _VIEW_CONTENT = {
   <div class="vx-disclosure__body"><div id="vx-auto-config">%%LOADING%%</div></div>
 </details>
 ''',
-    'settings': '''
+    'preferences': '''
 <div class="vx-page-lead vx-mt4"><div><h2>R&eacute;glages essentiels</h2><div class="vx-sub">Pr&eacute;f&eacute;rences locales de cet appareil.</div></div></div>
 <div class="vx-section-stack vx-mt4">
   <section class="vx-card" aria-label="Affichage">
@@ -271,7 +329,49 @@ _VIEW_CONTENT = {
   </details>
 </div>''',
 
-    'archive': '''
+    'alerts': '''
+<div class="vx2-section"><div class="vx2-section-head">
+  <h2 class="vx2-section-title">Alertes techniques</h2>
+  <span class="vx2-section-note">ce qui a &eacute;chou&eacute;, ce qui a &eacute;t&eacute; &eacute;touff&eacute;, et pourquoi</span></div></div>
+<div class="vx-grid vx-mt3">
+  <div class="vx-col-12" id="vx-alerts-kpis"><div class="vx-skeleton" style="height:80px"></div></div>
+</div>
+<div class="vx-hero-grid vx-mt4">
+  <section class="vx-card" aria-label="Pannes en cours">
+    <div class="vx-card-header"><span class="vx-card-title">Pannes en cours</span>
+      <span class="vx-chart-question">Qu&#8217;est-ce qui emp&ecirc;che Vertex de d&eacute;cider&nbsp;?</span></div>
+    <div id="vx-alerts-pannes">%%LOADING%%</div>
+  </section>
+  <aside class="vx-insight-rail" style="grid-template-columns:minmax(0,1fr)">
+    <section class="vx-card" aria-label="Alertes de march&eacute;">
+      <div class="vx-card-header"><span class="vx-card-title">Alertes de march&eacute;</span></div>
+      <div id="vx-alerts-marche">%%LOADING%%</div>
+    </section>
+  </aside>
+</div>
+<div class="vx-mt4" id="vx-alerts-absences"></div>''',
+
+    'security': '''
+<div class="vx2-section"><div class="vx2-section-head">
+  <h2 class="vx2-section-title">S&eacute;curit&eacute;</h2>
+  <span class="vx2-section-note">l&#8217;invariant, l&#8217;exposition r&eacute;seau et les secrets &mdash; jamais leur valeur</span></div></div>
+<div class="vx-grid vx-mt3">
+  <div class="vx-col-12" id="vx-sec-invariant"><div class="vx-skeleton" style="height:90px"></div></div>
+</div>
+<div class="vx-mt4">%%LOCKCARD%%</div>
+<section class="vx-card vx-mt4" aria-label="Secrets et cl&eacute;s">
+  <div class="vx-card-header"><span class="vx-card-title">Secrets et cl&eacute;s</span>
+    <span class="vx-chart-question">Lesquels sont pos&eacute;s, et que se passe-t-il sans eux&nbsp;?</span></div>
+  <div class="vx2-banner" data-kind="prudence" role="status"><span>Seul le <b>statut</b> est
+    affich&eacute;. Aucune valeur, aucun fragment de cl&eacute; ne transite jamais par cette page.</span></div>
+  <div id="vx-sec-config" class="vx-mt3">%%LOADING%%</div>
+</section>
+<section class="vx-card vx-mt4" aria-label="Ce que Vertex ne fait pas">
+  <div class="vx-card-header"><span class="vx-card-title">Ce que Vertex ne fait pas</span></div>
+  <div id="vx-sec-jamais"></div>
+</section>''',
+
+    'archives': '''
 <div class="vx-grid vx-mt4">
   <section class="vx-card vx-col-12" aria-label="Coffre — archive">
     <div class="vx-card-header"><span class="vx-card-title">Coffre (archive interne)</span>
@@ -390,7 +490,8 @@ async function loadBrain(){
     +'<div class="vx-card-footer">'+VX.updateIndicator((snap&&snap.as_of)?Date.parse(snap.as_of):Date.now(),'/api/ai/enrichment',status==='OK'?'delayed':'fallback')
     +' · rendements/prix 100% diff&eacute;r&eacute;s &mdash; jamais un ordre</div>';
   if(window.VXCharts&&VXCharts.barCard&&movers.length){
-    VXCharts.barCard('vx-brain-movers',{title:'Plus forts mouvements du jour',
+    VXCharts.barCard('vx-brain-movers',{title:'Plus forts mouvements du jour',unit:'%',
+      question:'Quels titres bougent le plus aujourd&rsquo;hui&nbsp;?',source:'SCAN',
       labels:movers,values:movers.map(s=>quotes[s].change_pct),
       colors:movers.map(s=>quotes[s].change_pct>=0?VXCharts.colors.positive:VXCharts.colors.negative),
       horizontal:true,yFmt:(v)=>v+'%',source:'via Claude · web',
@@ -508,7 +609,12 @@ async function loadConnections(){
       if(_hero)_hero.innerHTML='<div class="vx-flex vx-wrap" style="justify-content:space-between;align-items:flex-start;gap:10px">'
         +'<div style="max-width:640px"><div class="vx-flex" style="gap:8px;align-items:center;margin-bottom:4px">'
         +'<span class="vx-eyebrow">Confiance données</span>'
-        +'<span class="vx-freshness" data-state="'+(_tone==='pos'?'live':_tone==='warn'?'delayed':'stale')+'">'+esc(_headline)+'</span>'
+        /*  La pastille rendait le MEME texte que le titre juste en dessous :
+            « Systeme partiellement degrade » se lisait deux fois, l'un sous
+            l'autre. Elle porte desormais l'ETAT — ce que le titre ne dit pas —
+            et le titre garde le verdict. Chacun apporte quelque chose.  */
+        +'<span class="vx-freshness" data-state="'+(_tone==='pos'?'live':_tone==='warn'?'delayed':'stale')+'">'
+        +({pos:'toutes vertes',warn:'à revoir',muted:'lecture en cours'}[_tone]||'état inconnu')+'</span>'
         +(_demo?'<span class="vx-badge-demo">DÉMO</span>':'')+(_ro?'<span class="vx-badge vx-pos">READONLY</span>':'')+'</div>'
         +'<h2 style="margin:0 0 6px;font-size:21px" class="'+({pos:'vx-pos',warn:'vx-warn',muted:'vx-muted'}[_tone])+'">'+esc(_headline)+'</h2>'
         +'<p class="vx-dim" style="margin:0;font-size:13.5px;line-height:1.6">'+_line.map(esc).join(' · ')+'.</p></div>'
@@ -783,7 +889,7 @@ async function loadData(){
         STALE:colors.warning,EXPIRED:colors.negative,MISSING:colors.muted,
         DEMO:colors.violet};
       VXCharts.donutCard('vx-data-quality-chart',{
-        title:'Qualit&eacute; des donn&eacute;es ('+dq.total+' titres)',
+        title:'Qualit&eacute; des donn&eacute;es ('+dq.total+' titres)',unit:'titres',
         question:'Les donn&eacute;es sont-elles utilisables pour d&eacute;cider ?',
         conclusion:'Dominante : '+dominant+' ('+byQ[dominant]+' / '+dq.total+') · source '+(dq.scan_source||'n/d'),
         labels,values,colors:labels.map(k=>colByQ[k]||colors.muted),height:200,
@@ -1262,10 +1368,147 @@ async function loadAutomations(){
   }catch(e){($('vx-auto-config')||{}).innerHTML=VX.states.error('Validation indisponible');}
 }
 
+
+/* ══ ALERTES TECHNIQUES ══════════════════════════════════════════════
+   Rien n'est calcule ici. Tout vient de `/api/system/diagnostics`, de
+   `/healthz` et de `/api/system/jobs` — trois endpoints deja servis.
+   Une alerte qu'aucun moteur ne produit est DECLAREE absente, pas simulee. */
+async function loadAlerts(){
+  const k=(l,v,sub,ton)=>'<div class="vx2-metric"><span class="vx2-metric-label">'+l+'</span>'
+    +'<span class="vx2-metric-value" data-tone="'+(ton||'')+'">'+v+'</span>'
+    +(sub?'<span class="vx2-metric-meta">'+sub+'</span>':'')+'</div>';
+  let dg=null,hz=null,jb=null;
+  try{dg=await VX.fetch('/api/system/diagnostics',{ttl:30000});}catch(e){}
+  try{hz=await VX.fetch('/healthz',{ttl:30000});}catch(e){}
+  try{jb=await VX.fetch('/api/system/jobs',{ttl:30000});}catch(e){}
+  const al=(dg&&dg.alerts)||{},me=al.metrics||{};
+  const jobs=(jb&&jb.jobs)||[];
+  const enEchec=jobs.filter(j=>j.last_error);
+  const nonImpl=jobs.filter(j=>j.implemente===false);
+  ($('vx-alerts-kpis')||{}).innerHTML='<div class="vx2-strip">'
+    +k('Alertes actives',al.active!=null?String(al.active):'—',
+       'alertes de marché armées',al.active>0?'caution':'')
+    +k('Emises',me.emitted!=null?String(me.emitted):'—','depuis le démarrage')
+    +k('Tâches en échec',String(enEchec.length),
+       enEchec.length?'dernière erreur consignée':'aucune erreur de tâche',
+       enEchec.length?'negative':'positive')
+    /*  Un job marque `implemente:false` n'a AUCUN executant : dire qu'il n'a
+        « jamais ete execute » l'accuse d'un silence qui n'est pas le sien. Le
+        registre distingue trois situations — non implemente, en attente, en
+        panne — et l'ecran doit les distinguer aussi.  */
+    +k('Tâches sans exécutant',String(nonImpl.length),
+       'déclarées au registre, aucun code derrière',nonImpl.length?'missing':'')
+    +'</div>';
+
+  /* Pannes : une panne est un FAIT rapporte par le serveur, pas une deduction. */
+  const pannes=[];
+  if(hz&&hz.scan_error)pannes.push(['Scan',String(hz.scan_error),'negative']);
+  const lk=(dg&&dg.ibkr_link)||{};
+  if(lk.raison)pannes.push(['Lien IBKR',String(lk.raison),lk.mode?'caution':'missing']);
+  const sh=(hz&&hz.source_health)||{};
+  Object.keys(sh).forEach(function(nom){
+    const v=String(sh[nom]||'');
+    /*  `UNKNOWN`, `STALE`… sont des codes moteur : ils ne s'affichent jamais
+        bruts. Un etat inconnu n'est pas non plus une panne — il empeche de
+        decider, ce que la carte dit, mais le mot doit etre juste.  */
+    const LIB={UNKNOWN:'état non rapporté par le serveur',
+               STALE:'données périmées',DEGRADED:'source dégradée',
+               PARTIAL:'couverture partielle',OFFLINE:'source hors ligne'};
+    if(v&&v!=='OK'&&v!=='LIVE')pannes.push(['Source '+nom,LIB[v]||v,v==='UNKNOWN'?'missing':'caution']);
+  });
+  enEchec.forEach(j=>pannes.push(['Tache '+j.name,String(j.last_error),'negative']));
+  ($('vx-alerts-pannes')||{}).innerHTML=pannes.length
+    ? '<div class="vx2-theses">'+pannes.map(function(p){
+        return '<article class="vx2-these" data-etat="'+(p[2]==='negative'?'cassee':p[2]==='caution'?'fragilisee':'')+'">'
+          +'<div class="vx2-these-head"><strong>'+esc(p[0])+'</strong>'
+          +'<span class="vx2-badge" data-state="'+(p[2]==='negative'?'error':p[2]==='caution'?'delayed':'missing')+'">'
+          +(p[2]==='negative'?'en échec':p[2]==='caution'?'dégradé':'inconnu')+'</span></div>'
+          +'<p class="vx2-these-texte">'+esc(p[1])+'</p></article>';}).join('')+'</div>'
+    : '<div class="vx2-state" data-kind="empty" role="status">'
+      +'<span class="vx2-state-ghost" aria-hidden="true"><i></i><i></i><i></i><i></i></span>'
+      +'<p class="vx2-state-title">Aucune panne rapportée</p>'
+      +'<p class="vx2-state-cause">Ni le scan, ni le lien courtier, ni les taches de fond '
+      +'ne signalent d\'erreur. L\'absence de panne n\'est pas une garantie de fraîcheur : '
+      +'la voir sur <a href="/system?view=data">Donnees</a>.</p></div>';
+
+  /* Alertes de marche : elles vivent dans le desk, pas dans un moteur. */
+  const E=window.VXEntities;
+  const ual=(E&&E.alerts&&E.alerts())||[];
+  ($('vx-alerts-marche')||{}).innerHTML=ual.length
+    ? '<div class="vx-kv"><span class="k">Alertes déclarées</span><span class="v vx-mono">'+ual.length+'</span></div>'
+      +'<div class="vx2-stamp vx-mt2">Elles vivent dans le bureau local. '
+      +'Les compteurs ci-dessus decrivent le moteur d\'alertes du serveur.</div>'
+    : '<div class="vx2-state" data-kind="empty" role="status">'
+      +'<p class="vx2-state-title">Aucune alerte de marché déclarée</p>'
+      +'<p class="vx2-state-cause">Elles se posent depuis une analyse ou une position.</p></div>';
+
+  ($('vx-alerts-absences')||{}).innerHTML=%%ABSENCES_ALERTES%%;
+}
+
+/* ══ SECURITE ════════════════════════════════════════════════════════
+   L'invariant est confirme PAR LE SERVEUR, jamais par un drapeau de page. */
+/* La barre de contexte porte la sante globale. Elle etait declaree et remplie
+   par personne : « Lecture… » pour toujours. */
+async function peindreSante(){
+  const el=$('vx-sys-ctx-sante');if(!el)return;
+  const dire=(t,e)=>{el.innerHTML='<span class="vx2-badge" data-state="'+e+'">'+t+'</span>';};
+  let hz=null;try{hz=await VX.fetch('/healthz',{ttl:30000});}catch(e){}
+  if(!hz){dire('Santé non lue','missing');return;}
+  const mot={ok:['Opérationnel','live'],degraded:['Partiellement dégradé','delayed'],
+             error:['En erreur','error']}[String(hz.status||'').toLowerCase()];
+  if(!mot){dire('État non rapporté','missing');return;}
+  const n=(hz.engines||[]).length;
+  dire(mot[0]+(n?' · '+n+' moteur'+(n>1?'s':''):''),mot[1]);
+}
+
+async function loadSecurity(){
+  let hz=null,cf=null;
+  try{hz=await VX.fetch('/healthz',{ttl:30000});}catch(e){}
+  try{cf=await VX.fetch('/api/system/config',{ttl:60000});}catch(e){}
+  const ro=hz&&hz.constitution&&hz.constitution.read_only===true;
+  ($('vx-sec-invariant')||{}).innerHTML='<div class="vx2-strip">'
+    +'<div class="vx2-metric"><span class="vx2-metric-label">Lecture seule</span>'
+    +'<span class="vx2-metric-value" data-tone="'+(ro?'positive':'negative')+'">'
+    +(ro?'CONFIRMÉE':'NON CONFIRMÉE')+'</span>'
+    +'<span class="vx2-metric-meta">'+(ro?'par le serveur, pas par la page'
+      :'le serveur ne l\'a pas confirmee — ne pas s\'y fier')+'</span></div>'
+    +'<div class="vx2-metric"><span class="vx2-metric-label">Profil stratégique</span>'
+    +'<span class="vx2-metric-value">'+esc(((hz&&hz.constitution)||{}).strategy_id||'—')+'</span>'
+    +'<span class="vx2-metric-meta">version '+esc(String(((hz&&hz.constitution)||{}).version||'—'))+'</span></div>'
+    +'<div class="vx2-metric"><span class="vx2-metric-label">Courtier</span>'
+    +'<span class="vx2-metric-value" data-tone="'+(hz&&hz.ibkr_live?'positive':'missing')+'">'
+    +(hz&&hz.ibkr_live?'connecté':(hz&&hz.ibkr_enabled?'activé, hors ligne':'désactivé'))+'</span>'
+    +'<span class="vx2-metric-meta">toujours en lecture seule</span></div>'
+    +'</div>';
+
+  /* Secrets : le STATUT seul. Jamais une valeur, jamais un fragment. */
+  const el=$('vx-sec-config');
+  if(el){
+    const clefs=cf?Object.keys(cf).filter(c=>c.charAt(0)!=='_').sort():[];
+    el.innerHTML=clefs.length
+      ? '<div class="vx-table-wrap"><table class="vx2-table"><thead><tr>'
+        +'<th scope="col">Clé</th><th scope="col">Statut</th><th scope="col">Requise</th>'
+        +'<th scope="col">Conséquence si absente</th></tr></thead><tbody>'
+        +clefs.map(function(c){const v=cf[c]||{};
+          const pose=String(v.status||'').toUpperCase()!=='MISSING';
+          return '<tr><td><code>'+esc(c)+'</code></td>'
+            +'<td><span class="vx2-badge" data-state="'+(pose?'live':'missing')+'">'
+            +(pose?'posée':'absente')+'</span></td>'
+            +'<td>'+(v.required?'oui':'non')+'</td>'
+            +'<td>'+esc(v.consequence||'—')+'</td></tr>';}).join('')
+        +'</tbody></table></div>'
+      : '<div class="vx2-state" data-kind="missing" role="status">'
+        +'<p class="vx2-state-title">Inventaire des clés indisponible</p>'
+        +'<p class="vx2-state-cause">`/api/system/config` n\'a pas répondu.</p></div>';
+  }
+  ($('vx-sec-jamais')||{}).innerHTML=%%JAMAIS%%;
+}
+
 /* ══ Orchestration ══════════════════════════════════════════════════ */
 document.querySelectorAll('details.vx-disclosure').forEach(d=>{
   d.addEventListener('toggle',()=>{if(d.open)window.dispatchEvent(new Event('resize'));});
 });
+peindreSante();
 if(VIEW==='connections'){
   loadConnections();
   document.getElementById('vx-brain-refresh')?.addEventListener('click',refreshBrain);
@@ -1276,12 +1519,17 @@ if(VIEW==='connections'){
   $('vx-data-refresh').addEventListener('click',doRefresh);
   VX.refresh.register(loadData,60000,'data');
   VX.refresh.register(loadContinuity,15000,'continuity');
-}else if(VIEW==='automations'){
+}else if(VIEW==='jobs'){
   loadAutomations();
-  VX.refresh.register(loadAutomations,60000,'automations');
-}else if(VIEW==='settings'){
+  VX.refresh.register(loadAutomations,60000,'jobs');
+}else if(VIEW==='alerts'){
+  loadAlerts();
+  VX.refresh.register(loadAlerts,60000,'alertes');
+}else if(VIEW==='preferences'){
   initSettings();
-}else if(VIEW==='archive'){
+}else if(VIEW==='security'){
+  loadSecurity();
+}else if(VIEW==='archives'){
   initArchive();
 }
 VX.context.restoreIfReturning();
@@ -1291,14 +1539,17 @@ VX.context.restoreIfReturning();
 
 
 def render(view: str = 'connections') -> str:
+    view = _ALIAS.get(view, view)
     view = view if view in dict(VIEWS) else _DEFAULT_VIEW
     body = _VIEW_CONTENT[view].replace(
         '%%LOADING%%', '<div class="vx-skeleton" style="height:60px"></div>').replace(
         '%%LOCKCARD%%', _lock_card(AUTH_ON))
     content = (_header(view)
                + f'<div id="vx-system" data-view="{view}">' + body + '</div>')
+    page_js = (_JS.replace('%%ABSENCES_ALERTES%%', json_for_script(_ABSENCES_ALERTES))
+               .replace('%%JAMAIS%%', json_for_script(_JAMAIS)))
     sub = dict(VIEWS)[view]
     return render_shell(title='Système', active='system',
                         space_label='Système', sub_label=sub,
-                        content=content, page_js=_JS,
+                        content=content, page_js=page_js,
                         page_label='Système — ' + sub)

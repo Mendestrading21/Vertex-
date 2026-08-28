@@ -1,0 +1,41 @@
+[
+  {
+    "route": "/performance",
+    "console": [],
+    "pageerrors": [],
+    "shots": {
+      "desktop": "docs/vertex-2-0/preuves/lot-16-apres/performance-desktop.png",
+      "mobile": "docs/vertex-2-0/preuves/lot-16-apres/performance-mobile.png"
+    },
+    "overflow": {
+      "desktop": 0,
+      "mobile": 0
+    }
+  },
+  {
+    "route": "/performance?view=journal",
+    "console": [],
+    "pageerrors": [],
+    "shots": {
+      "desktop": "docs/vertex-2-0/preuves/lot-16-apres/performance-view-journal-desktop.png",
+      "mobile": "docs/vertex-2-0/preuves/lot-16-apres/performance-view-journal-mobile.png"
+    },
+    "overflow": {
+      "desktop": 0,
+      "mobile": 0
+    }
+  },
+  {
+    "route": "/performance?view=track-record",
+    "console": [],
+    "pageerrors": [],
+    "shots": {
+      "desktop": "docs/vertex-2-0/preuves/lot-16-apres/performance-view-track-record-desktop.png",
+      "mobile": "docs/vertex-2-0/preuves/lot-16-apres/performance-view-track-record-mobile.png"
+    },
+    "overflow": {
+      "desktop": 0,
+      "mobile": 0
+    }
+  }
+]
