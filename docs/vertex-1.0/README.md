@@ -1,6 +1,8 @@
-# Vertex 1.0 — corpus canonique
+# Vertex 1.0 — archive du runtime
 
-Ce dossier est la source documentaire active unique.
+> Historique depuis le cutover Claude Vertex 2.0. La seule doctrine active est
+> `.claude/skills/vertex-2-0/SKILL.md`. Ce dossier décrit le runtime 1.0 et sert
+> de preuve de migration ; il ne peut pas contredire le skill maître.
 
 | Document | Rôle |
 |---|---|

@@ -1,6 +1,7 @@
 # Données, intégrations et santé
 
-Contrat de présentation uniquement : cette référence décrit ce que l'UI doit révéler. Elle n'autorise aucun changement aux sources, connexions, caches, jobs, modèles ou contrats existants.
+Contrat de source transversal. Toute modification de connexion, cache, job ou
+modèle exige un lot, des tests hostiles, une migration et un rollback.
 
 ## Sources
 
@@ -8,7 +9,11 @@ Inventorier les sources déjà présentes avant tout ajout : IBKR, TradingView, 
 
 ## IBKR
 
-Lecture seule stricte. Séparer comptes, positions, quotes, chaînes et P&L. Afficher source du mark et état de marché. Réconcilier sans écraser une donnée utilisateur silencieusement.
+Données de marché uniquement. Autoriser contrats, quotes, barres, chaînes,
+volume/OI, IV, Greeks et états de marché. Interdire comptes, positions, cash,
+NAV, P&L, ordres, exécutions et réconciliation broker. Le gateway ne rend
+jamais l'objet IB brut. La source du mark, son âge et son entitlement restent
+visibles ; une panne de cote ne modifie aucune position déclarée.
 
 ## TradingView
 
@@ -24,7 +29,10 @@ Sanitization obligatoire avant rendu ; dédupliquer ; conserver source, heure et
 
 ## Centre Système
 
-Connexions, santé, freshness par domaine, dernier scan, jobs, caches, erreurs, mode, READONLY, sync, stockage, backups et préférences. Aucun secret dans le navigateur, les logs, captures ou exports.
+Connexions par capacité, santé, freshness par domaine, dernier scan, jobs,
+caches, erreurs, mode, READONLY, sync, stockage, backups et préférences. Le
+statut provient d'une preuve runtime. Aucun secret, identifiant de compte ou
+patrimoine dans navigateur, logs, captures, télémétrie ou exports techniques.
 
 ## Observabilité
 

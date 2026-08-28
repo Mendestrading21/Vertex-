@@ -2,6 +2,13 @@
 
 ## Shell global
 
+La cible à douze pages est une décision produit Vertex 2.0, pas l'état actuel.
+Lire `runtime-page-manifest.md` avant toute modification : il distingue les
+pages servies, redirigées, absentes et internes. Le runtime actuel reste servi
+pendant la migration. Un `NavigationManifest` unique doit produire
+sidebar desktop, barre mobile, tiroir Plus, palette, breadcrumbs, aliases,
+sous-vues et tests ; aucun tableau Python/JS recopié ne reste propriétaire.
+
 ### Sidebar
 
 **Piloter**
@@ -31,7 +38,10 @@
 
 - Système — `/system`
 
-Design System reste `/design-system`, accessible en développement seulement. Les anciennes routes Journal et Tracking redirigent vers leurs sous-vues canoniques.
+Design System reste `/design-system`, accessible en développement seulement.
+Les anciennes routes Journal et Tracking ne redirigent vers leurs sous-vues
+canoniques qu'après migration et preuve de parité ; elles servent encore du
+contenu dans la baseline.
 
 ### Topbar
 
@@ -76,7 +86,11 @@ Sous-vues : Radar, Actions, ETF, Options, Anomalies, Catalyseurs. Premier écran
 
 **Question :** ce dossier mérite-t-il du capital potentiel et sous quelles conditions ?
 
-Index : recherche, récents, favoris et comparateur. Dossier : Décision, Graphique, Thèse, Scénarios, Fondamentaux, Technique, Sentiment/News, Options, Portefeuille, Historique. Premier écran : identité/quote, verdict/gates, `DecisionTrace`, graphique dominant et rail thèse/risque/invalidation.
+Index : recherche, récents, favoris et comparateur. Dossier : Orientation,
+Graphique, Thèse, Scénarios, Fondamentaux, Technique, Sentiment/News, Options,
+Portefeuille déclaré, Historique. Premier écran : identité/quote,
+`AdviceResult`/gates, `DecisionTrace`, graphique dominant et rail
+thèse/risque/invalidation. Aucun second moteur n'est affiché comme autorité.
 
 ## 6. Options
 
@@ -96,7 +110,11 @@ Lire `position-simulator.md`. Une fonction absente reste un état manquant docum
 
 **Question :** que possède le portefeuille, pourquoi et avec quels risques ?
 
-Sous-vues : Synthèse, Positions, Allocation, Options, Risque, Thèses. Premier écran : valeur/cash/exposition, fraîcheur IBKR, risque principal, concentration, contributeurs et revues urgentes. Tables positions et options séparées ; drawer par position.
+Sous-vues : Synthèse, Enveloppes, Positions, Allocation, Options, Risque,
+Thèses. Premier écran : patrimoine déclaré, valorisation estimée, couverture des
+cotes, risque principal, concentration, contributeurs et revues urgentes.
+Tables positions et options séparées ; saisie/édition manuelle et drawer par
+position. IBKR n'apparaît que comme source possible des marks de marché.
 
 ## 9. Suivi
 
@@ -114,7 +132,10 @@ Sous-vues : Synthèse, Journal, Trades réels, Signaux théoriques, Tracking hyp
 
 **Question :** comment Vertex comprend-il la situation, où sont les contradictions et que manque-t-il ?
 
-Sous-vues : Assistant, Brief quotidien, Comité, Décisions, Recherche, Mémoire. Premier écran : conversation contextuelle + contexte actif + sources/packet. Les détails montrent moteurs, désaccords, gates, versions et audit trail.
+Sous-vues : Assistant, Brief quotidien, Orientation, Recherche, Mémoire.
+Premier écran : conversation contextuelle + contexte actif + sources/packet.
+Les détails montrent preuves, contradictions, gates, versions et audit trail ;
+un comité éventuel reste une preuve interne, jamais une décision concurrente.
 
 ## 12. Système
 

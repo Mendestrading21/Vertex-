@@ -1,6 +1,8 @@
 # Centre Opportunités
 
-Contrat de présentation uniquement : afficher et composer les capacités existantes ; ne pas créer les données, moteurs, scores, calculs, états ou persistance décrits.
+Contrat de domaine et de présentation. Le pipeline peut converger dans son lot
+dédié ; l'UI consomme ses preuves et le `AdviceResult` canonique sans score
+parallèle.
 
 ## Mission
 

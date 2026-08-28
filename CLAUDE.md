@@ -1,9 +1,10 @@
 # CLAUDE.md — Vertex
 
-## Routage des skills
+## Autorité unique
 
-Pour toute refonte visuelle, navigation, page, sous-vue, composant, widget,
-tableau, graphique, typographie, responsive, accessibilité ou microcopy :
+Pour tout travail sur Vertex — audit, architecture, données, IA, marché,
+options, portefeuille, automatisations, performance, sécurité, interface,
+tests ou publication — utiliser exclusivement :
 
 ```text
 /vertex-2-0
@@ -11,82 +12,119 @@ tableau, graphique, typographie, responsive, accessibilité ou microcopy :
 
 Skill maître : `.claude/skills/vertex-2-0/SKILL.md`.
 
-`vertex-design-2-0` est un alias historique de compatibilité vers
-`vertex-2-0`. Il ne définit plus une doctrine indépendante.
+Il n'existe aucun second skill actif, aucun alias de compatibilité et aucune
+doctrine de page indépendante. Les anciens documents et noms de branches sont
+des preuves historiques, jamais des instructions concurrentes.
 
-Pour une demande non visuelle concernant moteurs, données, stratégie,
-sécurité, intégrations ou release, utiliser exclusivement :
+## Produit
+
+Vertex est un centre personnel d'intelligence de marché et d'aide à la
+décision. Il collecte, vérifie, analyse, note, compare et explique. L'humain
+reste le seul décideur et agit hors de Vertex.
+
+Boucle canonique :
 
 ```text
-/vertex-1-0
+OBSERVER → COMPRENDRE → DÉTECTER → ÉVALUER → ORIENTER
+→ SURVEILLER → MESURER → APPRENDRE
 ```
 
-## Verrou de la refonte visuelle Vertex 2.0
-
-La refonte est strictement une migration de présentation. Elle peut
-réorganiser navigation, templates, mise en page, CSS, tokens, composants,
-tables, drawers, formulaires, états, rendu des graphiques et texte visible en
-français.
-
-Elle ne modifie jamais :
-
-- moteur, formule, score, gate, scénario, stratégie ou verdict ;
-- modèle métier, store, persistance, desk sync ou donnée utilisateur ;
-- provider, API, endpoint financier, worker, job ou intégration ;
-- connexion IBKR, TradingView, WMB, news ou Claude ;
-- fonction existante, comportement financier ou invariant lecture seule.
-
-Une nouvelle vue est autorisée seulement si elle compose les routes,
-fonctions, endpoints et données existants. Si une capacité manque, afficher un
-état honnête et la consigner hors périmètre ; ne pas développer le backend.
+Les moteurs déterministes produisent les calculs, scores, scénarios, gates et
+orientations analytiques. Claude explique le packet existant, nomme les
+contradictions et les inconnues ; il ne devient jamais le calculateur ou le
+propriétaire du verdict.
 
 ## Invariants absolus
 
-1. Vertex reste `READONLY=True` et `ANALYSIS_ONLY=True`.
-2. IBKR reste `readonly=True`.
-3. Aucun ordre, ticket broker, bouton achat/vente ou automatisation
-   d'exécution.
-4. Aucune donnée financière inventée ; absence = `—`, `n.d.` ou état explicite.
-5. L'IA explique ; elle ne calcule ni ne change le verdict canonique.
-6. Toute donnée conserve source, timestamp, fraîcheur et état.
-7. Toute modification visible du shell/statique respecte les contrats de
-   service worker et les tests existants.
+1. `READONLY=True` et `ANALYSIS_ONLY=True` restent vrais.
+2. Aucun ordre live ou paper, transfert, exercice, ticket transmissible,
+   bouton achat/vente ou automatisation d'exécution.
+3. **IBKR est une source de données de marché uniquement.** Vertex ne lit,
+   n'importe, n'affiche ni ne rapproche jamais identifiant de compte, solde,
+   cash, NAV, positions, portefeuille, P&L, ordres, exécutions ou historique
+   IBKR.
+4. Les comptes et positions Vertex proviennent exclusivement des déclarations
+   volontaires de l'utilisateur. Une source externe ne les écrase jamais.
+5. Aucune donnée financière inventée. Absence, zéro, estimation, retard,
+   fallback, démo et erreur restent distincts.
+6. Toute valeur critique conserve source, timestamp, fraîcheur, qualité,
+   unité et limites.
+7. L'IA n'invente ni prix, prime, Greek, probabilité, score ou source ; elle ne
+   contourne jamais un hard gate.
+8. Une capacité non implémentée est nommée `NON_IMPLÉMENTÉE`, jamais présentée
+   comme une automatisation en attente.
+9. Aucun nettoyage par nom ou ancienneté : supprimer seulement après preuve
+   d'absence d'import, route, test, consommateur, donnée ou rollback utile.
+10. Une PR reste brouillon et n'est jamais fusionnée automatiquement.
 
-## Direction visuelle canonique
+## Architecture de travail
 
-**Vertex Black Glass — Signal Light** : obsidienne et graphite, verre noir,
-structure argent/blanc cassé, bordures presque invisibles, Geist + Geist Mono,
-densité professionnelle et mouvement très mesuré.
+Le runtime au SHA de baseline ne respecte pas encore tous ces invariants : il
+contient notamment des lectures de compte/positions IBKR, plusieurs autorités
+de décision, deux collisions de routes et des jobs déclaratifs. Claude doit les
+traiter comme P0 du programme, jamais prétendre qu'ils sont déjà corrigés parce
+que ce contrat les interdit.
 
-- Vert = positif ; rouge = négatif/risque ; ambre = prudence/donnée dégradée.
-- Violet = options ; cyan = focus technique/crosshair exceptionnel.
-- Une couleur lumineuse dominante maximum par carte.
-- Aucun glow permanent, arc-en-ciel, template SaaS ou esthétique gaming.
-- Signature unique : **Decision Trace**, ligne argentée reliant
-  Données → Moteur → Décision → Portefeuille sur cinq emplacements définis.
+- Entrée locale : `python -m vertex`.
+- WSGI : `vertex.runtime:app`.
+- `terminal.py` reste un adaptateur historique à réduire par strangler pattern ;
+  ne pas y ajouter une nouvelle capacité sauf correctif bloquant avant
+  extraction.
+- Une page sert des snapshots bornés ; elle ne lance pas une collecte réseau
+  lente dans la requête utilisateur.
+- Un propriétaire canonique par capacité, route, métrique, composant et job.
+- Une PR cohérente par lot : ne pas mélanger frontière IBKR, migration de
+  données, moteur financier, refonte globale et nettoyage sans rapport.
 
-La navigation finale compte douze pages cohérentes : Aujourd'hui, Marchés,
-Opportunités, Analyse, Options, Calendrier, Simulateur, Portefeuille, Suivi,
-Performance, Vertex IA et Système. Le Simulateur est une composition visuelle
-multi-actifs des moteurs existants, jamais un moteur de prévision ou d'ordre.
+## Identité visuelle
 
-## Sources de vérité
+Direction unique : **Vertex Black Glass — Signal Light**.
 
-Pour le chantier visuel :
+- obsidienne et graphite, verre noir, argent et blanc cassé ;
+- Geist pour l'interface, Geist Mono pour tickers, prix et mesures ;
+- vert = positif, rouge = risque/négatif, ambre = prudence ou dégradation ;
+- violet = options, cyan = focus technique exceptionnel ;
+- une lumière dominante maximum par carte, deux par écran hors rouge/vert ;
+- bordures presque invisibles, aucun glow permanent, aucun arc-en-ciel,
+  aucun template SaaS ou esthétique casino ;
+- tout le texte visible en français clair.
 
-1. ce fichier ;
-2. `.claude/skills/vertex-2-0/SKILL.md` et ses références ;
-3. `.interface-design/system.md` ;
-4. tokens, composants partagés et thème graphique du dépôt ;
-5. styles de page seulement pour une exception justifiée.
+## Navigation cible
 
-Les doctrines Copper, Signal Green, Signal OS, Neon Glass, V3 et les anciens
-`vertex-redesign-*` sont historiques. Ne pas empiler un nouveau thème.
+- **Piloter** : Aujourd'hui, Calendrier.
+- **Explorer** : Marchés, Opportunités, Analyse, Options, Simulateur.
+- **Gérer** : Portefeuille, Suivi, Performance.
+- **Intelligence** : Vertex IA.
+- **Utilitaire** : Système.
 
-## Livraison
+Une page cible n'est activée que lorsque ses routes, données, états et tests
+existent réellement. Sinon Claude conserve l'accès existant et documente le
+manque sans fabriquer de façade.
 
-- partir du dernier `main` ;
-- un lot visuel cohérent et réversible par PR brouillon ;
-- captures avant/après aux mêmes dimensions ;
-- tests, console, clavier, responsive et états dégradés vérifiés ;
-- aucune fusion automatique.
+## Workflow obligatoire
+
+1. Partir du dernier `main`, relever SHA, état Git, PR ouvertes, CI et dette
+   déjà prise en charge.
+2. Lire le code, les tests et les consommateurs avant le document historique.
+3. Établir une baseline reproductible avant de modifier.
+4. Choisir le premier lot canonique non terminé dans le skill maître.
+5. Écrire le contrat du lot : problème, propriétaires, données, risques,
+   tests, preuves visuelles et rollback.
+6. Implémenter le changement minimal cohérent.
+7. Vérifier compile, tests ciblés, suite complète, sécurité, navigateur,
+   états dégradés, performance et données.
+8. Pour chaque page modifiée, produire captures avant/après en 1600, 1024 et
+   390 px, avec console et `/api/client-log` contrôlés.
+9. Ouvrir ou mettre à jour une PR brouillon ; attendre la décision humaine.
+
+## Validation minimale
+
+```bash
+python -m compileall -q terminal.py vertex
+python -m pytest -q
+python -m pytest tests/test_no_orders.py -q
+```
+
+Ajouter les contrôles du domaine modifié et les 150 contrôles finaux du skill.
+Une suite verte ne remplace ni la preuve navigateur, ni la preuve des données,
+ni l'acceptation humaine.

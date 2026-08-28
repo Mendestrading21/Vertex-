@@ -1,6 +1,8 @@
 # Centre Analyse
 
-Contrat de présentation uniquement : afficher et composer les capacités existantes ; ne pas créer les données, moteurs, scores, calculs, états ou persistance décrits.
+Contrat de domaine et de présentation. Les lots fonctionnels peuvent faire
+converger les moteurs selon `ai-decision-contract.md` ; la page consomme
+uniquement leurs sorties canoniques et ne calcule rien.
 
 ## Dossier canonique
 

@@ -1,119 +1,167 @@
 ---
 name: vertex-2-0
-description: Auditer et refondre intégralement l'interface visible de Vertex comme centre de trading IA clair, cohérent et premium, page par page, en réutilisant toutes les capacités existantes sans modifier moteurs, calculs, données, API, intégrations ou règles financières.
+description: Auditer, consolider, développer, refondre, tester et publier Vertex comme centre personnel d'intelligence de marché, avec portefeuille manuel, IBKR limité aux données de marché, IA explicative, automatisations honnêtes et interface Black Glass. Utiliser pour tout travail sur le dépôt Vertex ; ne jamais exécuter d'ordre ni accéder aux données de compte du courtier.
 ---
 
-# Vertex 2.0 — Centre de trading IA
+# Vertex 2.0 — Skill maître
 
 ## Mission
 
-Transformer l'interface existante en un centre de trading IA complet, clair et simple à utiliser. La refonte relie visuellement toutes les capacités déjà présentes — marchés, opportunités, analyse, options, calendrier, portefeuille, risque, performance, suivi et IA — sans modifier leur fonctionnement interne.
+Faire converger le dépôt existant vers une seule plateforme mesurable,
+explicable, rapide, sûre et visuellement cohérente. Réutiliser les capacités
+saines, supprimer les doublons prouvés et avancer par lots réversibles. Ne pas
+réécrire le produit en big bang.
 
-Ce skill est l'orchestrateur unique et la doctrine finale de la refonte visuelle. Pour ce chantier, lancer uniquement `/vertex-2-0`. Il lit l'autorité financière existante pour connaître les invariants, mais ne modifie jamais ses propriétaires :
+Ce dossier est l'unique doctrine active. Les documents historiques servent de
+preuves, pas d'instructions. En cas de conflit : sécurité et vie privée → vérité
+des données → contrats financiers → continuité utilisateur → performance →
+accessibilité → design.
 
-- `.claude/skills/vertex-1-0/SKILL.md` pour les données, moteurs, stratégies, règles financières, sécurité et release ;
-- `.claude/skills/vertex-design-2-0/SKILL.md` est seulement un alias historique vers ce skill.
+## Résultat produit
 
-Les anciennes instructions de design sont des preuves historiques. Les références internes de ce skill définissent désormais directement l'architecture des pages, l'UX, les composants, les graphiques et l'identité visuelle.
+Vertex :
 
-En cas de conflit : sécurité et lecture seule → vérité financière → contrats existants → clarté d'usage → design.
+- collecte et normalise des données de marché sourcées ;
+- exécute ses moteurs déterministes ;
+- construit un packet de décision versionné ;
+- détecte opportunités, risques, contradictions et données manquantes ;
+- produit une orientation analytique et des scénarios ;
+- utilise Claude pour expliquer, comparer et questionner le packet ;
+- surveille les objets suivis et les positions déclarées ;
+- n'exécute jamais l'action financière finale.
 
-## Périmètre verrouillé : interface uniquement
+Lire d'abord [product-contract.md](references/product-contract.md),
+[repository-audit.md](references/repository-audit.md),
+[runtime-page-manifest.md](references/runtime-page-manifest.md) et
+[platform-architecture.md](references/platform-architecture.md).
 
-Autorisé :
+## Frontières non négociables
 
-- réorganiser la navigation, les pages, sous-vues et sections ;
-- modifier templates/HTML de présentation, CSS, tokens, classes et responsive ;
-- consolider les composants visuels, tables, drawers, formulaires et états ;
-- modifier le thème et les options de rendu des graphiques sans changer leurs données ;
-- reformuler toute la microcopy visible en français ;
-- créer une nouvelle vue visuelle uniquement avec routes, fonctions, endpoints et données déjà présents ;
-- ajouter tests visuels, a11y, responsive et garde-fous de présentation.
+- `READONLY=True`, `ANALYSIS_ONLY=True`, aucun ordre live ou paper.
+- IBKR fournit uniquement quotes, barres, contrats, historiques, chaînes,
+  volume/OI, IV, Greeks et état de marché autorisés.
+- Interdire identifiant de compte, `managedAccounts`, `accountSummary`,
+  `positions`, `portfolio`, `reqPnL`, cash, NAV, P&L, ordres, exécutions et
+  transactions IBKR. Lire [ibkr-market-data-only.md](references/ibkr-market-data-only.md).
+- Comptes, enveloppes, cash et positions sont saisis volontairement dans
+  Vertex et ne sont jamais écrasés par une source externe. Lire
+  [manual-portfolio.md](references/manual-portfolio.md).
+- L'IA explique les sorties ; elle ne calcule ni ne remplace moteurs, scores,
+  scénarios, Greeks, gates ou orientation canonique.
+- Aucune donnée, courbe, performance, disponibilité ou réussite inventée.
+- Une capacité absente reste absente et visible.
+- Aucun secret, identifiant personnel ou donnée de compte dans Git, logs,
+  captures, télémétrie, cache navigateur ou prompt IA.
 
-Interdit :
+## Sélection du mode
 
-- modifier moteur, score, formule, scénario, gate, stratégie ou verdict ;
-- modifier schéma métier, store, persistance, desk sync ou donnée utilisateur ;
-- ajouter ou changer provider, API, endpoint financier, worker, job ou intégration ;
-- modifier les connexions IBKR, TradingView, WMB, news ou Claude ;
-- fabriquer une donnée pour remplir une nouvelle page ;
-- déplacer une logique financière dans JavaScript ou un template ;
-- supprimer une fonction existante parce qu'elle est difficile à présenter.
+Déterminer le mode depuis la demande, sans lancer plusieurs chantiers couplés :
 
-Si la maquette exige une donnée ou fonction absente, noter le besoin dans le rapport de lot et afficher un état manquant honnête. Ne pas développer le backend dans cette refonte.
+- **audit** : inventaire en lecture seule, preuves, matrice des propriétaires,
+  risques et premier lot ;
+- **privacy** : frontière IBKR, données personnelles, portefeuille manuel et
+  migrations ;
+- **platform** : architecture, sources, snapshots, jobs, performance,
+  observabilité, sécurité et dette ;
+- **intelligence** : moteurs, sources, décision, IA, mémoire, opportunités,
+  options et simulation ;
+- **interface** : navigation, pages, composants, graphiques, français,
+  responsive et accessibilité ;
+- **qa** : tests, sécurité, navigateur, captures, charge, audit 150 et release ;
+- **cleanup** : propriétaires doubles et fichiers morts prouvés seulement.
 
-Ce verrou de périmètre prévaut sur toute formulation plus ambitieuse présente dans une référence de domaine.
+Lire uniquement les références du mode, plus les contrats transversaux requis.
 
-## Boucle produit
+## Baseline obligatoire
 
-**OBSERVER → COMPRENDRE → DÉTECTER → ÉVALUER → DÉCIDER → SURVEILLER → MESURER → APPRENDRE.**
+Avant toute écriture :
 
-Chaque page, tableau, graphique et texte IA doit servir explicitement une étape. Une fonctionnalité existante sans place évidente reste fonctionnelle : déplacer ou regrouper uniquement sa présentation, sans supprimer sa logique, sa route, ses données ni ses consommateurs.
+1. relever `main`, HEAD, branche, dirty state, PR/CI et worktrees ;
+2. cartographier fichiers, imports, routes, endpoints, jobs, stores, tests,
+   styles, assets et docs du périmètre ;
+3. reproduire le problème et capturer l'état actuel ;
+4. distinguer `RÉEL`, `PARTIEL`, `DÉGRADÉ`, `ABSENT`, `NON_IMPLÉMENTÉ` ;
+5. identifier le propriétaire canonique et les PR qui traitent déjà le sujet ;
+6. définir tests, budget, migration, rollback et données à préserver.
 
-## Invariants absolus
+Ne jamais conclure depuis le nom d'un fichier, une doc ancienne ou un statut de
+configuration. Mesurer le runtime réel.
 
-- Vertex reste `READONLY=True` et `ANALYSIS_ONLY=True` ; IBKR reste `readonly=True`.
-- Aucun ordre, ticket broker, bouton achat/vente, transmission ou automatisation d'exécution.
-- L'IA explique et relie les faits ; elle ne calcule ni ne modifie prix, Greeks, score, scénario, risque, sizing, hard gate ou verdict canonique.
-- Aucune donnée, source, fraîcheur, courbe ou performance inventée. L'absence est affichée honnêtement.
-- Les positions IBKR, positions déclarées, idées suivies, simulations et signaux théoriques restent séparés.
-- Toute décision conserve faits, sources, timestamps, qualité, contradictions, scénarios, invalidation, version des moteurs et limites.
-- Les fonctionnalités existantes sont inventoriées et consolidées avant tout ajout parallèle.
+Outils locaux : `scripts/inventory_repo.py` produit une baseline reproductible,
+`scripts/audit_runtime.py` mesure routes, pages, collisions et shell,
+`scripts/audit_claude_surface.py` valide l'autorité unique et
+`scripts/check_ibkr_boundary.py` inventorie la dette de confidentialité. Le
+mode `--enforce-target` du premier devient obligatoire après le cutover des
+pages ; le mode `--enforce` du dernier devient obligatoire à la fin du lot 2.
 
-## Règle « tout ce qui existe déjà »
+## Règle de convergence
 
-Avant chaque page, cartographier en lecture seule routes, modules, moteurs, services, jobs, stores, endpoints, composants, tests et documents liés. Produire ou mettre à jour un registre visuel indiquant : source existante, consommateur, bloc actuel, état réel, doublon d'affichage, donnée manquante et décision conserver/regrouper/déplacer/masquer visuellement.
+Conserver → regrouper → migrer les consommateurs → prouver la parité → retirer.
 
-Ne jamais repartir de zéro si une capacité saine existe. Les doublons de présentation peuvent converger ; les propriétaires métier restent intacts.
+Un doublon n'est supprimable qu'après recherche des imports, routes, blueprints,
+IDs DOM, événements, clés localStorage, service worker, tests, scripts, docs,
+jobs, données persistées et chemins de rollback. Lire
+[repository-consolidation.md](references/repository-consolidation.md) et
+[capability-convergence.md](references/capability-convergence.md).
 
-Lire [product-contract.md](references/product-contract.md), puis [platform-architecture.md](references/platform-architecture.md) pour la carte cible et [capability-convergence.md](references/capability-convergence.md) pour la méthode d'inventaire.
+## Architecture et intelligence
 
-## Routage des domaines
+- Contrat sources, confiance, provenance et états :
+  [data-and-integrations.md](references/data-and-integrations.md).
+- Décision, IA, outils, mémoire et limites :
+  [ai-decision-contract.md](references/ai-decision-contract.md).
+- Jobs, caches, rapidité et observabilité :
+  [automation-performance-observability.md](references/automation-performance-observability.md).
+- Sécurité, dépendances et méthodes externes :
+  [security-and-supply-chain.md](references/security-and-supply-chain.md).
+- Simulateur : [position-simulator.md](references/position-simulator.md).
 
-- Organisation définitive, routes, pages, sous-vues et premier écran : [navigation-and-pages.md](references/navigation-and-pages.md).
-- Identité, tokens, typographie, profondeur, densité et motion : [design-system-final.md](references/design-system-final.md).
-- Cartes, widgets, tables, drawers, formulaires et états : [components-tables-and-states.md](references/components-tables-and-states.md).
-- Choix et implémentation des graphiques : [chart-system-final.md](references/chart-system-final.md).
-- Catalogue des widgets trading, licences et règles d'adoption : [trading-widget-catalog.md](references/trading-widget-catalog.md).
-- Simulateur multi-actifs de positions et scénarios : [position-simulator.md](references/position-simulator.md).
-- Français, accessibilité, responsive et performance : [ux-copy-a11y-performance.md](references/ux-copy-a11y-performance.md).
-- Opportunités, screener, classements, catalyseurs, alertes : [opportunity-center.md](references/opportunity-center.md).
-- Analyse actions/ETF et dossiers : [analysis-center.md](references/analysis-center.md).
-- Chaînes, volatilité, contrats et scénarios options : [options-center.md](references/options-center.md).
-- Portefeuille, exposition, risque, watchlist et suivi : [portfolio-center.md](references/portfolio-center.md).
-- Intelligence, assistant, comité, mémoire et audit trail : [ai-center.md](references/ai-center.md).
-- Performance, journal, tracking, apprentissages : [performance-center.md](references/performance-center.md).
-- Calendrier économique, résultats, dividendes, expirations, revues et alertes : [calendar-and-alerts.md](references/calendar-and-alerts.md).
-- Données, IBKR, TradingView, WMB, news, jobs et santé : [data-and-integrations.md](references/data-and-integrations.md).
-- Programme complet, lots et conditions de sortie : [delivery-program.md](references/delivery-program.md).
-- Sources méthodologiques GitHub et principes retenus : [methodology-sources.md](references/methodology-sources.md).
-- Contrôle final page, domaine et plateforme : [definition-of-done.md](references/definition-of-done.md).
-- Revue exhaustive avant livraison : [audit-150.md](references/audit-150.md).
+## Produit et interface
 
-## Architecture fonctionnelle
+- Navigation et pages : [navigation-and-pages.md](references/navigation-and-pages.md).
+- Design : [design-system-final.md](references/design-system-final.md).
+- Composants, tables et états :
+  [components-tables-and-states.md](references/components-tables-and-states.md).
+- Graphiques : [chart-system-final.md](references/chart-system-final.md).
+- Widgets trading : [trading-widget-catalog.md](references/trading-widget-catalog.md).
+- Opportunités, analyse, options, portefeuille, performance, calendrier et IA :
+  lire la référence de domaine correspondante.
+- Français, accessibilité et responsive :
+  [ux-copy-a11y-performance.md](references/ux-copy-a11y-performance.md).
 
-La sidebar est organisée par travail, pas par architecture technique :
+## Exécution
 
-- **Piloter** : Aujourd'hui, Calendrier.
-- **Explorer** : Marchés, Opportunités, Analyse, Options, Simulateur.
-- **Gérer** : Portefeuille, Suivi, Performance.
-- **Intelligence** : Vertex IA.
-- **Utilitaire épinglé** : Système.
+Suivre [delivery-program.md](references/delivery-program.md) et
+[claude-execution-protocol.md](references/claude-execution-protocol.md).
 
-Alertes et recherche globale restent dans la topbar. Journal appartient à Performance. Watchlist appartient au Suivi/Portefeuille. Les détails sont des routes secondaires ou drawers avec deep links, jamais de nouvelles entrées de sidebar par défaut.
+Pour chaque lot : un objectif, un ensemble de propriétaires, un contrat de
+données, une migration explicite, tests rouges si défaut, correction minimale,
+preuves runtime et rollback. PR brouillon, aucune fusion automatique.
+Utiliser `templates/audit-report.md` et `templates/delivery-report.md` pour ne
+jamais perdre SHA, preuves, métriques, limites et rollback.
+Pour une exécution autonome contrôlée, utiliser
+`templates/claude-autopilot-prompt.md` ; il automatise les lots et captures mais
+ne contourne jamais les arrêts destructifs ou la validation finale.
 
-## Méthode de livraison
+Pour chaque page : question en cinq secondes, données réellement disponibles,
+états complets, capture avant, capture après en 1600/1024/390 px, interactions,
+clavier, console, réseau, `/api/client-log`, tests et confirmation qu'aucun
+calcul financier n'a migré dans l'UI.
 
-1. Partir du dernier `main`, relever CI/PR/SHA et ne pas baser le travail sur une ancienne branche de redesign.
-2. Auditer le domaine et ses dépendances ; identifier le premier lot canonique non terminé.
-3. Écrire le contrat visuel du lot : question, données consommées sans modification, hiérarchie, composants, états, responsive, tests et rollback.
-4. Consolider uniquement le modèle de présentation et les composants visuels ; ne pas consolider le backend.
-5. Développer l'expérience visuelle complète, y compris états réels et dégradés.
-6. Vérifier que calculs, données et provenance sont inchangés, puis contrôler navigateur, responsive, clavier, console, performance et tests.
-7. Livrer une PR brouillon cohérente avec preuves ; ne jamais fusionner automatiquement.
+## Méthodes externes
 
-Pour une surface UI, appliquer quatre critiques avant livraison : test de permutation, test de hiérarchie à distance, test de signature sur cinq emplacements précis et test des tokens. Avant le lot d'acceptation, exécuter aussi les 150 contrôles de `references/audit-150.md` et joindre les preuves. Corriger avant de montrer.
+Les méthodes Anthropic, Vercel, Trail of Bits, Playwright, Lighthouse CI,
+Ruff, OpenTelemetry et Locust peuvent guider un lot après audit de licence,
+maintenance, permissions, hooks, dépendances et adéquation à Flask. Elles ne
+sont jamais installées, exécutées ou copiées automatiquement. Lire
+[methodology-sources.md](references/methodology-sources.md).
 
-## Définition de terminé
+## Acceptation
 
-Vertex 2.0 visuel est terminé lorsque toutes les capacités existantes sont retrouvables dans une architecture cohérente, que chaque page répond à une question claire en cinq secondes, que les données et comportements sont strictement inchangés, que les états sont honnêtes, que desktop et mobile sont utilisables, et qu'aucune erreur navigateur ni régression de test n'est introduite.
+Un lot est terminé seulement avec les preuves de
+[definition-of-done.md](references/definition-of-done.md). Avant release,
+exécuter les 150 contrôles de [audit-150.md](references/audit-150.md). Chaque
+contrôle reçoit `OK + preuve`, `N/A + justification` ou `Écart + ticket`.
+
+Ne jamais déclarer « terminé à 100 % » sur la seule base d'une suite verte.
+La validation humaine du commit candidat reste obligatoire.

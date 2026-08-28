@@ -26,7 +26,13 @@ def _python_sources():
             yield p
 
 
-DENY_LIST_FILES = ('vertex/ai/tool_registry.py',)  # la liste NOIRE cite les noms pour les interdire
+# Ces deux fichiers citent les noms pour les refuser ou les auditer ; ils ne
+# les appellent jamais. Le test comportemental IBKR reste chargé de vérifier
+# que le scanner lui-même ne confond pas une chaîne avec un appel AST.
+DENY_LIST_FILES = (
+    'vertex/ai/tool_registry.py',
+    '.claude/skills/vertex-2-0/scripts/check_ibkr_boundary.py',
+)
 
 
 def test_no_order_execution_path():

@@ -1,6 +1,7 @@
 # Centre Portefeuille et Risque
 
-Contrat de présentation uniquement : afficher et composer les capacités existantes ; ne pas créer les données, moteurs, calculs, états ou persistance décrits.
+Contrat fonctionnel et visuel du portefeuille manuel. Réutiliser puis faire
+converger les stores existants selon `manual-portfolio.md`, sans modèle parallèle.
 
 ## Mission
 
@@ -8,11 +9,18 @@ Répondre à : **que possède le portefeuille, pourquoi, avec quelles exposition
 
 ## Synthèse
 
-Valeur, cash, exposition nette/brute, P&L selon disponibilité, allocation, concentration, liquidité, risque options, fraîcheur et réconciliation IBKR. Principaux contributeurs/détracteurs, alertes et thèses à revoir.
+Patrimoine déclaré, cash facultatif, valorisation estimée, exposition nette/
+brute, P&L calculable selon couverture, allocation, concentration, liquidité,
+risque options et fraîcheur des cotes. Afficher dernière saisie manuelle,
+contributeurs/détracteurs, alertes et thèses à revoir. Aucune réconciliation
+de compte broker.
 
 ## Positions
 
-Table configurable : instrument, type, quantité, coût, mark/source, valeur, poids, P&L, rôle, thèse, score, risque, invalidation, cible si canonique, prochaine revue et fraîcheur. Drawer : graphique, thèse, scénarios, catalyseurs, historique, portefeuille et journal.
+Table configurable : enveloppe interne, instrument, type, quantité et coût
+déclarés, mark/source, valeur estimée, poids, P&L calculé, rôle, thèse, score,
+risque, invalidation, prochaine revue et fraîcheur. Drawer : provenance champ
+par champ, graphique, thèse, scénarios, catalyseurs, historique et journal.
 
 ## Allocation et expositions
 

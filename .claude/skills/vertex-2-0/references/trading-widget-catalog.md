@@ -2,7 +2,10 @@
 
 ## Principe
 
-Ce catalogue sert à choisir des formes et, exceptionnellement, des briques visuelles. Il n'autorise ni changement de moteur, ni nouvelle donnée, ni copie aveugle d'un dépôt. Réutiliser d'abord les composants et graphiques déjà présents dans Vertex.
+Ce catalogue sert à choisir des formes et, exceptionnellement, des briques
+visuelles. Une bibliothèque ne devient jamais moteur financier ni source de
+vérité. Réutiliser les composants présents, puis adopter une dépendance
+seulement dans un lot dédié, mesuré et réversible.
 
 Avant toute dépendance : vérifier version, licence, attribution, maintenance, poids, CSP, vulnérabilités, accessibilité, responsive, lifecycle, fallback, compatibilité Flask/JavaScript et coût de retrait. L'adoption d'une bibliothèque est une décision séparée et documentée.
 
@@ -70,7 +73,8 @@ Avant toute dépendance : vérifier version, licence, attribution, maintenance, 
 
 ### Portefeuille et risque
 
-- `PortfolioSnapshot` : valeur, cash, exposition, P&L, état IBKR et dernière réconciliation.
+- `PortfolioSnapshot` : patrimoine déclaré, valeur estimée, cash volontaire,
+  exposition, couverture des cotes et dernière saisie manuelle.
 - `AllocationTreemap` : hiérarchie actif/secteur/devise/thème ; labels prioritaires et table fallback.
 - `ContributionBars` : contributeurs/détracteurs sur une base commune.
 - `ExposureMatrix` : actif × dimension, devise × secteur ou position × risque selon données.

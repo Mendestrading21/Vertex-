@@ -1,75 +1,170 @@
-# Programme de livraison visuelle Vertex 2.0
+# Programme maître de livraison Vertex 2.0
 
-Chaque lot modifie uniquement la présentation. Les moteurs, calculs, données, endpoints, intégrations, stores et règles financières restent inchangés.
+Le programme fait converger l'existant par lots indépendants, réversibles et
+mesurés. Un lot reste ouvert tant que ses consommateurs, tests, migrations et
+preuves runtime ne sont pas terminés. Claude ne démarre jamais plusieurs lots
+dépendants en parallèle et ne fusionne jamais automatiquement.
 
-## Lot 0 — Baseline visuelle
+## Phase A — Autorité, confidentialité et vérité
 
-Relever SHA/CI/PR. Inventorier toutes les routes et sous-vues existantes, leurs données consommées, actions, composants, styles inline, états et captures desktop/mobile. Vérifier chaque page dans le navigateur avant de dessiner sa cible.
+### Lot 0 — Baseline reproductible
 
-Livrables : matrice page × fonction existante × bloc visuel × état × largeur ; captures avant ; liste des contradictions visuelles ; aucune modification runtime.
+Figer SHA, branche, PR/CI, inventaire des routes, moteurs, jobs, stores,
+sources, pages, tests, dépendances, données persistées et documents actifs.
+Mesurer latences, payloads, erreurs, états de connexion et captures avant.
+Exécuter `audit_runtime.py`, publier la matrice vérité → cible et interdire de
+traiter une redirection ou une 404 comme une page déjà livrée.
 
-## Lot 1 — Source de vérité
+### Lot 1 — Autorité Claude unique
 
-Finaliser tokens, Geist/Geist Mono, palette, densité, surfaces, Decision Trace, iconographie, microcopy et page /design-system. Aligner .interface-design/system.md, règles Claude et documents actifs. Les aliases legacy restent tant que leurs consommateurs ne sont pas migrés.
+Activer uniquement `/vertex-2-0`, intégrer les règles utiles des doctrines
+historiques, retirer skills/agents concurrents prouvés et ajouter le test de
+non-réapparition. Les archives restent explicitement historiques.
 
-## Lot 2 — Shell et navigation
+### Lot 2 — Frontière IBKR market-data-only
 
-Refondre sidebar groupée Piloter/Explorer/Gérer/Intelligence, topbar, recherche, calendrier, alertes, drawers, modales et mobile bar. Préserver routes, handlers, IDs DOM, clés et contrats existants.
+Créer un firewall de capacités typé, retirer comptes/positions/P&L/routes et
+objets IB bruts, corriger les statuts de connexion, protéger caches/logs et
+prouver par double hostile qu'aucun appel personnel n'est possible.
 
-## Lot 3 — Primitives
+### Lot 3 — Portefeuille manuel souverain
 
-Consolider visuellement cartes, KPI, badges, boutons, tabs, filtres, formulaires, tables, tooltips, états et drawers. Faire converger les multiples familles de cartes/métriques sans déplacer leur logique.
+Consolider enveloppes, cash déclaré, positions, thèses, transactions et
+valorisations sans propriétaire double. Migrer idempotemment les stores
+existants avec sauvegarde, aperçu, rollback et provenance champ par champ.
 
-## Lot 4 — Graphiques
+### Lot 4 — Sécurité privée et exposition
 
-Unifier uniquement thème, conteneurs, axes, tooltips, légendes, formats d'affichage, resize, destruction, fallbacks et accessibilité. Les séries, valeurs, calculs et sources ne changent pas.
+Faire échouer tout démarrage privé non-loopback sans authentification, rendre
+la démo publique non persistante, ajouter CSRF/rate limit/headers no-store,
+minimisation IA, scan secrets/PII et politique explicite de consentement.
 
-## Lot 5 — Aujourd'hui
+## Phase B — Architecture de la machine
 
-Réordonner les fonctions existantes en command center : décision, marché, risques, revues, calendrier, opportunités, portefeuille, options et brief IA. Aucun nouveau calcul.
+### Lot 5 — Contrats instrument, source et unité
 
-## Lot 6 — Calendrier et Marchés
+Une identité d'instrument, une unité canonique par champ, enveloppes de
+provenance, fraîcheur, qualité et lineage. `UNKNOWN` n'est jamais zéro ni
+neutre. Migrer route par route sans casser les fixtures.
 
-Créer la vue Calendrier seulement avec événements/endpoints déjà présents ; sinon composer les catégories disponibles et marquer les manques. Refaire les sous-vues Marchés avec une visualisation dominante et preuves secondaires.
+### Lot 6 — Market Data Gateway et snapshots
 
-## Lot 7 — Opportunités et Analyse
+Un propriétaire de connexion, collectes asynchrones, timeouts, pacing,
+circuit breakers, coalescence et snapshots immuables publiés atomiquement.
+Aucun réseau fournisseur dans une requête UI.
 
-Réorganiser radar/tables/drawers et dossier ticker. Conserver scores, gates, verdicts, loaders et endpoints exactement. Ajouter clarté, sources, fraîcheur et liens existants.
+### Lot 7 — Automatisations honnêtes
 
-## Lot 8 — Options
+Relier chaque job à un exécuteur réel ou le marquer `NON_IMPLÉMENTÉ`. Ajouter
+idempotence, retries bornés, heartbeats, freshness produite, reprise après
+redémarrage, arrêt propre et tests de panne.
 
-Refondre visuellement Vue d'ensemble, Chaîne, Volatilité, Scanner, Scénarios, Positions et Événements. Présenter les champs réellement fournis ; aucune Greek, IV, quote, score ou stratégie calculée dans l'UI.
+### Lot 8 — Observabilité et budgets
 
-## Lot 9 — Simulateur
+Logs structurés sans données privées, métriques/traces bornées, health/ready,
+latence p50/p95/p99, budgets payload/cache/JS/CSS et charge reproductible.
 
-Composer la page multi-actifs Actions/ETF/Options/Forex depuis les capacités de simulation existantes. Construire paramètres, scénarios, comparaison, risques, impact portefeuille et provenance. Aucun nouveau moteur, calcul de prix, prédiction, store ou action broker.
+### Lot 9 — Convergence du runtime
 
-## Lot 10 — Portefeuille et Suivi
+Réduire `terminal.py` par strangler pattern. Choisir un propriétaire par route,
+store, service, composant et style ; migrer les consommateurs, mesurer la
+parité puis retirer l'ancien chemin dans une PR dédiée.
 
-Réordonner Synthèse, Positions, Allocation, Options, Risque et Thèses. Créer la page visuelle Suivi en composant watchlist/tracking/journal existants ; ne pas créer de nouveau store ni état métier.
+## Phase C — Intelligence canonique
 
-## Lot 11 — Performance et Vertex IA
+### Lot 10 — AdviceEngine unique
 
-Séparer visuellement les populations existantes. Refaire Journal, courbes, tables, Assistant, Comité, Décisions, Recherche et Mémoire sans modifier packet, prompt métier, moteur ou persistance.
+Une seule API `AdviceEngine.evaluate(snapshot) -> AdviceResult`. Les autres
+moteurs deviennent producteurs de preuves/métriques. Compléter les hard gates,
+unifier R:R et versions, rendre GET purs et supprimer les verdicts UI/JS après
+parité.
 
-## Lot 12 — Système
+### Lot 11 — Gateway IA unique
 
-Clarifier Connexions, Données, Jobs, Préférences, Sécurité, Archives et Design System. Ne changer aucune connexion, job, secret, backup ou sync.
+Faire passer analyste, copilote, briefs et enrichissement par schéma strict,
+grounding numérique, citations, redaction, consentement, limites de coût/débit,
+audit et fallback déterministe. Claude explique mais ne décide pas.
 
-## Lot 13 — Responsive et accessibilité
+### Lot 12 — Pipeline opportunités et recherche
 
-Vérifier 390, 430, 768, 1024, 1280, 1440, 1600 et écran large ; clavier, zoom 200 %, touch, focus, reduced motion, contrastes, tableaux et graphiques. Corriger seulement la couche visuelle.
+Un entonnoir point-in-time, budgets à chaque étage, preuves comparables,
+déduplication, calendrier et statut explicable. Aucun candidat ne contourne les
+gates canoniques.
 
-## Lot 14 — Nettoyage visuel
+### Lot 13 — Options et simulateur multi-actifs
 
-Après recherche des consommateurs, retirer CSS/classes/docs de design devenus sans usage. Ne supprimer aucun moteur, route, endpoint, fonction métier ou actif de données.
+Unifier chaîne, identité contrat, unités, filtres, Greeks, volatilité, GEX,
+scénarios et recommandations. Consolider les trois simulateurs en un moteur
+Actions/ETF/Options/Forex, séparer prévision, estimation et stress, sans ordre.
 
-## Lot 15 — Acceptation
+## Phase D — Produit Black Glass page par page
 
-Comparer avant/après sur le même SHA fonctionnel ; exécuter les 150 contrôles de `audit-150.md`, tests complets, no-orders, healthz, client-log, console, modes live/delayed/stale/demo/offline/missing, service worker et rollback. PR brouillon ; aucune fusion automatique.
+### Lot 14 — Fondations et shell
 
-## Commande Claude
+Tokens, Geist/Geist Mono, Black Glass Signal Light, composants, topbar,
+`NavigationManifest` unique, sidebar groupée, barre mobile, recherche,
+responsive, états et Design System interne. Résoudre la collision
+`/options/<sym>`, rendre Journal accessible à 390 px et arbitrer le routeur
+persistant avant la cosmétique. Fusionner les deux Design Systems seulement
+après migration de leurs consommateurs. Aucune logique financière dans l'UI.
 
-    /vertex-2-0 lot:0
+### Lot 15 — Aujourd'hui et Calendrier
 
-Claude continue le premier lot visuel non terminé. Il implémente et vérifie page par page, sans ouvrir plusieurs lots dépendants simultanément et sans étendre le périmètre au backend.
+Command center : attention, risques, revues, opportunités, événements et tâches
+à partir de données réelles. Calendrier global sans dupliquer ses producteurs.
+
+### Lot 16 — Marchés et Opportunités
+
+Vue de marché, régimes, listes, heatmaps et entonnoir canonique ; une
+visualisation dominante, sources/fraîcheur visibles et drill-down cohérent.
+
+### Lot 17 — Analyse
+
+Un seul dossier ticker et un seul `AdviceResult`, avec thèse, preuves,
+contradictions, gates, scénarios, sources, annotations et historique.
+
+### Lot 18 — Options et Simulateur
+
+Vue options, chaîne, volatilité, scanner, stratégies et scénarios. Simulateur
+multi-actifs compréhensible, hypothèses/limites visibles, aucun bouton d'ordre.
+
+### Lot 19 — Portefeuille, Suivi et Performance
+
+Patrimoine déclaré, allocations, exposition, risque, thèses, watchlists,
+alertes, journal et performance avec populations et provenances séparées.
+
+### Lot 20 — Vertex IA et Système
+
+Assistant explicatif fondé sur le packet canonique ; connexions, données, jobs,
+sécurité, archives, préférences et diagnostic sans fuite d'information.
+
+### Lot 21 — Responsive, accessibilité et netteté
+
+Vérifier 390/430/768/1024/1280/1440/1600, clavier, zoom 200 %, touch, focus,
+reduced motion, contraste, HiDPI, tableaux/graphiques et budgets Lighthouse.
+
+## Phase E — Nettoyage et acceptation
+
+### Lot 22 — Nettoyage prouvé
+
+Retirer seulement les adaptateurs, routes, moteurs, CSS, assets, tests et docs
+dont l'absence de consommateur, la parité, la migration et le rollback sont
+prouvés. Les branches distantes font l'objet d'une autorisation séparée.
+
+### Lot 23 — Acceptation finale
+
+Exécuter compile, tests ciblés/complets, no-orders, privacy firewall, tests de
+charge/sécurité/navigateur, les 150 contrôles, captures avant/après et rollback.
+La PR reste brouillon jusqu'à validation humaine.
+
+## Commandes Claude
+
+```text
+/vertex-2-0 mode:audit
+/vertex-2-0 lot:2
+/vertex-2-0 page:Analyse
+```
+
+Sans lot explicite, Claude remesure la baseline et reprend le premier lot non
+terminé. Il ne transforme jamais ce programme en promesse de capacité déjà
+livrée.

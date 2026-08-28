@@ -1,6 +1,7 @@
 # Centre Intelligence IA
 
-Contrat de présentation uniquement : afficher et composer les capacités existantes ; ne pas créer les données, moteurs, scores, calculs, états ou persistance décrits.
+Contrat de domaine et de présentation. Les appels IA convergent vers la gateway
+unique dans leur lot ; l'interface n'invente ni contexte, score ou décision.
 
 ## Rôle
 

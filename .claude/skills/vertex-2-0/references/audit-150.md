@@ -1,183 +1,185 @@
 # Audit final — 150 contrôles Vertex 2.0
 
-Chaque contrôle reçoit `OK + preuve`, `N/A + justification` ou `Écart + ticket`. Une case sans preuve n'est pas validée. L'audit porte sur la refonte visuelle ; il ne donne aucun droit de modifier le backend.
+Chaque contrôle reçoit `OK + preuve`, `N/A + justification` ou
+`Écart + ticket`. Une affirmation, une capture isolée ou une suite verte sans
+preuve du contrat ne suffit pas.
 
-## A. Périmètre, sécurité et vérité — 001 à 015
+## A. Autorité, baseline et périmètre — 001 à 015
 
-001. Le diff ne modifie aucun moteur, formule, score, gate, stratégie ou verdict.
-002. Le diff ne modifie aucun provider, endpoint financier, worker, job ou intégration.
-003. Le diff ne modifie aucun store, schéma métier, desk sync ou donnée utilisateur.
-004. `READONLY`, `ANALYSIS_ONLY` et IBKR readonly restent vrais.
-005. Aucun bouton, libellé ou raccourci ne prépare ou transmet un ordre.
-006. Aucun calcul financier nouveau n'existe dans template, CSS ou JavaScript visuel.
-007. Aucune donnée fictive n'est affichée comme réelle.
-008. `—`, `n.d.` et états manquants sont employés honnêtement.
-009. Live, delayed, stale, demo, offline et missing restent distinguables.
-010. Source, timestamp et fraîcheur survivent à la recomposition visuelle.
-011. Positions, signaux, idées, simulations et trades réels restent séparés.
-012. Les scénarios ne sont jamais présentés comme des prédictions certaines.
-013. Aucun secret, identifiant compte ou payload sensible n'apparaît dans l'UI/log.
-014. Les textes externes rendus conservent leur sanitization.
-015. Les limites non vérifiées sont déclarées dans la PR.
+001. Le SHA de `main`, HEAD, branche, dirty state, PR et CI sont relevés.
+002. Les routes, services, moteurs, jobs, stores et pages touchés sont inventoriés.
+003. Les consommateurs statiques, dynamiques, navigateur et persistés sont recensés.
+004. Le problème ou état initial est reproduit avec une preuve datée.
+005. Les capacités sont classées `RÉEL`, `PARTIEL`, `DÉGRADÉ`, `ABSENT` ou `NON_IMPLÉMENTÉ`.
+006. Un seul dossier actif existe sous `.claude/skills` : `vertex-2-0`.
+007. `CLAUDE.md` ne route vers aucun alias ou skill historique.
+008. Toutes les références relatives du skill maître existent.
+009. Les docs historiques ne sont pas traitées comme doctrine active.
+010. Le lot définit objectif, non-objectifs, propriétaires, risques et rollback.
+011. Une découverte hors périmètre est séparée au lieu d'être corrigée opportunément.
+012. Les modifications utilisateur préexistantes sont identifiées et préservées.
+013. Aucune capacité n'est déclarée livrée depuis son seul nom ou sa documentation.
+014. Le résultat attendu est mesurable avant l'écriture.
+015. La PR reste brouillon et aucune fusion/déploiement n'est automatique.
 
-## B. Architecture de l'information — 016 à 030
+## B. Vie privée, IBKR et sécurité — 016 à 030
 
-016. La sidebar suit Piloter/Explorer/Gérer/Intelligence/Système.
-017. Aujourd'hui est la destination initiale claire.
-018. Calendrier est global sans dupliquer ses propriétaires spécialisés.
-019. Marchés, Opportunités, Analyse, Options et Simulateur sont distincts.
-020. Portefeuille, Suivi et Performance ont des responsabilités distinctes.
-021. Vertex IA n'absorbe pas les pages métier.
-022. Système reste utilitaire et épinglé.
-023. Journal appartient à Performance.
-024. Watchlist appartient à Suivi/Portefeuille.
-025. Design System reste interne à la QA.
-026. Chaque route secondaire conserve breadcrumb, origine et retour.
-027. Drawer est utilisé pour comparer/scanner ; page pour profondeur/historique.
-028. La recherche globale retrouve ticker, page et fonction existante.
-029. Les libellés de navigation sont français, courts et non ambigus.
-030. Aucune fonction existante ne devient introuvable après déplacement.
+016. `READONLY=True` et `ANALYSIS_ONLY=True` sont protégés par tests.
+017. Aucun appel d'ordre, paper order, exécution, transfert ou exercice n'existe.
+018. Un seul module autorisé importe la bibliothèque IBKR.
+019. Le gateway ne retourne jamais l'objet client IBKR brut.
+020. L'allowlist IBKR contient uniquement contrats et données de marché.
+021. `managedAccounts`, `accountSummary`, `positions`, `portfolio` et `reqPnL` sont impossibles.
+022. Aucune route ne renvoie compte, cash, NAV, marge, position ou P&L broker.
+023. Le statut connecté provient d'une preuve runtime, jamais du flag de configuration.
+024. Une panne IBKR ne crée, ferme ou modifie aucune position déclarée.
+025. Les routes personnelles renvoient `private, no-store` et ne passent pas en cache partagé.
+026. Un service privé non-loopback refuse de démarrer sans authentification.
+027. La démo publique ne lit ni ne persiste de données personnelles.
+028. Prompts, logs, traces, captures et fixtures excluent données de compte et secrets.
+029. Le partage IA du portefeuille est désactivé par défaut, minimisé et consenti.
+030. Scans secrets/PII, dépendances et permissions CI passent sur tout l'arbre suivi.
 
-## C. Hiérarchie et clarté page — 031 à 045
+## C. Portefeuille manuel et contrats de données — 031 à 045
 
-031. Chaque page formule sa question métier.
-032. Le point focal est compris en cinq secondes.
-033. Le premier viewport répond à situation, attention, raison et risque.
-034. Une seule visualisation ou table domine la page.
-035. Les KPI secondaires ne rivalisent pas tous au même niveau.
-036. PageHeader expose périmètre et fraîcheur.
-037. ContextBar expose période, univers, filtres et source.
-038. DecisionZone contient le point focal réel.
-039. EvidenceZone explique sans répéter.
-040. WorkZone porte la tâche principale.
-041. DepthZone contient méthode, historique et détails.
-042. Les actions sûres sont proches de leur objet.
-043. Les explications longues sont progressives, pas dans le premier écran.
-044. Les états vides donnent cause et prochaine action sûre.
-045. Le test de distance confirme une hiérarchie nette.
+031. Le portefeuille a une seule vérité : la déclaration utilisateur.
+032. Comptes internes, cash déclaré, positions, thèses et transactions ont un propriétaire unique.
+033. Origine de position et source de prix sont deux champs distincts.
+034. `SAISIE`, `MARCHÉ`, `MOTEUR`, `ESTIMATION` et `SIMULATION` restent distinguables.
+035. Un rafraîchissement de marché laisse quantité, coût, compte et thèse bit-identiques.
+036. `UNKNOWN` n'est jamais converti en zéro, neutre, conforme ou réel.
+037. Valeur, unité, devise, source, heure, fraîcheur, qualité et fallback accompagnent les champs critiques.
+038. Instrument, place, devise, multiplicateur et contrat ont une identité canonique.
+039. Les conversions fraction/pourcentage, par action/par contrat et devise sont explicites.
+040. Les migrations de store sont versionnées, idempotentes et testées old→new→rollback.
+041. Une sauvegarde vérifiée précède toute migration de données utilisateur.
+042. CSV/import reste explicite avec mapping, aperçu, déduplication et confirmation.
+043. Positions, trades, idées, signaux, simulations et tracking ne partagent aucun KPI ambigu.
+044. Une donnée manquante réduit la couverture au lieu d'être imputée silencieusement.
+045. Export, suppression, rétention et restauration du portefeuille sont testés.
 
-## D. Composants, tables et widgets — 046 à 060
+## D. Architecture, performance et automatisations — 046 à 060
 
-046. Chaque primitive a un propriétaire visuel unique.
-047. Tokens, pas de valeurs répétées en dur.
-048. Une famille unique de cartes et MetricCard est utilisée.
-049. Boutons, tabs, filtres, champs, badges et drawers sont cohérents.
-050. Les tables utilisent chiffres tabulaires et alignement numérique.
-051. Unités et devises sont visibles dans colonnes ou valeurs.
-052. Headers et colonnes clés sticky fonctionnent sans recouvrement.
-053. Tri, filtre et recherche annoncent leur état.
-054. Densité compacte/confortable ne masque aucune donnée critique.
-055. Drawer de ligne conserve contexte et focus.
-056. Loading, empty, partial, stale, delayed, offline, demo et error existent.
-057. ValueFlash est court, tonal et désactivé en reduced motion.
-058. DataLedger expose couverture et données absentes.
-059. Aucun widget décoratif ne survit sans question utile.
-060. Le registre page → widget correspond au catalogue canonique.
+046. Un propriétaire canonique existe par route, capacité, métrique, composant et job.
+047. `terminal.py` ne reçoit aucune nouvelle capacité hors correctif bloquant avant extraction.
+048. Les requêtes UI lisent des snapshots bornés et n'appellent aucun fournisseur lent.
+049. Les snapshots sont immuables, datés et publiés atomiquement.
+050. Timeouts, pacing, circuit breaker, coalescence et retries bornés sont définis.
+051. Chaque cache documente clé, scope, TTL, maximum, invalidation et stale behavior.
+052. Les états `LIVE`, `DELAYED`, `FROZEN`, `STALE`, `PARTIAL`, `OFFLINE` et `ERROR` sont honnêtes.
+053. Chaque job affiché possède un exécuteur et un heartbeat réels ou vaut `NON_IMPLÉMENTÉ`.
+054. Jobs et migrations sont idempotents après retry ou redémarrage.
+055. Dernière tentative, réussite, durée, prochaine exécution et erreur sont observables.
+056. Les threads, sessions, listeners et ressources se ferment proprement.
+057. Logs structurés utilisent request/job/source IDs sans données privées.
+058. `/healthz`, `/readyz` et la page Système ont des responsabilités distinctes.
+059. Latence p50/p95/p99, payload, cache hit et âge des données ont une baseline.
+060. Charge, timeout, fournisseur lent, cache stale et mode hors ligne respectent les budgets.
 
-## E. Graphiques et visualisation — 061 à 075
+## E. Décision, moteurs et preuves — 061 à 075
 
-061. Chaque graphique formule question, conclusion, source, unité et période.
-062. Les séries, valeurs, agrégations et timeframes sont inchangés.
-063. Les axes ne trompent pas et le zéro apparaît quand nécessaire.
-064. Les gaps ne sont pas reliés silencieusement.
-065. Une hausse n'est pas automatiquement colorée comme positive.
-066. Argent, gris, vert, rouge, ambre, violet et cyan respectent leur sémantique.
-067. Tooltip, légende et formatters sont centralisés.
-068. ResizeObserver ne crée ni boucle ni débordement.
-069. Instances, listeners et observers sont détruits au démontage.
-070. Canvas/SVG reste net en HiDPI.
-071. Un tableau équivalent existe pour toute visualisation critique.
-072. Le résumé accessible annonce les valeurs clés.
-073. Une bibliothèque externe possède licence et attribution documentées.
-074. Les plugins proof-of-concept sont durcis avant production.
-075. Le fallback fonctionne quand Canvas/WebGL/JS échoue.
+061. Une seule API publique produit le `AdviceResult` utilisateur.
+062. Aucun autre moteur, route ou composant n'émet un verdict concurrent.
+063. Le flux respecte faits→normalisation→calculs→gates→conseil→explication.
+064. Chaque conseil porte snapshot ID, versions de moteurs/profil et empreinte d'entrée.
+065. Tous les hard gates ont une implémentation fail-closed et des tests négatifs.
+066. Une section critique absente plafonne réellement le conseil.
+067. Un seul R:R structurel, une seule formule et une seule unité sont utilisés.
+068. Aucun score proxy n'est renommé comme fait fondamental ou sentiment réel.
+069. Le moteur exécutif reçoit qualité, réconciliation et garde portefeuille complets.
+070. Comité, scorecard, Skyler et chemins legacy ont été migrés ou cessent d'être autorités.
+071. Opportunités consomme le même `AdviceResult` que l'Analyse.
+072. Aucune règle financière, seuil, score ou verdict n'est recalculé en JavaScript.
+073. GET est sans effet de bord ; gel, journalisation et écriture utilisent une action explicite.
+074. Les conseils sont rejouables de façon déterministe depuis leur snapshot.
+075. Toute probabilité affiche calibration hors échantillon, taille, version et incertitude ou reste une estimation.
 
 ## F. Options et Simulateur — 076 à 090
 
-076. La chaîne garde CALL/strike/PUT et ATM neutre.
-077. Bid, ask, mid, spread, volume, OI, IV et Greeks absents restent absents.
-078. Multiplicateur, coût par contrat et coût total ne sont pas confondus.
-079. Le drawer contrat expose mark, source, heure, qualité et limites.
-080. Term structure et smile/skew ont table et unités.
-081. OI/GEX montrent zéro et provenance des niveaux.
-082. Payoff étiquette date, hypothèses, breakevens et nature théorique.
-083. Vol surface possède une alternative 2D accessible.
-084. Le Simulateur accepte seulement les classes réellement supportées.
-085. Montant et quantité sont explicitement distingués.
-086. Action, ETF, Option et Forex gardent leurs unités spécifiques.
-087. Chaque valeur est marquée Marché/Portefeuille/Moteur/Saisie.
-088. Scénarios A/B/C utilisent la même base de date et devise.
-089. Aucune sauvegarde n'apparaît sans store canonique.
-090. Aucun libellé du Simulateur ne ressemble à une action d'ordre.
+076. Un pipeline options unique possède filtre, score, scénario, limites et provenance.
+077. Chaîne, contrat, expiration, strike, droit, devise et multiplicateur ont une identité unique.
+078. Bid, ask, mark, spread, volume, OI, IV et Greeks gardent unités et timestamp.
+079. Données absentes ne sont jamais remplacées par zéro ou une Greek inventée.
+080. Fraction/percent IV et prime par action/par contrat ne reposent sur aucune heuristique ambiguë.
+081. Term structure, skew, surface et GEX exposent méthode, source et couverture.
+082. Les mandats DTE, stratégie, risque et revue ne se contredisent plus.
+083. Une stratégie non supportée ou interdite n'est jamais proposée par un moteur legacy.
+084. Les trois surfaces de simulation sont consolidées ou clairement non concurrentes.
+085. Actions, ETF, Options et Forex conservent leurs paramètres et unités propres.
+086. Montant, quantité, effet de levier, multiplicateur et devise sont explicitement distingués.
+087. Scénarios A/B/C partagent date, hypothèses et base de comparaison.
+088. Payoff, breakeven, pertes, stress et impact portefeuille sont étiquetés théoriques.
+089. Une simulation ne modifie le portefeuille qu'après confirmation humaine distincte.
+090. Aucun contrôle du simulateur ne ressemble à une transmission d'ordre.
 
-## G. Portefeuille, suivi et performance — 091 à 105
+## G. IA, sources et recherche — 091 à 105
 
-091. Valeur, cash, exposition et P&L précisent leur disponibilité.
-092. Réconciliation et fraîcheur IBKR sont visibles.
-093. Positions et options ont des tables distinctes.
-094. Allocation indique niveau, total et catégorie Autres.
-095. Treemap possède labels prioritaires et table fallback.
-096. Contribution positive/négative utilise base commune.
-097. Corrélation indique période, échantillon et données manquantes.
-098. Concentration et limites viennent d'un calcul existant.
-099. Impact simulé est séparé du portefeuille réel.
-100. Suivi conserve statut workflow et verdict financier séparés.
-101. Performance sépare toutes les populations.
-102. Equity et drawdown utilisent la même période.
-103. Benchmark, échantillon et limites sont visibles.
-104. Heatmap mensuelle affiche chiffres et légende numérique.
-105. Journal conserve sync, backups et liens aux dossiers.
+091. Tous les appels Claude passent par une gateway unique.
+092. Le schéma de sortie, grounding numérique, citations et fallback sont obligatoires.
+093. Les contenus externes sont traités comme non fiables et défendus contre prompt injection.
+094. Claude n'invente ni prix, Greek, probabilité, score, source ou disponibilité.
+095. Claude ne modifie ni gate, verdict, portefeuille, règle active ou job.
+096. Les prompts ont budget de taille et manifeste explicite des éléments omis.
+097. Rate limit, concurrence, coût, timeout et cancellation sont partagés globalement.
+098. Les réponses IA distinguent fait, calcul, estimation et interprétation.
+099. Chaque affirmation externe critique conserve une citation consultable et datée.
+100. Les publications officielles priment sur éditorial, alerte et interprétation IA.
+101. Les alertes TradingView déclenchent une réévaluation, jamais un ordre.
+102. News et recherches sont dédupliquées, bornées, sourcées et mises en cache.
+103. Aucune collecte IA automatique ne révèle implicitement les holdings.
+104. Mémoire et journal ont rétention, consentement et suppression explicites.
+105. L'IA reste utilisable en fallback déterministe quand le fournisseur est absent.
 
-## H. Identité visuelle et français — 106 à 120
+## H. Pages, clarté et identité Black Glass — 106 à 120
 
-106. Black Glass domine sans devenir gris opaque.
-107. La distribution 82/13/5 est respectée approximativement.
-108. Une lumière dominante maximum existe par carte.
-109. Deux accents maximum structurent un écran hors rouge/vert directionnels.
-110. Aucune bordure néon permanente n'encadre les cartes.
-111. Les niveaux de surface et l'espace assurent la séparation.
-112. Geist et Geist Mono sont chargées avec fallbacks corrects.
-113. Prix, dates, tickers et mesures utilisent tabular nums.
-114. Les titres français sont courts et naturels.
-115. Le jargon anglais inutile a été remplacé.
-116. Les sigles financiers conservés ont une aide contextuelle.
-117. Decision Trace apparaît seulement aux cinq emplacements canoniques.
-118. Vertex Beam reste un reflet de matière discret.
-119. Le test de permutation confirme une identité non générique.
-120. Le test des tokens ne trouve pas de mini-design-system de page.
+106. La navigation suit Piloter, Explorer, Gérer, Intelligence et Système.
+107. Aujourd'hui, Calendrier, Marchés, Opportunités, Analyse et Options ont des missions distinctes.
+108. Simulateur, Portefeuille, Suivi, Performance, Vertex IA et Système ont des missions distinctes.
+109. Chaque page répond à une question principale comprise en cinq secondes.
+110. Une visualisation ou table dominante structure le premier viewport.
+111. PageHeader, ContextBar, DecisionZone, EvidenceZone et WorkZone restent cohérents.
+112. Tous les textes utilisateur sont en français clair et les sigles sont expliqués.
+113. Black Glass Signal Light utilise obsidienne, graphite, argent et accents sémantiques sobres.
+114. Une lumière dominante maximum par carte et deux accents structurels maximum par écran.
+115. Aucune bordure néon permanente, arc-en-ciel, esthétique casino ou template SaaS générique.
+116. Geist et Geist Mono ont fallbacks, chiffres tabulaires et rendu net HiDPI.
+117. Boutons, filtres, champs, badges, tables, drawers et états ont un propriétaire visuel unique.
+118. Chaque graphique expose question, source, unité, période, tooltip et fallback tabulaire.
+119. Loading, empty, partial, stale, delayed, offline, demo et error sont conçus.
+120. Aucun widget décoratif ou KPI redondant ne subsiste sans décision utile.
 
-## I. Accessibilité, responsive et performance — 121 à 135
+## I. Accessibilité, navigateur et qualité — 121 à 135
 
-121. Contraste AA est vérifié pour textes et contrôles.
-122. Focus visible n'est jamais masqué.
-123. Ordre clavier suit l'ordre visuel.
-124. Skip link atteint le contenu principal.
-125. Modales/drawers piègent puis restaurent le focus.
-126. Labels, erreurs et aides sont reliés aux champs.
-127. Le sens ne dépend jamais de la couleur seule.
-128. Reduced motion supprime transitions non essentielles.
-129. Zoom 200 % conserve contenu et actions.
-130. 390 et 430 px sont réellement utilisables.
-131. 768 et 1024 px ont une composition dédiée.
-132. 1280, 1440, 1600 et écran large gardent une ligne de lecture saine.
-133. Aucun overflow horizontal global n'est présent.
-134. Tables et graphiques conservent accès aux données sur mobile.
-135. Le budget performance et le poids des bibliothèques sont respectés.
+121. Contraste AA, focus visible et sens indépendant de la couleur sont vérifiés.
+122. Ordre clavier, skip link, labels, erreurs et restauration du focus fonctionnent.
+123. Reduced motion, zoom 200 % et lecteurs d'écran gardent l'information critique.
+124. 390, 430, 768, 1024, 1280, 1440 et 1600 px sont testés.
+125. Aucun overflow global ; tables et graphiques restent consultables sur mobile.
+126. Captures avant/après utilisent route, état, données et viewport identiques.
+127. Console navigateur et `/api/client-log` ne contiennent aucune nouvelle erreur.
+128. Interactions principales, erreurs réseau et retours clavier sont testés avec Playwright.
+129. Canvas/SVG se redimensionne et détruit observers/listeners/instances au démontage.
+130. CSS, JS, images, fonts et bibliothèques respectent leurs budgets.
+131. Lighthouse ou mesure équivalente ne régresse pas au-delà du budget approuvé.
+132. `compileall`, lint/statique ciblé et tests unitaires du lot passent.
+133. Les tests de routes, contrats, migrations et no-orders passent.
+134. La suite complète passe ou chaque écart préexistant est reproduit et documenté.
+135. Les modes sans IBKR, sans Claude, réseau lent, offline et données partielles restent utilisables.
 
-## J. Runtime, tests et livraison — 136 à 150
+## J. Consolidation, preuves et release — 136 à 150
 
-136. Captures avant/après utilisent mêmes données, route, viewport et état.
-137. Console navigateur ne contient aucune erreur applicative.
-138. `/api/client-log` reste sans erreur liée au lot.
-139. `/healthz` reste conforme.
-140. Compileall passe.
-141. Suite pytest ciblée passe.
-142. Suite no-orders passe.
-143. Les tests des routes et contrats JS passent.
-144. Les modes live/delayed/stale/demo/offline/missing sont vérifiés.
-145. Le service worker est bumpé si le contrat l'exige.
-146. Les caches servent bien les nouveaux actifs visuels.
-147. Aucun consommateur legacy actif n'est supprimé sans preuve.
-148. Le rollback est documenté et réalisable.
-149. La PR reste brouillon avec risques, limites et preuves.
-150. Une validation humaine du commit candidat précède toute fusion/release.
+136. Chaque retrait a une recherche d'imports, routes, scripts, tests, docs et runtime dynamique.
+137. Les données persistées, clés navigateur, service worker et backups sont examinés avant retrait.
+138. Le propriétaire canonique couvre la capacité de l'ancien chemin.
+139. Parité fonctionnelle, données et captures est prouvée avant suppression.
+140. Le rollback du lot est documenté et testé quand il touche des données.
+141. Aucun fichier n'est supprimé uniquement parce qu'il est ancien, gros ou mal nommé.
+142. Les branches distantes ne sont pas supprimées sans inventaire et accord séparé.
+143. Les données personnelles de l'arbre courant sont remplacées par fixtures synthétiques.
+144. Toute réécriture d'historique Git reçoit une autorisation destructive explicite.
+145. Dépendances, skills et actions externes ont licence, version, permissions et retrait documentés.
+146. Le diff final ne contient ni secret, artefact généré accidentel ni changement hors lot.
+147. `git diff --check`, statut, liste des fichiers et commit candidat sont revus depuis zéro.
+148. La PR décrit résultats exacts, risques, limites, métriques, migrations et rollback.
+149. Les 150 contrôles sont eux-mêmes continus, uniques et tous renseignés.
+150. Une validation humaine du commit candidat précède toute fusion ou release.

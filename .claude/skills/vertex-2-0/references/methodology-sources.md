@@ -1,6 +1,8 @@
 # Sources méthodologiques GitHub
 
-Ces projets ont servi à améliorer la méthode. Ils ne sont ni copiés dans Vertex ni requis au runtime. Les règles Vertex, les références visuelles utilisateur et le périmètre « interface uniquement » restent prioritaires.
+Ces projets servent à améliorer la méthode. Ils ne sont ni copiés dans Vertex
+ni requis au runtime. Le contrat produit, la confidentialité, les licences et
+les preuves du dépôt restent prioritaires.
 
 ## UI UX Pro Max
 
@@ -26,6 +28,69 @@ Source : https://github.com/anthropics/claude-code/tree/main/plugins/frontend-de
 
 Retenu : direction spécifique au sujet, une signature unique, critique avant/après construction, complexité proportionnée à la vision, motion concentrée et microcopy conçue comme matériau d'interface.
 
+## Anthropic Code Review et Security Review
+
+Sources : https://github.com/anthropics/claude-code/tree/main/plugins/code-review
+et https://github.com/anthropics/claude-code-security-review
+
+Retenu : revues indépendantes du diff, seuil de confiance, modèle de menace,
+priorité aux défauts exploitables et preuves reproductibles.
+
+## GitHub Awesome Copilot — méthodes retenues
+
+Source : https://github.com/github/awesome-copilot/tree/main/skills
+
+Retenir uniquement les méthodes utiles, sans installer le catalogue :
+
+- `acquire-codebase-knowledge` : documenter seulement ce qui est prouvé par
+  le dépôt ou le terminal, marquer les inconnues et comparer intention/réalité ;
+- `audit-integrity` : vérifier que tests, rapports et exceptions n'occultent
+  pas une perte réelle ; particulièrement important avec `_supersede.py` ;
+- `anti-ui-slop` : partir du produit, des composants et des états réels, puis
+  exécuter une passe de finition observable ; aucune dépendance UIZZE requise ;
+- `agent-supply-chain` : traiter skills, hooks, MCP et actions comme une chaîne
+  logicielle à permissions et provenance vérifiables.
+
+Ces skills sont des sources de méthode. Leur structure, leurs templates et
+leurs services optionnels ne sont ni copiés ni activés automatiquement.
+
+## Trail of Bits
+
+Source : https://github.com/trailofbits/skills
+
+Retenu : differential review, insecure defaults, property-based testing,
+analyse statique et supply-chain risk. Licence CC-BY-SA-4.0 : ne pas recopier
+le corps des skills dans Vertex.
+
+## Qualité et observabilité
+
+Sources : https://github.com/microsoft/playwright,
+https://github.com/GoogleChrome/lighthouse-ci,
+https://github.com/astral-sh/ruff,
+https://github.com/open-telemetry/opentelemetry-python et
+https://github.com/locustio/locust.
+
+Retenu : comportement navigateur réel, budgets visuels/performance, lint rapide,
+télémétrie redacted et charge reproductible. Chaque adoption reste séparée et
+auditée ; Playwright doit réellement installer/exécuter Chromium en CI.
+
+Compléments officiels à évaluer lot par lot :
+
+- axe-core : règles d'accessibilité automatisées, complétées par clavier,
+  zoom, lecteur d'écran et revue humaine ;
+- Semgrep/CodeQL : règles ciblées sur secrets, routes d'écriture, appels IBKR
+  interdits, `innerHTML` et défauts Flask ;
+- `pip-audit` : vulnérabilités des dépendances Python verrouillées ;
+- OpenSSF Scorecard : santé supply-chain des nouvelles dépendances ;
+- OpenTelemetry : traces et métriques redacted ;
+- Locust : profils de charge chaude, froide, dégradée et concurrente.
+
+Sources : https://github.com/dequelabs/axe-core,
+https://github.com/semgrep/semgrep,
+https://github.com/github/codeql,
+https://github.com/pypa/pip-audit et
+https://github.com/ossf/scorecard.
+
 ## Frontend Design Principles
 
 Source : https://github.com/joshuadavidthomas/agent-skills/tree/main/frontend-design-principles
@@ -39,7 +104,25 @@ Retenu : explorer le monde réel du produit, nommer les défauts à rejeter, tok
 - Black Glass avec lumière locale issue des références, pas un dark dashboard générique.
 - Flask/Python/JS existant, aucune hypothèse React/Tailwind.
 - Français simple, données réelles, lecture seule et auditabilité avant esthétique.
-- Les méthodes externes guident le design ; elles n'autorisent jamais une modification métier.
+- Les méthodes externes guident un lot ; elles n'autorisent jamais une
+  permission, dépendance ou modification métier implicite.
+
+## Matrice d'adoption
+
+| Besoin Vertex | Méthode prioritaire | Preuve exigée avant adoption |
+|---|---|---|
+| Cartographie du monolithe | codebase knowledge + inventaire local | propriétaires, imports, routes, stores et preuves de chemin |
+| Refonte visuelle | Frontend Design + Interface Design + anti-ui-slop | capture réelle, tokens locaux, états et test de finition |
+| Régression fonctionnelle | Playwright + pytest de contrat | défaut rouge, parité, console/réseau et rollback |
+| Accessibilité | axe-core + revue manuelle | 390/1024/1600, clavier, zoom, contraste et reduced motion |
+| Sécurité applicative | Anthropic + Trail of Bits + Semgrep/CodeQL | modèle de menace, cas exploitable et faux positifs revus |
+| Unités financières | dimensional analysis + golden/property tests | unité, conversion, tolérance et source documentées |
+| Supply chain | pip-audit + Scorecard + revue des skills | version/SHA, licence, permissions, hooks et plan de retrait |
+| Performance | Lighthouse CI + Locust + traces | baseline p50/p95/p99, budgets et scénario reproductible |
+
+La quantité de skills installés n'est jamais un objectif. Une méthode entre
+dans le skill maître seulement si elle améliore un contrôle Vertex précis sans
+ajouter d'autorité concurrente.
 
 ## Sources de widgets trading
 

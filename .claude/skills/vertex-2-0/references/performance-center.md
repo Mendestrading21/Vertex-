@@ -1,13 +1,14 @@
 # Centre Performance, Journal et Suivi
 
-Contrat de présentation uniquement : afficher et composer les capacités existantes ; ne pas créer les données, métriques, calculs, états ou persistance décrits.
+Contrat fonctionnel et visuel. Les métriques restent déterministes, versionnées
+et séparées par population ; tout nouveau calcul exige tests et provenance.
 
 ## Séparation des populations
 
 Ne jamais fusionner dans un même KPI :
 
 - trades réels déclarés ;
-- positions IBKR ;
+- positions déclarées et leurs valorisations estimées ;
 - signaux théoriques moteurs ;
 - idées suivies hypothétiquement ;
 - simulations options.

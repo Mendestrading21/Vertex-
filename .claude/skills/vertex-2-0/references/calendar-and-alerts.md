@@ -1,6 +1,7 @@
 # Calendrier central et alertes
 
-Contrat de présentation uniquement : composer les événements et alertes déjà fournis ; ne créer ni source, ni type d'alerte, ni état persistant, ni calcul, ni job.
+Contrat de domaine et de présentation. Les sources/jobs manquants nécessitent un
+lot fonctionnel dédié ; l'UI n'invente aucun événement, alerte ou statut.
 
 ## Mission
 

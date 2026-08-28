@@ -9,8 +9,9 @@
 calme, dense et précis. La lecture doit être évidente en cinq secondes : ce qui
 se passe, ce qui mérite l'attention, pourquoi et avec quel risque.
 
-La refonte est uniquement visuelle. Ne modifier ni logique métier, ni données,
-ni moteurs, ni endpoints, ni intégrations, ni persistance.
+Ce fichier gouverne seulement l'interface. Les migrations métier suivent les
+lots du skill maître ; aucune logique, donnée ou promesse ne doit être créée
+dans la couche visuelle.
 
 ## Ce que les références imposent
 
@@ -25,7 +26,7 @@ et terminal desktop simplement compressé sur mobile.
 ## Signature
 
 La signature unique est **Decision Trace** : une hairline argentée avec quatre
-nœuds `Données → Moteur → Décision → Portefeuille`. Elle existe uniquement dans
+nœuds `Données → Moteur → Orientation → Patrimoine déclaré`. Elle existe uniquement dans
 le hero Aujourd'hui, le drawer Opportunité, le hero Analyse, l'audit de décision
 IA et l'impact Portefeuille.
 
@@ -77,8 +78,12 @@ légende, interactions visuelles, resize et accessibilité. Séries, valeurs,
 calculs, agrégations, sources et timeframes canoniques restent inchangés.
 
 Le Simulateur est une surface analytique multi-actifs. Il compare des scénarios
-explicites pour Actions, ETF, Options et Forex avec les moteurs existants ; il
-ne promet pas une prévision, n'invente aucun calcul et ne prépare aucun ordre.
+explicites pour Actions, ETF, Options et Forex avec le moteur canonique ; il ne
+promet pas une prévision, n'invente aucun calcul et ne prépare aucun ordre.
+
+Le Portefeuille affiche uniquement les enveloppes, cash et positions déclarés
+par l'utilisateur. IBKR peut sourcer une cote de marché ; il ne fournit jamais
+compte, position, coût, P&L ou patrimoine.
 
 ## États, accessibilité et responsive
 

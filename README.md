@@ -3,7 +3,7 @@
 **Système d'intelligence de marché et d'aide à la décision — analyse uniquement.**
 
 Vertex centralise le régime de marché, le brief quotidien, les opportunités,
-l'analyse d'entreprises, le portefeuille et l'intelligence options. Il est
+l'analyse d'entreprises, le portefeuille déclaré et l'intelligence options. Il est
 conçu pour produire des décisions structurées, mesurables, traçables et
 explicables. **Aucun chemin d'exécution d'ordre n'est autorisé.**
 
@@ -45,7 +45,11 @@ canonique active V4 avant de charger l'application.
 
 ## Sources et intégrations
 
-- **IBKR**: cours, options et portefeuille, connexion forcée en lecture seule;
+- **IBKR**: contrats, cours, historiques, chaînes, IV et Greeks de marché
+  uniquement, connexion forcée en lecture seule; aucun compte, solde, position
+  ou P&L broker ne fait partie du contrat Vertex 2.0;
+- **Portefeuille**: enveloppes, cash et positions saisis volontairement par
+  l'utilisateur dans Vertex;
 - **TradingView**: signaux authentifiés qui demandent une réévaluation, jamais
   un achat;
 - **WMB Brief**: contexte macro quotidien avec provenance;
@@ -53,16 +57,17 @@ canonique active V4 avant de charger l'application.
 - **Claude**: synthèse et explication uniquement; les calculs, scores, Greeks,
   probabilités, hard gates et verdicts restent déterministes.
 
-## Huit espaces canoniques
+## Espaces du runtime actuel
 
-1. Aujourd'hui
-2. Marchés
-3. Opportunités
-4. Analyse
-5. Portefeuille
-6. Options
-7. Journal
-8. Système
+La navigation principale réellement servie contient Dashboard, Opportunités,
+Analyse, Portefeuille, Options, Journal et Système. Intelligence et Suivis sont
+des pages secondaires. Calendrier redirige vers Opportunités, Marchés vers le
+Dashboard ; Simulateur et la future route Suivi n'existent pas encore.
+
+La cible Vertex 2.0 comporte douze pages, livrées par migration progressive :
+Aujourd'hui, Calendrier, Marchés, Opportunités, Analyse, Options, Simulateur,
+Portefeuille, Suivi, Performance, Vertex IA et Système. La matrice exacte vit
+dans le skill maître ; elle ne constitue pas une promesse de pages déjà prêtes.
 
 ## Architecture
 
@@ -91,14 +96,15 @@ python -m pytest -q
 python -m pytest tests/test_no_orders.py -q
 ```
 
-Claude Code doit utiliser exclusivement `/vertex-1-0` et les documents sous
-`docs/vertex-1.0/`.
+Claude Code doit utiliser exclusivement `/vertex-2-0`. Le skill maître est
+`.claude/skills/vertex-2-0/SKILL.md`; il fait converger progressivement le
+runtime 1.0 vers la plateforme 2.0 sans présenter la cible comme déjà livrée.
 
 ## Documentation active
 
-Commencer par [`docs/vertex-1.0/README.md`](docs/vertex-1.0/README.md).
-Les anciens documents et branches restent consultables comme archives de
-preuve, mais ne sont plus des sources d'instruction.
+Commencer par le skill maître. [`docs/vertex-1.0/README.md`](docs/vertex-1.0/README.md)
+reste une archive technique du runtime actuel ; les anciens documents et
+branches sont des preuves historiques, pas des instructions concurrentes.
 
 ## Sécurité
 

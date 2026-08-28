@@ -6,9 +6,12 @@ Répondre à : **si j'expose un montant à cet instrument et que tel scénario s
 
 Le Simulateur est analytique, multi-actifs et strictement séparé de l'exécution. Employer `scénario`, `hypothèse`, `simulation` et `résultat théorique`. Ne jamais présenter une sortie comme une prévision certaine, une promesse, un signal ou une recommandation personnalisée.
 
-## Périmètre visuel verrouillé
+## Séparation moteur / interface
 
-La page compose uniquement les calculateurs, scénarios, quotes, positions et données déjà présents. Elle peut organiser les entrées et rendre leurs sorties plus lisibles. Elle ne crée ni moteur de pricing, ni conversion de devise, ni Greek, ni probabilité, ni forecast, ni store, ni endpoint.
+La page compose les calculateurs, scénarios, quotes et positions déclarées du
+contrat canonique. Le lot moteur peut consolider les calculateurs existants ;
+la page ne crée ni pricing, conversion, Greek, probabilité, forecast, store ou
+endpoint dans JavaScript.
 
 Si un calcul manque, afficher `Calcul non disponible dans Vertex` avec les données nécessaires et consigner le besoin hors périmètre. Aucun calcul approximatif dans JavaScript ou le template.
 

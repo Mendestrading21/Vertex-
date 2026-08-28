@@ -2,7 +2,7 @@
 
 ## Registre obligatoire
 
-Avant de refondre visuellement un domaine, inventorier en lecture seule :
+Avant de refondre un domaine, inventorier en lecture seule :
 
 | Champ | Contenu |
 |---|---|
@@ -14,7 +14,7 @@ Avant de refondre visuellement un domaine, inventorier en lecture seule :
 | Consommateurs | pages, jobs, API, tests |
 | Réalité | fonctionnel, partiel, fantôme, legacy |
 | Doublons | propriétaires concurrents |
-| Décision visuelle | conserver, regrouper, déplacer, reformuler, masquer |
+| Décision cible | conserver, regrouper, migrer, déplacer, reformuler, retirer |
 | Preuves | tests, navigateur, données, logs |
 
 ## Méthode
@@ -23,8 +23,9 @@ Avant de refondre visuellement un domaine, inventorier en lecture seule :
 2. Vérifier le comportement au runtime ; un nom de fonction n'est pas une capacité fonctionnelle.
 3. Identifier le propriétaire existant et les données réellement disponibles sans les modifier.
 4. Concevoir une présentation unique qui consomme les mêmes sorties.
-5. Ajouter des gardiens de non-régression visuelle et fonctionnelle.
-6. Retirer uniquement le doublon CSS/HTML lorsque son dernier consommateur visuel a migré.
+5. Ajouter des gardiens de non-régression fonctionnelle, données et visuelle.
+6. Retirer l'ancien propriétaire seulement lorsque son dernier consommateur et
+   ses données ont migré et que le rollback est prouvé.
 
 ## Dette à traiter
 
@@ -40,4 +41,7 @@ Avant de refondre visuellement un domaine, inventorier en lecture seule :
 
 ## Règle de composition
 
-Une nouvelle page ou sous-vue visuelle est autorisée uniquement si elle compose des routes, handlers, stores, endpoints et données déjà présents. Si une capacité métier manque, la consigner comme besoin hors périmètre et afficher un état honnête ; ne pas créer provider, endpoint, moteur, schéma ou persistance.
+Une nouvelle page ou sous-vue est activée seulement lorsque routes, handlers,
+stores, endpoints, données, états et tests existent. Si une capacité manque,
+la marquer honnêtement et la planifier dans un lot fonctionnel distinct ; ne
+jamais fabriquer une façade ou implémenter un moteur dans la couche visuelle.

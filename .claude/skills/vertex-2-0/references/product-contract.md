@@ -2,7 +2,12 @@
 
 ## Pour qui
 
-Vertex est d'abord le centre de décision personnel d'Elio : investisseur actif utilisant IBKR, TradingView et ses propres moteurs, avec options tactiques revues sur 2/4/6 semaines et actions/ETF sur 3/6/12 mois. Il ouvre Vertex pour savoir quoi comprendre, quoi étudier, ce qui menace son portefeuille et ce qui a changé depuis sa dernière visite.
+Vertex est d'abord un centre personnel d'intelligence de marché pour un
+investisseur actif utilisant IBKR uniquement pour les données de marché,
+TradingView pour des événements de réévaluation, ses propres moteurs et un
+portefeuille volontairement déclaré dans Vertex. Il ouvre Vertex pour savoir
+quoi comprendre, quoi étudier, ce qui menace ses hypothèses et ce qui a changé
+depuis sa dernière visite.
 
 ## Travail principal
 
@@ -27,7 +32,10 @@ En moins de cinq minutes, Vertex doit permettre de :
 - Une vérité, plusieurs lectures : un instrument, une thèse, un packet et plusieurs surfaces liées.
 - Contradiction visible : la contre-thèse et l'opinion minoritaire ne sont jamais enterrées.
 - Temps explicite : toute donnée, thèse, décision et alerte possède un âge.
-- Portefeuille partout : une opportunité sans impact portefeuille est incomplète.
+- Portefeuille déclaré partout : une opportunité sans impact hypothétique sur
+  les positions saisies est incomplète.
+- Une seule orientation : toutes les pages projettent le même `AdviceResult` ;
+  aucun moteur, agent ou JavaScript n'émet un verdict parallèle.
 - Suivi obligatoire : une décision sans invalidation ni prochaine revue est incomplète.
 - Dégradation honnête : une plateforme partiellement alimentée reste utile sans simuler le réel.
 - Progressivité : profondeur maximale, mais révélée au bon moment plutôt qu'affichée simultanément.
@@ -41,6 +49,8 @@ En moins de cinq minutes, Vertex doit permettre de :
 - terminal rempli de métriques sans décision ;
 - copie de Bloomberg, TradingView ou d'un dashboard SaaS ;
 - nouvelle stratégie activée par l'IA sans validation humaine.
+- agrégateur de comptes ou de positions broker ;
+- décision ou recommandation personnalisée présentée comme certaine.
 
 ## Mesure de valeur
 

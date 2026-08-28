@@ -1,6 +1,7 @@
 # Centre Options
 
-Contrat de présentation uniquement : afficher et composer les capacités existantes ; ne pas créer les données, moteurs, Greeks, scénarios, calculs, états ou persistance décrits.
+Contrat de domaine et de présentation. Le pipeline options peut converger dans
+son lot dédié ; l'UI ne calcule ni Greek, prix, score, stratégie ou scénario.
 
 ## Mission
 

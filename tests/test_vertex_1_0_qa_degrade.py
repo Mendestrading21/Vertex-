@@ -35,6 +35,7 @@ sur un produit qui invente un verdict.
 import json
 import pathlib
 import sys
+import urllib.error
 import urllib.request
 
 import pytest
@@ -52,6 +53,28 @@ def _serveur_repond():
     try:
         with urllib.request.urlopen(BASE + '/healthz', timeout=3) as r:
             return r.status == 200
+    except Exception:  # noqa: BLE001
+        return False
+
+
+def _serveur_verrouille():
+    """Le serveur exige-t-il un code d'accès (`VERTEX_CODE`) ?
+
+    `/healthz` reste ouvert — c'est une sonde d'infrastructure. Les surfaces
+    mesurées ici, elles, sont derrière le verrou : sur un poste où l'accès est
+    protégé, l'instrument reçoit `{"error":"auth"}` partout.
+
+    Sans ce contrôle, il **accusait le produit à tort** : « la réponse ne
+    contient aucun mot d'aveu — le vide n'est pas nommé » alors qu'il n'avait
+    jamais vu la réponse, seulement le mur d'authentification. Une mesure qui
+    ne peut pas être faite doit se déclarer impossible, jamais se transformer
+    en défaut imaginaire.
+    """
+    try:
+        with urllib.request.urlopen(BASE + '/api/live/status', timeout=3) as r:
+            return b'"auth"' in r.read()
+    except urllib.error.HTTPError as e:
+        return e.code in (401, 403)
     except Exception:  # noqa: BLE001
         return False
 
@@ -156,6 +179,11 @@ def test_l_instrument_ne_recopie_jamais_le_secret_qu_il_trouve():
 @pytest.mark.skipif(not _serveur_repond(),
                     reason='serveur absent sur 127.0.0.1:5002 — la mesure '
                            'porterait sur rien')
+@pytest.mark.skipif(_serveur_repond() and _serveur_verrouille(),
+                    reason="serveur protege par VERTEX_CODE — l'instrument ne "
+                           "voit que le mur d'authentification, pas les "
+                           'surfaces. Mesurer ici accuserait le produit de ne '
+                           'pas nommer un vide que personne ne lui a montre.')
 def test_le_produit_servi_ne_fuit_rien_et_ne_sait_pas_passer_d_ordre():
     r = _mes.mesurer(BASE)
     assert _mes._temoins(r) == []
