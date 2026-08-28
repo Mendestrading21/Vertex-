@@ -816,9 +816,13 @@ def _scan_once():
             try:
                 _db = _demo_options_board(rows, detail)
                 _annotate_swing(_db, detail)
+                #  IMMUABILITÉ (lot 45) : rows est DÉJÀ publié quelques lignes
+                #  plus haut — copie avant verdict, republication de la copie.
+                rows = [dict(r) for r in rows]
                 _attach_vehicle(rows, _db)
                 _publier(scan_state, 'partiel', _gen,
-                         {'options_board': _db, 'options_as_of': time.time(),
+                         {'rows': rows,
+                          'options_board': _db, 'options_as_of': time.time(),
                           # chaîne large synthétique (grille/surface/skew)
                           'options_chain_full': _demo.demo_chain_full(rows, detail)})
             except Exception:
@@ -1513,18 +1517,29 @@ def _publish_board(focus):
     ob = list(merged.values())
     if ob:
         _annotate_swing(ob, scan_state.get('detail') or {})
-        scan_state['options_board'] = ob
-        scan_state['options_as_of'] = now
+        bloc = {'options_board': ob, 'options_as_of': now}
         # Suivis HYPOTHÉTIQUES uniquement : chaque refresh du board fige une
         # quote de contrat réellement publiée pour alimenter le track record.
         try:
             from vertex.tracking import repository as _tracking_repo
-            scan_state['option_tracking_snapshot'] = _tracking_repo.record_option_board(
+            bloc['option_tracking_snapshot'] = _tracking_repo.record_option_board(
                 ob, at=now, source=scan_state.get('options_source') or 'options_board')
         except Exception:
             # Le suivi ne doit jamais interrompre la publication analytique.
-            scan_state['option_tracking_snapshot'] = {'error': 'snapshot indisponible'}
-        _attach_vehicle(scan_state.get('rows') or [], ob)   # rafraîchit le verdict véhicule
+            bloc['option_tracking_snapshot'] = {'error': 'snapshot indisponible'}
+        #  IMMUABILITÉ (lot 45, dette du lot 42) : la liste publiée reste
+        #  figée — le verdict véhicule est attaché sur une COPIE ligne à
+        #  ligne, republiée dans le MÊME cycle (génération et phase
+        #  conservées) en un seul bloc atomique avec le board.
+        rows_nouveaux = [dict(r) for r in (scan_state.get('rows') or [])]
+        _attach_vehicle(rows_nouveaux, ob)
+        bloc['rows'] = rows_nouveaux
+        _gen_cour = scan_state.get('scan_gen')
+        _publier(scan_state,
+                 scan_state.get('scan_phase') or 'partiel',
+                 _gen_cour if isinstance(_gen_cour, int)
+                 and not isinstance(_gen_cour, bool) else 0,
+                 bloc)
         _save_json('options_cache.json', {'board': ob, 'ts': time.time()})
         # Push SSE (canal 'options') : le board a changé → les pages options se rafraîchissent.
         try:
