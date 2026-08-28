@@ -218,8 +218,11 @@
   function rendreFraicheur(cal) {
     var hote = $('#vx-cal-fraicheur');
     if (!hote) return;
-    // `updated` existe ; `ts` n'existe pas. On n'invente pas le second.
-    if (cal && cal.updated) {
+    // Lot 46 : le flux porte désormais `ts` (époque serveur) — un âge VIVANT
+    // remplace le libellé figé ; sans ts on garde `updated`, sans rien on le dit.
+    if (cal && cal.ts && window.VX && VX.updateIndicator) {
+      hote.innerHTML = VX.updateIndicator(cal.ts, 'lot construit à ' + (cal.updated || '—'), 'delayed');
+    } else if (cal && cal.updated) {
       hote.innerHTML = badge('delayed', 'Lot construit à ' + cal.updated);
     } else {
       hote.innerHTML = badge('missing', 'Horodatage indisponible');

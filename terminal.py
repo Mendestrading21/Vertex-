@@ -1758,6 +1758,7 @@ def _cal_loop():
         if good and len(good) >= len(cal_state.get('items') or []) * 0.5:
             cal_state['items'] = good
             cal_state['updated'] = datetime.now().strftime('%H:%M %d/%m')
+            cal_state['ts'] = time.time()   # époque serveur — la page affiche un âge VRAI
             _save_json('cal_cache.json', good)
     time.sleep(5 if DEMO_MODE else 90)                 # laisse le scan de démarrage finir (anti-throttle)
     if DEMO_MODE:                                      # VITRINE : calendrier earnings synthétique
@@ -1778,6 +1779,7 @@ def _cal_loop():
                 items.sort(key=lambda x: x['dte'])
                 cal_state['items'] = items
                 cal_state['updated'] = datetime.now().strftime('%H:%M %d/%m')
+                cal_state['ts'] = time.time()
                 try:
                     from vertex.scheduler import registry as _sched
                     _sched.beat('CATALYST_REFRESH', ok=True)

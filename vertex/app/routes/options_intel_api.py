@@ -61,6 +61,13 @@ def _as_of():
     return scan_state.get('scan_ts_h') or scan_state.get('updated')
 
 
+def _ts_epoch():
+    """Époque (s) des données options servies : board d'abord (options_as_of),
+    repli scan. `_as_of()` rend un LIBELLÉ humain — illisible pour un âge
+    vivant côté client ; celle-ci porte le nombre."""
+    return scan_state.get('options_as_of') or scan_state.get('scan_ts')
+
+
 def _detail_by_sym():
     return scan_state.get('detail') or {}
 
@@ -384,7 +391,7 @@ def options_scenarios(sym):
     return jsonify({'symbol': sym, 'empty': False, 'contract': {
         'type': c.get('type'), 'strike': c.get('strike'), 'dte': c.get('dte'),
         'exp': c.get('exp'), 'iv': iv, 'cost': c.get('cost'), 'spot': spot,
-    }, 'sim': sim, 'as_of': _as_of()})
+    }, 'sim': sim, 'as_of': _as_of(), 'ts': _ts_epoch()})
 
 
 def _num(x):
@@ -541,8 +548,10 @@ def options_vol_charts(sym):
         wide = _wide_contracts(sym)
         board = wide if wide else _board_for(sym)
         src = 'chaîne large IBKR' if wide else 'SCAN'
-        return jsonify(vol_charts.build(board, sym, as_of=_as_of(),
-                                        source=src, expiry=expiry))
+        payload = vol_charts.build(board, sym, as_of=_as_of(),
+                                   source=src, expiry=expiry)
+        payload['ts'] = _ts_epoch()   # époque serveur pour l'âge des 4 cartes
+        return jsonify(payload)
     except Exception as e:
         return jsonify({'symbol': sym, 'empty': True,
                         'error': 'options_vol_charts_unavailable'}), 500

@@ -1,5 +1,15 @@
 # Vertex 2.0 — récapitulatif de livraison
 
+> **Mise à jour (2026-08-28, lot 46).** Ce document est le récapitulatif
+> HISTORIQUE de la campagne visuelle (lots 0-23, PR #839). Depuis : tout a
+> été fusionné dans `main` sur autorisation utilisateur (PR #840-#855 puis
+> lots 40-46), l'audit-150 est passé (150 OK · 0 écart, puis 22/22 aux
+> contrôles automatisés), et les « besoins hors périmètre » consignés en fin
+> de document sont soldés : `neon-glass.css` supprimée (lot 24),
+> `/options/<sym>` dédupliqué (lot 8), et le champ `ts` de `/cal-feed` est
+> LIVRÉ (lot 46 — fraîcheur serveur honnête). L'état courant vit dans
+> `docs/vertex-2-0/lot-NN/RAPPORT.md` (dernier lot = vérité).
+
 **Branche :** `claude/vertex-2-0-visual-redesign-vy3h7s`
 **PR brouillon :** `#839`  
 <!-- L'URL complète n'est pas écrite ici : son segment de propriétaire porte un
