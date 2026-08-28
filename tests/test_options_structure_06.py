@@ -34,9 +34,9 @@ PF = 'vertex/ui/pages/portfolio_page.py'
 def test_options_new_views_registered():
     src = _read(PAGE)
     assert "('structure', 'Structure')" in src
-    assert "('leaps', 'LEAPS')" in src
-    #  VERTEX 2.0 : libellé canonique de `navigation-and-pages.md` §6.
-    #  La clé d'URL ne change pas.
+    #  Lot 38 : la vue leaps EST le Scanner du contrat — libellé honnête,
+    #  la clé d'URL ne change pas.
+    assert "('leaps', 'Scanner LEAPS')" in src
     assert "('positions', 'Positions')" in src
     # défaut = structure (Carte-Verdict d'abord)
     assert "def render(view: str = 'structure')" in src
