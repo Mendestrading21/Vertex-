@@ -23,9 +23,8 @@ def _identity_set(positions: list[dict]) -> dict:
 
 
 def startup_position_report(desk_blob: dict | None,
-                            ibkr_positions: list | None,
                             ibkr_online: bool) -> dict:
-    positions = load_positions(desk_blob, ibkr_positions)
+    positions = load_positions(desk_blob)
     open_pos = [p for p in positions if p.get('status') != 'CLOSED']
     prev = persist.load_json(_INVENTORY_FILE, {}) or {}
     prev_ids = prev.get('ids') or {}

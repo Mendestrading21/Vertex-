@@ -53,10 +53,9 @@ def _quote_for_option(quotes, p):
 
 
 def recalculate_all(scan_state: dict, desk_blob: dict | None = None,
-                    quotes: dict | None = None,
-                    ibkr_positions: list | None = None) -> dict:
+                    quotes: dict | None = None) -> dict:
     """Recalcule TOUTES les positions ouvertes et le portefeuille agrégé."""
-    positions = load_positions(desk_blob, ibkr_positions)
+    positions = load_positions(desk_blob)
     positions = [p for p in positions if p.get('status') != 'CLOSED']
 
     for p in positions:

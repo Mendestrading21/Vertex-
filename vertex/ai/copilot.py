@@ -55,8 +55,13 @@ def _positions_for(symbol=None):
     return out[:20]
 
 
-def build_context(scan_state, symbol=None):
-    """Contexte RÉEL du copilote : digest de session + positionnement du titre + desk."""
+def build_context(scan_state, symbol=None, avec_positions=False):
+    """Contexte RÉEL du copilote : digest de session + positionnement du titre.
+
+    Lot 25 — minimisation PII : positions déclarées et post-mortem du journal
+    ne partent dans le prompt QUE sur action explicite (`avec_positions`).
+    L'exclusion est DITE au modèle — sans quoi il conclurait « aucune
+    position », ce qui serait un mensonge."""
     from vertex.engines import session_digest
     from vertex.options import gex as _gex, flow as _flow, dealer_synthesis as _ds
     scan_state = scan_state or {}
@@ -77,6 +82,10 @@ def build_context(scan_state, symbol=None):
                                      symbol=sym)
         ctx['detail'] = {'price': detail.get('price'), 'score': detail.get('score'),
                          'earnings_in_days': detail.get('earnings_in_days')}
+    if not avec_positions:
+        ctx['positions'] = ('NON_TRANSMISES (vie privée — activer « inclure '
+                            'mes positions » pour les joindre à la question)')
+        return ctx
     ctx['positions'] = _positions_for(sym)
     # Post-mortem du journal (résumé chiffré) : ancre les questions de discipline
     # (« quelles sont mes erreurs récurrentes ? ») dans les trades RÉELS clôturés.
@@ -111,8 +120,8 @@ def _fallback(ctx, symbol, conseil_cle=True):
     reg = (dg.get('regime') or {})
     if reg.get('label'):
         parts.append('Climat de marché : %s.' % reg['label'])
-    pos = ctx.get('positions') or []
-    if pos:
+    pos = ctx.get('positions')
+    if isinstance(pos, list) and pos:      # jamais compter la chaîne d'exclusion
         parts.append('%d position(s) déclarée(s)%s dans le desk.' % (
             len(pos), (' sur ' + symbol) if symbol else ''))
     if not parts:
@@ -127,14 +136,14 @@ def _fallback(ctx, symbol, conseil_cle=True):
     return ' '.join(parts)
 
 
-def answer(question, scan_state, symbol=None):
+def answer(question, scan_state, symbol=None, avec_positions=False):
     """Réponse du copilote. Retourne un dict JSON-sérialisable, jamais d'exception."""
     q = str(question or '').strip()[:MAX_QUESTION]
     sym = (str(symbol or '').upper()[:12] or None)
     if not q:
         return {'ok': False, 'error': 'question vide', 'source': None, 'answer': None}
     try:
-        ctx = build_context(scan_state, sym)
+        ctx = build_context(scan_state, sym, avec_positions=bool(avec_positions))
     except Exception as e:
         return {'ok': False, 'error': 'contexte indisponible: %s' % e,
                 'source': None, 'answer': None}

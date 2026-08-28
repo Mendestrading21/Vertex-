@@ -14,9 +14,10 @@ from vertex.ui.shell import render_shell
 
 
 def _load_tokens() -> dict:
-    """Valeurs RÉELLES de tokens.css (source unique de vérité). Les alias
-    var(--x) sont résolus un niveau — la page de référence ne peut plus
-    afficher un hex périmé : elle LIT la vérité au lieu de la recopier."""
+    """Valeurs RÉELLES de la cascade (tokens.css, puis glass.css et
+    vertex-2-0.css — la couche finale gagne). Les chaînes d'alias var(--x)
+    sont résolues jusqu'au hex — la page de référence LIT la vérité au lieu
+    de la recopier."""
     import os
     import re
     path = os.path.join(os.path.dirname(__file__), '..', '..', 'static',
@@ -27,11 +28,27 @@ def _load_tokens() -> dict:
         return {}
     toks = dict(re.findall(r'(--vx-[a-z0-9-]+)\s*:\s*([^;]+);', css))
     out = {}
+    #  Lot 25 : la résolution suit la CASCADE réelle — un alias peut pointer
+    #  sur un jeton défini par glass.css ou vertex-2-0.css (couche finale),
+    #  et une chaîne d'alias peut faire plusieurs sauts.
+    dossier = os.path.dirname(path)
+    for feuille in ('glass.css', 'vertex-2-0.css'):
+        chemin = os.path.join(dossier, feuille)
+        try:
+            autre = open(chemin, encoding='utf-8').read()
+        except OSError:
+            continue
+        for m in re.finditer(r'(--vx[a-z0-9-]*)\s*:\s*([^;}]+)[;}]', autre):
+            toks[m.group(1)] = m.group(2)
     for k, v in toks.items():
         v = v.strip()
-        m = re.fullmatch(r'var\((--vx-[a-z0-9-]+)\)', v)
-        if m:
+        for _ in range(6):                       # chaînes d'alias bornées
+            m = re.fullmatch(r'var\((--vx-[a-z0-9-]+)\)', v)
+            if not m:
+                break
             v = toks.get(m.group(1), v).strip()
+            if v == 'var(%s)' % m.group(1):
+                break
         out[k] = v
     return out
 

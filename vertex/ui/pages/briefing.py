@@ -302,7 +302,7 @@ _CONTENT = """
   [data-block] .vx-idx-tile .vx-kpi-label{font-size:11px !important;letter-spacing:.05em;
     text-transform:uppercase;color:var(--vx-text-muted,#7c828c)}
   [data-block] .vx-idx-tile .vx-kpi-value{font-size:21px !important;font-weight:640;letter-spacing:-.02em;
-    color:#f5f7fa;font-variant-numeric:tabular-nums;white-space:nowrap}
+    color:var(--vx-ink);font-variant-numeric:tabular-nums;white-space:nowrap}
   [data-block] .vx-idx-tile .vx-kpi-delta{font-weight:600;font-size:12.5px}
   [data-block] .vx-idx-tile:hover{border-color:rgba(255,255,255,.2);transform:translateY(-1px)}
   /* Lignes clé-valeur (régime, drivers, portefeuille) */
@@ -327,7 +327,7 @@ _CONTENT = """
   [data-block] #vx-regime-gauge .vx-gauge svg circle{
     r:7px;fill:#ffffff;
     filter:drop-shadow(0 0 9px rgba(255,255,255,.85)) drop-shadow(0 0 3px #fff)}
-  [data-block] #vx-regime-gauge .vx-gauge svg text[font-size="30"]{fill:#f5f7fa !important}
+  [data-block] #vx-regime-gauge .vx-gauge svg text[font-size="30"]{fill:var(--vx-ink) !important}
   /* ── Polish transversal : survols de carte, chips argent, badges nets ── */
   [data-block] .vx-card{transition:border-color .18s ease,box-shadow .18s ease}
   [data-block] .vx-card:hover{border-color:rgba(255,255,255,.16);

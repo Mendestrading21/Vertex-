@@ -281,6 +281,9 @@ _SECTIONS = """
     <p class="vx-chart-question">Question sur ce titre — réponse ancrée dans les chiffres disponibles.</p>
     <div data-body>
       <input id="an-cp-q" class="vx-input" aria-label="Question sur ce titre" placeholder="ex. Quel est le risque principal ici ?" maxlength="500" autocomplete="off" style="margin-bottom:.4rem" />
+      <label class="vx-meta" style="display:flex;align-items:center;gap:6px;margin-bottom:.4rem;cursor:pointer">
+        <input type="checkbox" id="an-cp-pos" /> Inclure mes positions déclarées dans la question (vie privée : exclues par défaut)
+      </label>
       <button class="vx-btn vx-btn-sm vx-btn-primary" id="an-cp-go">Demander</button>
       <div id="an-cp-out" class="vx-mt2" aria-live="polite"></div>
       <div class="vx-meta vx-mt1">Lecture seule — aucune exécution.</div>
@@ -1578,7 +1581,8 @@ function demoState(){return !!(window.__vxStatus&&window.__vxStatus.demo);}
     if(!question){VX.toast&&VX.toast('Écris une question','warn');return;}
     out.innerHTML='<div class="vx-empty">Le copilote analyse '+SYM+'…</div>';
     fetch('/api/copilot/ask',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({question:question,symbol:SYM})})
+      body:JSON.stringify({question:question,symbol:SYM,
+        avec_positions:!!($('an-cp-pos')&&$('an-cp-pos').checked)})})
       .then(r=>r.json()).then(d=>{
         if(!d.ok){out.innerHTML='<div class="vx-error-banner">'+esc(d.error||'réponse indisponible')+'</div>';return;}
         out.innerHTML='<div class="vx-insight" data-tone="action" style="white-space:pre-wrap;font-size:12.5px">'+esc(d.answer)+'</div>'

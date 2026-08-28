@@ -22,13 +22,16 @@ def _read(*parts):
 
 # ── Couleurs : marque ≠ positif, tokens sémantiques riches ────────────────
 def test_brand_color_is_not_positive_color():
-    """La marque (signal olive) ne doit JAMAIS être la couleur de gain positif."""
+    """La marque ne doit JAMAIS être la couleur de gain positif.
+    Lot 25 : tokens.css est aligné sur la vérité SERVIE (argent Black
+    Glass) — l'olive de l'ancienne marque ne revient pas, et l'intention
+    d'origine (marque ≠ vert de gain) reste gardée sans épingler une
+    palette abandonnée."""
     tok = _read(CSS, 'tokens.css')
-    assert '--vx-signal-500:#84aa31' in tok
     assert '--vx-positive:#36c889' in tok
-    # brand pointe sur signal, pas sur positive
-    assert '--vx-brand:var(--vx-signal-500)' in tok
+    assert '#84aa31' not in tok, 'l\'olive de l\'ancienne marque ne revient pas'
     assert '--vx-brand:var(--vx-positive)' not in tok
+    assert '--vx-brand:#36c889' not in tok.replace(' ', '')
 
 
 def test_macro_teal_token_exists():

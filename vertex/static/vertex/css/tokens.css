@@ -10,15 +10,15 @@
   /* ── Noirs & graphites (fond légèrement teinté vert) ── */
   --vx-black:#020302;
   --vx-obsidian-950:#040504;
-  --vx-obsidian-900:#060806;
-  --vx-obsidian-850:#070907;
-  --vx-obsidian-800:#090b09;
-  --vx-graphite-900:#0d100e;
-  --vx-graphite-850:#121612;
-  --vx-graphite-800:#181d19;
-  --vx-graphite-750:#202621;
-  --vx-graphite-700:#272e28;
-  --vx-root:var(--vx-obsidian-950);--vx-app:var(--vx-obsidian-900);--vx-sidebar:var(--vx-obsidian-850);--vx-topbar:rgba(8,10,8,.94);
+  --vx-obsidian-900:#08090b;
+  --vx-obsidian-850:#0b0c0e;
+  --vx-obsidian-800:#0e0f12;
+  --vx-graphite-900:#101216;
+  --vx-graphite-850:#14161a;
+  --vx-graphite-800:#1a1d22;
+  --vx-graphite-750:#20242a;
+  --vx-graphite-700:#262a30;
+  --vx-root:var(--vx-obsidian-950);--vx-app:var(--vx-obsidian-900);--vx-sidebar:var(--vx-obsidian-850);--vx-topbar:rgba(12,13,16,.7);
 
   /* ── Fonds (compat V3 : bg-0..3) ── */
   --vx-bg-0:var(--vx-obsidian-950);
@@ -27,39 +27,39 @@
   --vx-bg-3:var(--vx-obsidian-800);
 
   /* ── Surfaces (0..4 explicites) ── */
-  --vx-surface-0:#090b09;
-  --vx-surface-base:#0d100e;
-  --vx-surface-raised:#121612;
-  --vx-surface-elevated:#181d19;
-  --vx-surface-hover:#272e28;
+  --vx-surface-0:#0b0c0f;
+  --vx-surface-base:#101216;
+  --vx-surface-raised:#15171c;
+  --vx-surface-elevated:#1b1e23;
+  --vx-surface-hover:#232830;
   --vx-surface-1:var(--vx-surface-base);
   --vx-surface-2:var(--vx-surface-raised);
   --vx-surface-3:var(--vx-surface-elevated);
-  --vx-surface-4:#202621;
+  --vx-surface-4:#20242a;
 
   /* ── Bordures (blanc légèrement vert) ── */
-  --vx-border-faint:rgba(237,255,237,.035);
-  --vx-border-soft:rgba(237,255,237,.065);
-  --vx-border-default:rgba(237,255,237,.105);
-  --vx-border-strong:rgba(237,255,237,.17);
+  --vx-border-faint:rgba(222,227,237,.05);
+  --vx-border-soft:rgba(222,227,237,.09);
+  --vx-border-default:rgba(222,227,237,.14);
+  --vx-border-strong:rgba(222,227,237,.22);
 
   /* ── Texte ── */
-  --vx-text-primary:#f2f5f1;
-  --vx-text-secondary:#b8beb7;
-  --vx-text-muted:#818980;
-  --vx-text-faint:#5d645d;
+  --vx-text-primary:#f3f5f8;
+  --vx-text-secondary:#b7bcc4;
+  --vx-text-muted:#828892;
+  --vx-text-faint:#5c626b;
 
   /* ── VERTEX SIGNAL GREEN — identité (⚠️ pas « hausse ») ── */
-  --vx-signal-950:#111a07;
-  --vx-signal-900:#1d2b0b;
-  --vx-signal-800:#304412;
-  --vx-signal-700:#48631b;
-  --vx-signal-600:#648525;
-  --vx-signal-500:#84aa31;
-  --vx-signal-400:#a3ca42;
-  --vx-signal-300:#badf58;
-  --vx-signal-soft:rgba(163,202,66,.14);
-  --vx-signal-glow:rgba(163,202,66,.18);
+  --vx-signal-950:#191b1f;
+  --vx-signal-900:#202329;
+  --vx-signal-800:#2b2f36;
+  --vx-signal-700:#3a3f47;
+  --vx-signal-600:#565c66;
+  --vx-signal-500:#c9cdd4;
+  --vx-signal-400:#dfe2e7;
+  --vx-signal-300:#eef0f3;
+  --vx-signal-soft:var(--vx-silver-soft);
+  --vx-signal-glow:rgba(201,205,212,.16);
 
   /* ── Compat : rampe « orange » legacy → vert Signal (propagation d'identité) ── */
   --vx-orange-950:var(--vx-signal-950);
@@ -79,13 +79,13 @@
      ⚠️ Vérité d'EXÉCUTION : glass.css (chargé en dernier) override --vx-brand
      et la rampe signal en ARGENT #c9cdd4 — direction Black Glass, le vert est
      réservé au positif. Ne PAS changer les hex ci-dessous (garde-fous tests). */
-  --vx-brand:var(--vx-signal-500);
-  --vx-brand-strong:var(--vx-signal-400);
-  --vx-brand-hover:var(--vx-signal-400);
+  --vx-brand:var(--vx-silver);
+  --vx-brand-strong:#e6e9ee;
+  --vx-brand-hover:#e6e9ee;
   --vx-brand-selected:var(--vx-signal-700);
-  --vx-brand-soft:rgba(48,68,18,.45);
+  --vx-brand-soft:var(--vx-silver-soft);
   --vx-amber:#dda23b;
-  --vx-beige:#c0b79f;
+  --vx-beige:#c9cdd4;
 
   /* ── États sémantiques ── */
   --vx-positive:#36c889;
@@ -118,14 +118,14 @@
   --vx-sand:#c0b79f;
   --vx-neutral-chart:#9d978e;
   /* information = acier neutre (jamais bleu, jamais orange) */
-  --vx-info:var(--vx-steel-2);
+  --vx-info:var(--vx-silver);
   --vx-info-soft:rgba(166,173,165,.12);
   --vx-cyan:var(--vx-sand);
   --vx-cyan-soft:rgba(192,183,159,.12);
 
   /* ── Dégradés (réservés aux éléments importants) ── */
-  --vx-brand-gradient:linear-gradient(135deg,var(--vx-signal-500) 0%,var(--vx-signal-700) 100%);
-  --vx-hero-halo:radial-gradient(ellipse 640px 300px at 12% -8%,rgba(201,205,212,.045),transparent 68%);
+  --vx-brand-gradient:linear-gradient(135deg,#3a3f47 0%,#23262c 100%);
+  --vx-hero-halo:radial-gradient(ellipse 640px 300px at 12% -8%,rgba(222,227,237,.04),transparent 68%);
 
   /* ── Typographie (General Sans UI · JetBrains Mono numérique — auto-hébergées, cf. fonts.css) ── */
   --vx-font:'General Sans',ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;

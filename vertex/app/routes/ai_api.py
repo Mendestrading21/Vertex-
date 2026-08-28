@@ -25,8 +25,11 @@ def copilot_ask():
     configurée, sinon repli déterministe honnête. Lecture seule — aucun ordre."""
     from vertex.ai import copilot
     body = request.get_json(force=True, silent=True) or {}
+    #  Lot 25 : les positions déclarées ne partent dans le prompt QUE sur
+    #  action explicite du client (case cochée), jamais par défaut.
     return jsonify(copilot.answer(body.get('question'), scan_state,
-                                  symbol=body.get('symbol')))
+                                  symbol=body.get('symbol'),
+                                  avec_positions=bool(body.get('avec_positions'))))
 
 _refresh_lock = threading.Lock()
 _refreshing = {'on': False}

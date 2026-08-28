@@ -178,7 +178,8 @@
       var sym = ($('vx-gx-sym') && $('vx-gx-sym').value || '').trim().toUpperCase() || null;
       out.innerHTML = '<div class="vx-empty">Le copilote analyse' + (sym ? ' ' + esc(sym) : '') + '…</div>';
       fetch('/api/copilot/ask', { method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question: question, symbol: sym }) })
+        body: JSON.stringify({ question: question, symbol: sym,
+          avec_positions: !!($('vx-cp-pos') && $('vx-cp-pos').checked) }) })
         .then(function (r) { return r.json(); })
         .then(function (d) {
           if (!d.ok) { out.innerHTML = '<div class="vx-error-banner">' + esc(d.error || 'réponse indisponible') + '</div>'; return; }
@@ -189,6 +190,15 @@
     }
     go.addEventListener('click', ask);
     q.addEventListener('keydown', function (e) { if (e.key === 'Enter') ask(); });
+    /* Vie privée (lot 25) : les positions déclarées ne partent JAMAIS dans le
+       prompt sans cette case — action explicite, décochée par défaut. */
+    if (!$('vx-cp-pos')) {
+      var priv = document.createElement('label');
+      priv.className = 'vx-meta';
+      priv.style.cssText = 'display:flex;align-items:center;gap:6px;margin-top:.35rem;cursor:pointer';
+      priv.innerHTML = '<input type="checkbox" id="vx-cp-pos"> Inclure mes positions déclarées (exclues par défaut)';
+      (q.parentElement || out.parentElement).insertBefore(priv, out);
+    }
     /* Questions suggérées (1 clic) — remplissent et envoient. */
     var sug = document.createElement('div');
     sug.className = 'vx-flex vx-wrap'; sug.style.cssText = 'gap:6px;margin-top:.4rem';

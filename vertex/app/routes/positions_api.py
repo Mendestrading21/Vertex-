@@ -71,9 +71,9 @@ def make_blueprint(scan_state: dict, *, opt_job=None, ibkr_enabled=False) -> Blu
         from vertex.positions.recalculator import recalculate_all
         from vertex.positions.repository import load_positions
         blob = _desk_blob()
-        base = load_positions(blob, None)
+        base = load_positions(blob)
         quotes = _quotes([p for p in base if p.get('status') != 'CLOSED'])
-        state = recalculate_all(scan_state, blob, quotes, None)
+        state = recalculate_all(scan_state, blob, quotes)
         #  `live` dit desormais : « les COTATIONS viennent du marche en
         #  direct ». Il ne dit plus rien d'un compte : il n'y en a plus.
         state['live'] = bool(ibkr_enabled)
@@ -92,7 +92,7 @@ def make_blueprint(scan_state: dict, *, opt_job=None, ibkr_enabled=False) -> Blu
         from vertex.positions.detector import startup_position_report
         #  Plus de lecture de compte : le rapport ne detecte plus de cloture
         #  par disparition chez le courtier (ibkr_online=False, fige).
-        return jsonify(startup_position_report(_desk_blob(), None,
+        return jsonify(startup_position_report(_desk_blob(),
                                                ibkr_online=False))
 
     @bp.route('/api/positions/audit')
@@ -100,7 +100,7 @@ def make_blueprint(scan_state: dict, *, opt_job=None, ibkr_enabled=False) -> Blu
         """Audit d'intégrité (§41) — HEALTHY/DEGRADED/CRITICAL."""
         from vertex.positions.audit import audit_positions
         from vertex.positions.repository import load_positions
-        return jsonify(audit_positions(load_positions(_desk_blob(), None)))
+        return jsonify(audit_positions(load_positions(_desk_blob())))
 
     @bp.route('/api/positions/reconcile')
     def positions_reconcile():
@@ -109,7 +109,7 @@ def make_blueprint(scan_state: dict, *, opt_job=None, ibkr_enabled=False) -> Blu
         from vertex.positions.reconciler import reconcile
         #  Sans lecture de compte, plus de cote courtier : la reconciliation
         #  rend l'etat honnete « courtier non lu », jamais un faux accord.
-        pos = load_positions(_desk_blob(), None)
+        pos = load_positions(_desk_blob())
         local = [p for p in pos if p['source'] != 'IBKR']
         return jsonify(reconcile(local, [], ibkr_online=False))
 
@@ -198,8 +198,8 @@ def make_blueprint(scan_state: dict, *, opt_job=None, ibkr_enabled=False) -> Blu
         from vertex.positions.alerts import ALERTS
         from vertex.positions.repository import load_positions
         blob = _desk_blob()
-        base = [p for p in load_positions(blob, None) if p.get('status') != 'CLOSED']
-        state = recalculate_all(scan_state, blob, _quotes(base), None)
+        base = [p for p in load_positions(blob) if p.get('status') != 'CLOSED']
+        state = recalculate_all(scan_state, blob, _quotes(base))
         fresh = ALERTS.evaluate(state['positions'])
         return jsonify({'new': fresh, 'active': ALERTS.active(),
                         'gamma': _gamma_events(state['positions'])})
@@ -258,8 +258,8 @@ def make_blueprint(scan_state: dict, *, opt_job=None, ibkr_enabled=False) -> Blu
         from vertex.positions.change_detector import diff
         blob = _desk_blob()
         from vertex.positions.repository import load_positions
-        base = [p for p in load_positions(blob, None) if p.get('status') != 'CLOSED']
-        state = recalculate_all(scan_state, blob, _quotes(base), None)
+        base = [p for p in load_positions(blob) if p.get('status') != 'CLOSED']
+        state = recalculate_all(scan_state, blob, _quotes(base))
         cur = next((p for p in state['positions'] if p['position_id'] == position_id), None)
         if not cur:
             return jsonify({'error': 'position introuvable', 'changed': False}), 200

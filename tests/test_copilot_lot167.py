@@ -74,7 +74,10 @@ def test_postmortem_inclus_quand_trades_clotures():
         'myTrades': '[]',
         'myTradesClosed': json.dumps([{'sym': 'AAPL', 'cost': 1000, 'exit': 1300}]),
         'vxJournal': '[]'}})
-    ctx = copilot.build_context(SS)
+    #  Lot 25 : le post-mortem (données personnelles) exige l'action
+    #  explicite — exclu par défaut, comme les positions.
+    assert 'postmortem' not in copilot.build_context(SS)
+    ctx = copilot.build_context(SS, avec_positions=True)
     assert ctx['postmortem']['total_pnl'] == 300.0
     assert ctx['postmortem']['trades_n'] == 1
 
