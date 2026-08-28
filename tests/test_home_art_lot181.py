@@ -74,8 +74,12 @@ def test_chiffres_localises_fr_et_lecture_vix_14_22():
     assert "'—'" in ha.ART_JS                          # VIX absent → tiret honnête
 
 
-# ── Câblage réel dans les pages servies ──────────────────────────────────────
+# ── Statut : ORPHELIN documenté (lot 36) ────────────────────────────────────
 
-def test_couche_appliquee_aux_pages_du_terminal():
-    import terminal
-    assert 'artBoard' in terminal.PAGE_DAILY           # apply() effectif sur /
+def test_module_orphelin_plus_aucun_cablage_dans_terminal():
+    """La couche pages de terminal.py (PAGE_DAILY…) est retirée au lot 36 :
+    home_art n'a PLUS de consommateur servi. Le module et ses tests de pureté
+    restent en attendant le lot de retrait dédié (preuves de convergence) —
+    mais terminal.py ne doit pas le réimporter sans nouvelle doctrine."""
+    src = open('terminal.py', encoding='utf-8').read()
+    assert 'home_art' not in src

@@ -1,16 +1,15 @@
 """
-tests/test_nav.py — La navigation a UNE source (Ch. II, loi anti-duplication).
+tests/test_nav.py — La navigation a UNE source par surface servie.
 
-vertex/ui/nav.py est la vérité ; terminal.py la réinjecte dans toutes les pages.
-Ce test échoue si une page réintroduit sa propre copie divergente.
+Historique : vertex/ui/nav.py était réinjecté dans les gabarits inline de
+terminal.py. Cette couche pages est retirée (strangler, lot 36) — la
+navigation SERVIE appartient à la coque 2.0 (vertex/ui/shell). nav.py reste
+un module orphelin documenté (retrait = lot dédié avec ses preuves) ; ce banc
+garde ses invariants de forme et interdit à terminal.py de ressusciter une
+nav inline.
 """
 
-import terminal  # noqa: E402  (conftest a déjà neutralisé IBKR/gate)
 from vertex.ui import nav
-
-
-_INLINE_PAGES = ['PAGE_DAILY', 'PAGE_WATCHLIST', 'PAGE_OPTIONS_DESK',
-                 'PAGE_ME', 'PAGE_ENTREPRISES']
 
 
 def test_items_wellformed_and_unique():
@@ -20,17 +19,11 @@ def test_items_wellformed_and_unique():
     assert len(paths) == len(set(paths))       # aucun doublon de chemin
 
 
-def test_every_inline_page_uses_the_single_source():
-    want = 'var NAV=' + nav.nav_array_js()
-    for pg in _INLINE_PAGES:
-        src = getattr(terminal, pg)
-        assert want in src, pg + ' ne référence pas la nav source unique'
-        assert src.count('var NAV=') == 1       # pas de copie résiduelle
-
-
-def test_shell_pages_inherit_single_source():
-    # Les pages _vpage tirent leur nav du bloc extrait de PAGE_DAILY.
-    assert nav.nav_array_js() in terminal._NAVJS_BLOCK
+def test_terminal_ne_porte_plus_de_nav_inline():
+    src = open('terminal.py', encoding='utf-8').read()
+    assert 'var NAV=' not in src, (
+        'terminal.py réintroduit une navigation inline — la nav servie '
+        'appartient à la coque 2.0 (vertex/ui/shell)')
 
 
 def test_core_workflows_are_in_nav():
