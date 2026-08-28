@@ -16,6 +16,18 @@
   font-weight:500;width:100%}
 .vx-chart-body{position:relative;flex:1;min-height:120px}
 .vx-chart-body canvas{width:100%!important}
+/* Lot 44 — la hauteur vit dans --vx-chart-h (émise par C.card et les corps
+   posés à la main). En mobile, aucune carte OPTÉE ne dépasse ~58 % de la
+   largeur d'écran : mesuré, un « hero » de 360 px avalait le viewport d'un
+   téléphone. `max-height`, pas `height` : dans une carte flex, seul un
+   min/max borne la taille servie par l'algorithme flex — un height, même
+   !important, ne plafonne pas un item qui grandit. Scopé à [style*=] : les
+   corps SANS variable (ex. #an-chart, 260 px épinglés au lot 620) gardent
+   leur contrat. Le plein écran survit : son min-height:62vh bat un
+   max-height inférieur (règle CSS min > max). */
+@media (max-width:640px){
+  .vx-chart-body[style*="--vx-chart-h"]{max-height:min(var(--vx-chart-h),58vw)}
+}
 .vx-chart-legend{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:var(--vx-s2);
   font-size:11px;color:var(--vx-text-muted)}
 .vx-chart-legend .vx-swatch{display:inline-block;width:9px;height:9px;

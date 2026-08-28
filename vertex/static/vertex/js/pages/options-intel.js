@@ -286,7 +286,7 @@
         plugins: { tooltip: { callbacks: { label: function (it) { var p = it.raw;
           return p.sym + ' ' + (p.type || '') + ' — qualité ' + Math.round(p.x) + ' · PoP ' + Math.round(p.y) + '% · IV ' + (p.iv != null ? Math.round(p.iv) + '%' : 'n/d'); } } } } }
     };
-    host.innerHTML = '<div class="vx-chart-body" style="height:320px"><canvas id="' + hostId + '-cv"></canvas></div>' +
+    host.innerHTML = '<div class="vx-chart-body" style="--vx-chart-h:320px;height:var(--vx-chart-h)"><canvas id="' + hostId + '-cv"></canvas></div>' +
       '<div class="vx-chart-legend"><span><span class="vx-swatch" style="background:' + cc.neutral + '"></span>CALL</span>' +
       '<span><span class="vx-swatch" style="background:' + cc.violet + '"></span>PUT</span>' +
       '<span class="vx-meta">taille = IV (convexité) · haut-droit = qualité ET probabilité</span></div>';

@@ -232,6 +232,18 @@
     };
   };
 
+  /* ── Gabarits de hauteur (lot 44) : une échelle NOMMÉE au lieu de pixels
+     inventés page par page. `size` prime ; `height` numérique reste accepté
+     (compat — le pixel desktop des cartes existantes ne bouge pas). Le corps
+     émet `--vx-chart-h` : la feuille peut borner en mobile sans toucher au
+     choix de la page. ── */
+  C.TAILLES = { xs: 120, s: 160, m: 200, l: 240, xl: 300, hero: 360 };
+  C.hauteur = function (size, height) {
+    if (size && C.TAILLES[size]) return C.TAILLES[size];
+    const h = Number(height);
+    return (isFinite(h) && h > 0) ? Math.round(h) : C.TAILLES.m;
+  };
+
   /* ── ChartCard : contrat visuel §34 ─────────────────────────────── */
   let uid = 0;
   C.card = function (host, opts) {
@@ -270,7 +282,7 @@
         ${opts.question ? `<span class="vx-chart-question">${opts.question}</span>` : ''}
         ${opts.conclusion ? `<span class="vx-chart-conclusion">${opts.conclusion}</span>` : ''}
       </div>
-      <div class="vx-chart-body" style="height:${opts.height || 200}px">${bodyInner}</div>
+      <div class="vx-chart-body" style="--vx-chart-h:${C.hauteur(opts.size, opts.height)}px;height:var(--vx-chart-h)">${bodyInner}</div>
       ${legend ? `<div class="vx-chart-legend">${legend}</div>` : ''}
       <div class="vx-chart-foot">
         ${VX.updateIndicator(opts.timestamp, opts.source, opts.mode)}
