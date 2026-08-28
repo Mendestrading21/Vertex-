@@ -1366,3 +1366,20 @@ html,body{max-width:100%;overflow-x:clip}
    est large, le texte n'atteint pas la pastille ; des que le champ retrecit --
    tablette, barre laterale ouverte -- « ...une page » passe DESSOUS. */
 .vx-topbar-search input{padding-right:46px}
+
+/* === 32. La barre d'onglets et le contenu : un seul ecart, pas quatre =======
+   Mesure sur les 50 sous-vues qui portent une barre d'onglets : l'ecart entre
+   cette barre et le premier bloc de contenu vaut 0 px (x2), 12 px (x28),
+   16 px (x13) ou 32 px (x7). C'est la MEME frontiere structurelle -- on quitte
+   la navigation, on entre dans le contenu -- et elle se lit differemment d'une
+   page a l'autre. En passant d'un onglet a l'autre, le contenu saute.
+
+   L'ecart vient de trois endroits a la fois : une classe utilitaire posee au
+   coup par coup (`vx-mt3`, `vx-mt4`), la marge propre du premier bloc, ou
+   rien du tout. On le pose donc a UN seul endroit -- la barre elle-meme --
+   et on annule ce que le bloc suivant ajoutait de son cote.
+
+   20 px : entre les 16 px des ecarts internes et les 32 px des separations de
+   section. La frontiere est reelle, elle n'est pas une rupture. */
+#vx-content > .vx2-tabs{margin-bottom:var(--vx2-s5)}
+#vx-content > .vx2-tabs + *{margin-top:0}

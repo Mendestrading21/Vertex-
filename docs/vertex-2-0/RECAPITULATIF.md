@@ -6,7 +6,7 @@
      nom personnel, et le dépôt en exige zéro dans l'arbre
      (test_namespace_guards, test_production_guards_canonical). Le numéro suffit,
      le document vivant dans le dépôt concerné. -->
-**Base :** `main` @ `eff337f` · **16 commits**
+**Base :** `main` @ `eff337f` · **32 commits**
 
 ---
 
@@ -35,16 +35,28 @@
 | **18** | **Options** — tiroir contrat, tables équivalentes, boucle infinie corrigée | ✅ |
 | **19** | **Graphiques** — registre mesuré, contrat comblé sur 72 cartes | ✅ |
 | **20** | **Répétitions** — 0 texte explicatif répété sur les 12 pages | ✅ |
+| **21** | **Système** — les huit sous-vues du contrat, dont deux manquantes | ✅ |
+| **22** | **Opportunités** — six références introuvables cassaient la page peuplée | ✅ |
+| **23** | **Aujourd'hui** — la carte Alertes n'avait jamais fonctionné | ✅ |
+| **24** | **Vertex IA** — Brief quotidien et Décisions | ✅ |
+| **25** | **Performance et Options** — sous-vues du contrat au complet | ✅ |
+| **26** | **Espacements** — disposition manquante, carte creuse, famille unique de tuiles | ✅ |
+| **27** | **Sans JavaScript et tablette** — deux contrôles fermés par la mesure | ✅ |
 | — | Audit d'acceptation — 150 contrôles renseignés | ✅ |
 
-**Les douze pages sont traitées, et il reste UN `À CORRIGER`** : la dette de
-composants du lot 14 (048 — 146 occurrences de tuiles, chiffrées et datées,
-**déjà visuellement unifiées** par le remappage des jetons). Ce n'est pas un
-oubli : migrer ne changerait rien pour l'utilisateur, pour un risque réel dans
-sept pages dont trois font plus de 90 ko.
+**Les douze pages sont traitées, et il ne reste AUCUN `À CORRIGER`.** Le dernier
+(048, la dette de tuiles) a été fermé au lot 26 — et il a d'abord fallu admettre
+que la justification qui le tenait ouvert était fausse : les familles n'étaient
+**pas** « déjà visuellement unifiées ». La mesure au navigateur a montré deux
+fonds, deux filets, deux rayons, et un pixel de rembourrage d'écart entre
+`vx-stat` et `vx-metric`.
 
-  129 RÉUSSI · 10 partiels · 9 non applicables · 1 à corriger · 1 décision
+  132 RÉUSSI · 8 partiels · 9 non applicables · 0 à corriger · 1 décision
   humaine = 150
+
+Le seul point restant est un **jugement humain** (045, test de distance) : les
+captures sont fournies pour qu'il puisse être porté ; il ne l'est pas à la
+place de l'humain.
 
 ## La seconde passe n'a pas décoré — elle a retiré des mensonges
 

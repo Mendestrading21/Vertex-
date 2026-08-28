@@ -103,7 +103,7 @@ panneau garde une largeur de lecture utile plutôt que deux colonnes trop
 
 ---
 
-## 3. Preuves
+## 3. Preuves (mises a jour au dernier passage)
 
 ```
 python -m compileall -q vertex                 OK
@@ -117,7 +117,32 @@ python tools/vertex_2_0_a11y.py                0 défaut · 0 débordement
 
 Service worker : `td-shell-v257`. Empreinte `/static` au même commit.
 
-## 4. Ce qui reste partiel, et pourquoi
+## 4. Un ecart structurel qui valait quatre valeurs
+
+Mesure sur les **50 sous-vues** qui portent une barre d'onglets : l'ecart entre
+cette barre et le premier bloc de contenu vaut
+
+```
+ 0 px  x2        12 px  x28        16 px  x13        32 px  x7
+```
+
+C'est la **meme frontiere** -- on quitte la navigation, on entre dans le
+contenu -- et elle se lit differemment d'une page a l'autre. En passant d'un
+onglet a l'autre, le contenu saute.
+
+L'ecart venait de trois endroits a la fois : une classe utilitaire posee au
+coup par coup (`vx-mt3`, `vx-mt4`), la marge propre du premier bloc, ou rien du
+tout. Il est desormais pose a **un seul endroit** -- la barre elle-meme -- a
+20 px : entre les 16 px des ecarts internes et les 32 px des separations de
+section.
+
+Apres correction : **43 sous-vues a 20 px**, et 7 a 36 px. Ces sept-la ne sont
+pas une exception de mise en page : sur Portefeuille, un conteneur de synthese
+vide s'intercale entre les onglets et le contenu visible. **Verifie** en le
+remplissant dans le navigateur : l'ecart retombe a 20 px. C'est la donnee
+absente qui se voit, pas la regle qui manque.
+
+## 5. Ce qui reste partiel, et pourquoi
 
 **Huit** contrôles restent `RÉUSSI partiellement` — six lignes ci-dessous,
 « 102–104 » en couvrant trois. Tous portent une limite que ce poste ne peut
