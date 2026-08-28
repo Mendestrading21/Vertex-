@@ -156,7 +156,8 @@ def test_app_shell_is_shared(client):
         assert f'data-shell="{SHELL_VERSION}"' in html, p
         assert 'vx-sidebar' in html and 'vx-topbar' in html, p
         assert 'vx-palette' in html and 'vx-toasts' in html, p
-        assert '/static/vertex/css/tokens.css' in html, p
+        #  Lot 30 : bundle agrégé — jetons dedans, ordre contractuel.
+    assert '/asset/css/bundle.css' in html, p
 
 
 def test_active_nav_item_marked(client):
@@ -365,7 +366,7 @@ def test_service_worker_bumped(client):
     r = client.get('/sw.js')
     assert r.status_code == 200
     body = r.get_data(as_text=True)
-    assert 'td-shell-v271' in body, 'le shell a changé — la version du cache doit suivre'
+    assert 'td-shell-v272' in body, 'le shell a changé — la version du cache doit suivre'
     assert 'td-shell-v49' not in body
 
 

@@ -41,8 +41,10 @@ def test_local_fonts_shipped():
 
 
 def test_shell_links_local_fonts_css():
-    shell = open('vertex/ui/shell/__init__.py', encoding='utf-8').read()
-    assert '/static/vertex/css/fonts.css' in shell
+    #  Lot 30 : fonts.css entre dans le bundle agrégé — PREMIÈRE de la
+    #  cascade (les @font-face avant tout consommateur). Toujours locale.
+    from vertex.ui.shell import CSS_ORDER
+    assert CSS_ORDER[0] == 'fonts.css'
 
 
 def test_service_worker_bumped_to_at_least_v126():

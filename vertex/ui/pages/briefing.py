@@ -352,7 +352,9 @@ _CONTENT = """
   [data-block] .vx-card::after{opacity:.28}
   [data-block] .vx-card-header{margin-bottom:12px}
   /* Sous-titres / questions de carte : discrets */
-  [data-block] .vx-chart-question{opacity:.66;font-size:11px;font-style:italic}
+  /* opacité RETIRÉE (lot 30) : elle abaissait le jeton AA à ~3,8:1 — mesuré
+     Lighthouse. La hiérarchie vient du jeton, de la taille et de l'italique. */
+  [data-block] .vx-chart-question{font-size:11px;font-style:italic}
   /* Méta, pieds, indicateurs de fraîcheur : au second plan (mais lisibles) */
   [data-block] .vx-meta{font-size:10.5px;color:var(--vx-text-muted,#7c828c)}
   [data-block] .vx-card-footer,[data-block] .vx-card-foot{opacity:.7}

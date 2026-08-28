@@ -1489,3 +1489,12 @@ html,body{max-width:100%;overflow-x:clip}
   #vx-content[data-space="analysis"] .an-identity-main{align-items:flex-start}
   #vx-content[data-space="analysis"] .an-decision-grid .vx-scenario-grid{grid-template-columns:minmax(0,1fr);}
 }
+
+/* === 30. La question de graphique tenait son AA... derrière une opacité ======
+   glass.css posait `opacity:.7` sur .vx-chart-question/.vx-card-question :
+   le jeton AA mesuré (#9aa1ad, 5,9:1) rendait à ~3,84:1 — mesuré par
+   Lighthouse sur Opportunités PEUPLÉE. L'opacité est annulée ; la
+   hiérarchie vient du jeton, du style italique et de la taille. */
+#vx-content .vx-chart-question,#vx-content .vx-card-question{
+  opacity:1;color:var(--vx-smoke);
+}

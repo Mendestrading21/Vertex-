@@ -9,6 +9,18 @@ from __future__ import annotations
 
 SHELL_VERSION = 'vx-shell-2'
 
+#: L'ORDRE DE LA CASCADE — un contrat, pas une liste (lot 30). Le bundle
+#: /asset/css/bundle.css concatène ces feuilles dans CET ordre exact :
+#: le déplacer change le rendu (la couche finale vertex-2-0.css gagne).
+#: Lighthouse (lot 28) : 19 requêtes CSS en chaîne critique = LCP 6-7 s
+#: simulés — une seule requête les remplace ; les feuilles individuelles
+#: restent servies (développement, bancs, rollback).
+CSS_ORDER = ('fonts.css', 'tokens.css', 'base.css', 'layout.css',
+             'components.css', 'buttons.css', 'states.css', 'animations.css',
+             'forms.css', 'tables.css', 'charts.css', 'utilities.css',
+             'responsive.css', 'polish.css', 'control-surface.css',
+             'cockpit.css', 'premium.css', 'glass.css', 'vertex-2-0.css')
+
 # ── Navigation Vertex 2.0 — groupée par TRAVAIL, pas par architecture ────────
 #
 # La forme précédente alignait sept entrées à plat : l'utilisateur ne distinguait
@@ -289,25 +301,7 @@ def render_shell(*, title: str, active: str, space_label: str, sub_label: str = 
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="preload" as="font" type="font/woff2" crossorigin href="/static/vertex/fonts/geist-variable.woff2">
 <link rel="preload" as="font" type="font/woff2" crossorigin href="/static/vertex/fonts/geist-mono-variable.woff2">
-<link rel="stylesheet" href="/static/vertex/css/fonts.css">
-<link rel="stylesheet" href="/static/vertex/css/tokens.css">
-<link rel="stylesheet" href="/static/vertex/css/base.css">
-<link rel="stylesheet" href="/static/vertex/css/layout.css">
-<link rel="stylesheet" href="/static/vertex/css/components.css">
-<link rel="stylesheet" href="/static/vertex/css/buttons.css">
-<link rel="stylesheet" href="/static/vertex/css/states.css">
-<link rel="stylesheet" href="/static/vertex/css/animations.css">
-<link rel="stylesheet" href="/static/vertex/css/forms.css">
-<link rel="stylesheet" href="/static/vertex/css/tables.css">
-<link rel="stylesheet" href="/static/vertex/css/charts.css">
-<link rel="stylesheet" href="/static/vertex/css/utilities.css">
-<link rel="stylesheet" href="/static/vertex/css/responsive.css">
-<link rel="stylesheet" href="/static/vertex/css/polish.css">
-<link rel="stylesheet" href="/static/vertex/css/control-surface.css">
-<link rel="stylesheet" href="/static/vertex/css/cockpit.css">
-<link rel="stylesheet" href="/static/vertex/css/premium.css">
-<link rel="stylesheet" href="/static/vertex/css/glass.css">
-<link rel="stylesheet" href="/static/vertex/css/vertex-2-0.css">
+<link rel="stylesheet" href="/asset/css/bundle.css?v={SHELL_VERSION}">
 <noscript><style>
   /* Sans JavaScript, aucun de ces squelettes ne sera jamais rempli : ils
      promettent une donnee qui n'arrivera pas. Mesure au navigateur, moteur JS
