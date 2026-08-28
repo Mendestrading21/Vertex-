@@ -267,6 +267,14 @@ const SCAN_ACTION='<a class="vx-btn vx-btn-sm" href="/system?view=data">Système
    conservé ici sous forme de triplets [label, tone, hint] pour le rendu. */
 const REGIME_LABEL=Object.fromEntries(Object.entries(VX.regime.MAP)
   .map(([k,m])=>[k,[m.label,m.tone,m.hint]]));
+/* Signaux SECONDAIRES du moteur de régimes : libellés français (mesuré au
+   navigateur en mode peuplé : « YIELD_CURVE_INVERTED » sortait brut). Un
+   jeton inconnu retombe sur le libellé du régime principal s'il en est un,
+   sinon reste affiché tel quel — honnête, jamais masqué. */
+const SECONDARY_LABEL={YIELD_CURVE_INVERTED:'Courbe des taux inversée',
+  YIELD_CURVE_STEEP:'Courbe des taux pentue',BREADTH_DIVERGENCE:'Divergence de participation',
+  DOLLAR_STRENGTHENING:'Dollar en renforcement',DOLLAR_WEAKENING:'Dollar en affaiblissement'};
+const secFr=(t)=>SECONDARY_LABEL[t]||(REGIME_LABEL[t]?REGIME_LABEL[t][0]:t);
 const SETUP_LABEL={BALANCED:'Équilibrée',BREAKOUT_PULLBACK:'Cassure / pullback',DEFENSIVE:'Défensive',
   MEAN_REVERSION:'Retour moyenne',MOMENTUM:'Momentum',QUALITY_DEFENSIVE:'Qualité défensive',
   CAPITAL_PRESERVATION:'Préservation capital',TAKE_PROFITS:'Prises de bénéfices',
@@ -317,7 +325,7 @@ async function loadRegime(scan){
     ($('vx-mk-regime-body')||{}).innerHTML=
       `<div class="vx-mk-regime-lead">
         <div class="vx-mk-regime-name" data-tone="${meta[1]}" data-regime="${esc(r.regime)}">${meta[0]}</div>
-        <div class="vx-mk-regime-sub">${meta[2]} · ${dims} dimensions évaluées${(r.secondary&&r.secondary.length)?' · aussi '+esc(r.secondary[0]):''}</div>
+        <div class="vx-mk-regime-sub">${meta[2]} · ${dims} dimensions évaluées${(r.secondary&&r.secondary.length)?' · aussi '+esc(secFr(r.secondary[0])):''}</div>
         <div class="vx-mk-chips">
           ${chip('Nouveau risque',allowed?'Autorisé':'BLOQUÉ',allowed?'on':'off')}
           ${chip('Confiance',conf+' %')}

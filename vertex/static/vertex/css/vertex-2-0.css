@@ -1444,3 +1444,48 @@ html,body{max-width:100%;overflow-x:clip}
   min-height:24px;display:flex;align-items:center;
   padding:var(--vx2-s2) 0;cursor:pointer;
 }
+
+/* === 29. Rapatriement lot 29 — les orphelines du mode PEUPLÉ ============
+   Le mode démo a révélé 20 classes rendues seulement AVEC des données et
+   sans aucune règle servie (héritage de la feuille morte, invisibles aux
+   vérifications en mode dégradé). Effet mesuré : libellés collés aux
+   valeurs dans les puces de régime (« Nouveau risqueAutorisé »).
+   Jetons neon remplacés par les canoniques ; aucun glow. */
+#vx-content[data-space="markets"] .vx-mk-regime-name{font-size:clamp(26px,4vw,var(--vx-fs-display));font-weight:800;line-height:1.05; letter-spacing:-.01em;color:var(--vx-text-primary);}
+#vx-content[data-space="markets"] .vx-mk-regime-name[data-tone="risk"]{color:var(--vx-negative)}
+#vx-content[data-space="markets"] .vx-mk-regime-name[data-tone="go"]{color:var(--vx-positive)}
+#vx-content[data-space="markets"] .vx-mk-regime-sub{color:var(--vx-text-secondary);margin-top:6px}
+#vx-content[data-space="markets"] .vx-mk-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:var(--vx-s4);}
+#vx-content[data-space="markets"] .vx-mk-chip{display:inline-flex;flex-direction:column;gap:2px;padding:8px 12px; background:var(--vx-glass-card);border:1px solid var(--vx2-line);border-radius:12px;min-width:96px;}
+#vx-content[data-space="markets"] .vx-mk-chip .k{font-size:var(--vx-fs-meta);color:var(--vx-text-muted);letter-spacing:.03em}
+#vx-content[data-space="markets"] .vx-mk-chip .v{font-size:14px;font-weight:650;color:var(--vx-text-primary)}
+#vx-content[data-space="markets"] .vx-mk-chip[data-state="on"] .v{color:var(--vx-positive)}
+#vx-content[data-space="markets"] .vx-mk-chip[data-state="off"] .v{color:var(--vx-negative)}
+#vx-content[data-space="markets"] .vx-mk-lead-hero{margin-bottom:12px}
+#vx-content[data-space="markets"] .vx-mk-lead-top{display:block;font-size:20px;font-weight:800;color:var(--vx-text-primary);line-height:1.1}
+#vx-content[data-space="markets"] .vx-mk-lead-list{display:flex;flex-direction:column;gap:9px}
+#vx-content[data-space="markets"] .vx-mk-lead-row{display:grid;grid-template-columns:1fr 74px auto auto;align-items:center;gap:10px}
+#vx-content[data-space="markets"] .vx-mk-lead-name{font-size:12.5px;color:var(--vx-text-secondary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#vx-content[data-space="markets"] .vx-mk-lead-bar{height:6px;border-radius:4px;background:rgba(0,0,0,.35);overflow:hidden}
+#vx-content[data-space="markets"] .vx-mk-lead-bar i{display:block;height:100%;border-radius:4px}
+#vx-content[data-space="markets"] .vx-mk-lead-sc{font-size:12px;font-weight:700;color:var(--vx-text-primary);font-variant-numeric:tabular-nums;text-align:right;min-width:24px}
+#vx-content[data-space="analysis"] .an-identity{position:static!important;z-index:auto;display:grid; grid-template-columns:minmax(0,1fr) auto;align-items:center; gap:var(--vx-s3);padding:var(--vx-s4); background:linear-gradient(180deg,var(--vx-surface-elevated),var(--vx-surface)); border-color:var(--vx-border-default);box-shadow:var(--vx-shadow-1);}
+#vx-content[data-space="analysis"] .an-identity-main{display:flex;align-items:center;gap:var(--vx-s3);flex-wrap:wrap;min-width:0;}
+#vx-content[data-space="analysis"] .an-identity .vx-ticker{font-size:22px;line-height:1;font-weight:800;}
+#vx-content[data-space="analysis"] .an-identity .vx-kpi-value{font:800 22px/1 var(--vx-font-mono);font-variant-numeric:tabular-nums; color:var(--vx-text-primary);}
+#vx-content[data-space="analysis"] .an-decision-grid .vx-scenario-grid{grid-template-columns:minmax(0,1fr);gap:var(--vx-s2);}
+#vx-content[data-space="analysis"] .an-decision-grid .vx-scenario{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:baseline; column-gap:var(--vx-s3);row-gap:var(--vx-s1);padding:var(--vx-s3);}
+#vx-content[data-space="analysis"] .an-main-column{min-width:0}
+#vx-content[data-space="analysis"] .an-scorecard-note{color:var(--vx-text-muted);font-size:var(--vx-fs-meta);line-height:1.5;}
+#vx-content[data-space="options"] .vx-greeks{display:flex;flex-direction:column;gap:var(--vx-s2)}
+#vx-content[data-space="options"] .vx-greek{padding:var(--vx-s2) var(--vx-s3); border:1px solid var(--vx-border-soft);border-radius:var(--vx-r-sm); background:var(--vx-surface-1)}
+#vx-content[data-space="options"] .vx-greek b{font-size:13px}
+#vx-content[data-space="options"] .vx-scenario-head{display:flex; justify-content:space-between;align-items:baseline;gap:var(--vx-s2);margin-bottom:6px}
+@media (max-width:1024px){
+  #vx-content[data-space="analysis"] .an-decision-grid .vx-scenario-grid{grid-template-columns:repeat(3,minmax(0,1fr));}
+}
+@media (max-width:640px){
+  #vx-content[data-space="analysis"] .an-identity{grid-template-columns:minmax(0,1fr);padding:var(--vx-s3)}
+  #vx-content[data-space="analysis"] .an-identity-main{align-items:flex-start}
+  #vx-content[data-space="analysis"] .an-decision-grid .vx-scenario-grid{grid-template-columns:minmax(0,1fr);}
+}

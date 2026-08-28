@@ -487,13 +487,19 @@ function paintValuation(t,cf){
 
 /* Quadrant croissance × rentabilité : le titre (vert) vs ses pairs (acier) vs la
    médiane secteur (repère). Haut-droit = croissance ET rentabilité fortes. Réel. */
+/* Etat vide SANS perdre la colonne : remplacer host.className effacait le
+   span vx-col-* de la grille 12 colonnes — carte mesuree a 95 px. */
+function _gardeSpan(host,base){
+  const col=(host.className.match(/vx-col-\d+/)||[''])[0];
+  host.className=(base?base+' ':'')+col;
+}
 function paintQuadrant(cf,sm,peers,demo){
   const host=$('an-quadrant');if(!host)return;
   const P=[];const ok=(x)=>x!=null&&isFinite(x);
   if(ok(cf.rev_growth)&&ok(cf.roe))P.push({x:cf.rev_growth*100,y:cf.roe*100,sym:SYM,self:1});
   (peers||[]).forEach(function(p){if(p&&p.symbol!==SYM&&ok(p.rev_growth)&&ok(p.roe))P.push({x:+p.rev_growth*100,y:+p.roe*100,sym:p.symbol,self:0});});
   if(!P.length||!(window.VXCharts&&window.Chart)){
-    host.className='';host.innerHTML='<div class="vx-card"><div class="vx-card-header"><span class="vx-card-title">Croissance × rentabilité</span></div>'
+    _gardeSpan(host,'');host.innerHTML='<div class="vx-card"><div class="vx-card-header"><span class="vx-card-title">Croissance × rentabilité</span></div>'
       +VX.states.empty('Comparables insuffisants pour positionner le titre.')+'</div>';return;
   }
   const cc=VXCharts.colors;
@@ -541,7 +547,7 @@ function paintQuarters(cf,demo){
   const host=$('an-quarters');if(!host)return;
   const qs=((cf&&cf.quarters)||[]).filter(q=>q&&(q.rev!=null||q.ni!=null));
   if(qs.length<2){
-    host.className='';
+    _gardeSpan(host,'');
     host.innerHTML='<div class="vx-card"><div class="vx-card-header"><span class="vx-card-title">Croissance trimestrielle</span></div>'
       +VX.states.empty('Historique trimestriel indisponible pour ce titre (CA/résultat par trimestre servis via le flux de données du poste).')+'</div>';
     return;
@@ -1362,14 +1368,14 @@ async function loadDossier(){
         source:ch.source||'board options',timestamp:ch.as_of,mode:'delayed'});
     }else{
       const host=document.getElementById('an-options-chain');
-      if(host){host.className='vx-card';host.innerHTML='<div class="vx-card-header"><span class="vx-card-title">Chaîne — meilleurs contrats</span></div>'
+      if(host){_gardeSpan(host,'vx-card');host.innerHTML='<div class="vx-card-header"><span class="vx-card-title">Chaîne — meilleurs contrats</span></div>'
         +VX.states.empty('Aucun contrat exploitable pour '+esc(SYM)+' (IBKR hors ligne ou titre sans options liquides).',
           '<a class="vx-btn vx-btn-sm" href="/options/dossier/'+SYM+'">Ouvrir le dossier options</a>');}
       const bb=document.getElementById('an-options-bubble');if(bb)bb.innerHTML='';
     }
   }catch(e){
     const host=document.getElementById('an-options-chain');
-    if(host){host.className='vx-card';host.innerHTML='<div class="vx-card-header"><span class="vx-card-title">Chaîne — meilleurs contrats</span></div>'
+    if(host){_gardeSpan(host,'vx-card');host.innerHTML='<div class="vx-card-header"><span class="vx-card-title">Chaîne — meilleurs contrats</span></div>'
       +VX.states.empty('Chaîne d’options indisponible ('+esc(e.message)+').');}
   }
 
