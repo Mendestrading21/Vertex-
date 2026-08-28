@@ -1325,8 +1325,13 @@ async function loadAutomations(){
            a trouvé 18 des 27 jobs déclarés sans le moindre émetteur `beat` :
            ils ne pouvaient pas tourner, et l'écran les accusait d'un échec.
            Le serveur tranche désormais lui-même via `etat`. */
+        /* SILENCIEUX (lot 7) : cadencé, déjà battu, muet depuis > 2× sa
+           cadence — la boucle est morte ou coincée. Avant, un job mort
+           restait « OK » pour toujours. Ambre : prudence, pas erreur —
+           le dernier passage avait réussi. */
         const ETATS={NON_IMPLEMENTE:['frozen','non implémenté'],EN_ATTENTE:['frozen','en attente'],
-                     ACTIF:['live','OK'],ERREUR:['offline','erreur']};
+                     ACTIF:['live','OK'],ERREUR:['offline','erreur'],
+                     SILENCIEUX:['stale','silencieux']};
         const st=ETATS[j.etat]||(j.last_run===null?['frozen','en attente']:(j.last_ok?['live','OK']:['offline','erreur']));
         return `<tr><td><b>${esc(j.name)}</b><br><span class="vx-meta">${esc(j.description||'')}</span></td>
         <td><span class="vx-badge vx-badge-status" data-status="${st[0]}" title="${esc(j.last_error||'')}">${st[1]}</span></td>
