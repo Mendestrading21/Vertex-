@@ -773,3 +773,6 @@ Données réelles → moteurs déterministes → SkylerPacket (red-team produite
 Invariants tenus sur tous les lots : READONLY absolu, données réelles uniquement
 (absent → n/d), `main` intacte, aucune modification automatique de la
 Constitution, fichiers runtime gitignorés, gardiens de version prospectifs.
+
+> Lot 37 (Vertex 2.0) : `tests/test_vault.py` RETIRÉ avec son module
+> `vertex/ui/vault.py` (orphelin prouvé — voir docs/vertex-2-0/lot-37/).

@@ -140,19 +140,17 @@ def test_chaque_page_charge_le_fichier_de_cles_servi(client, page):
 # ── 3. Le constat qui a motivé ce lot, ancré ────────────────────────────────
 
 def test_vx_kit_reste_hors_des_pages_servies(client):
-    """`vx_kit.JS` (21 727 o) est la « source de vérité » selon la doc et les
-    deux gardiens nommés — mais il n'atteint AUCUNE des 8 pages. Mesuré ici.
-
-    Ce test ne juge pas : il **ancre le fait**. S'il échoue un jour, c'est que
-    `vx_kit` est redevenu servi — et alors sa liste rejoint le périmètre à
-    garder par ce qu'elle sert, comme les deux autres."""
-    from vertex.ui import vx_kit
-    assert len(vx_kit.JS) > 1000, 'vx_kit.JS vidé — gardien à revoir'
+    """`vx_kit` est RETIRÉ (lot 37) après la mesure de ce lot (0/8 pages).
+    Le gardien devient : aucune page servie ne porte de liste `var DESK_KEYS=`
+    inline — la seule liste servie est celle de vx-entities.js."""
+    import os
+    assert not os.path.exists(os.path.join(os.path.dirname(os.path.dirname(
+        os.path.abspath(__file__))), 'vertex', 'ui', 'vx_kit.py'))
     servies = [p for p in PAGES
                if 'var DESK_KEYS=' in client.get(p).get_data(as_text=True)]
     assert not servies, (
-        'vx_kit est redevenu servi sur %s — étendre le périmètre de ce gardien'
-        % ', '.join(servies))
+        'une liste DESK_KEYS inline est revenue sur %s — la source unique '
+        'servie est vx-entities.js' % ', '.join(servies))
 
 
 def test_les_deux_listes_servies_sont_identiques(client):

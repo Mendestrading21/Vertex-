@@ -11,7 +11,6 @@ import threading
 import time
 
 from vertex.services import live_engine
-from vertex.ui import sync_center
 
 
 def _wire(scan=None, demo=True, ibkr=False, ev=None):
@@ -96,11 +95,9 @@ def test_api_routes_and_global_injection():
     # ne vit plus que dans son module (vérifié par test_sync_center_features).
 
 
-def test_sync_center_features():
-    for marker in ('vxRefresh', 'vxReport', 'vxLiveToggle', 'vxLiveMode',
-                   'Sync Center', 'Live Mode', 'Rapport de synchronisation',
-                   'LIVE', 'DELAYED', 'DÉMO', 'OFFLINE'):
-        assert marker in sync_center.JS, marker
+#  (test_sync_center_features retiré au lot 37 avec le module
+#  sync_center.py — la synchronisation servie est live-updates.js,
+#  gardée par les tests d'API /api/live/* ci-dessous.)
 
 
 # ─── Connexions données réelles : forçage de cycle, recherche news, chiffres ───

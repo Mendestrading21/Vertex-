@@ -15,7 +15,8 @@
   'use strict';
   const VX = window.VX;
 
-  /* Clés synchronisées — MIROIR EXACT de __DESK_KEYS (terminal.py) + vxWatchlist. */
+  /* Clés synchronisées — SOURCE UNIQUE servie du contrat desk (lot 37) ;
+     le repli inline de system_page doit rester identique (gardien lot 381). */
   const DESK_KEYS = ['myTrades', 'myTradesClosed', 'myTradesEquity', 'myRecos',
     'myRecosClosed', 'myCapital', 'simCash', 'simStart', 'simTrades', 'simClosed',
     'myFavs', 'myNotes', 'vxJournal', 'myTradeLog', 'vxVault', 'vxAlerts',

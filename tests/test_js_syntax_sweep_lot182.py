@@ -25,7 +25,6 @@ import tempfile
 import pytest
 
 import terminal
-from vertex.ui import sync_center
 
 ROUTES = ('/', '/opportunities', '/portfolio', '/journal',
           '/options', '/system', '/tracking', '/intelligence',
@@ -95,7 +94,10 @@ def test_chaque_bloc_inline_de_chaque_page_parse():
 # ── Chaînes JS exposées par les modules (avant injection) ────────────────────
 
 def test_sync_center_js_parse():
-    assert _check(sync_center.JS) is None
+    #  sync_center.py est retiré (lot 37) ; la synchronisation servie
+    #  (live-updates.js) est couverte par le balayage des pages.
+    import os
+    assert not os.path.exists('vertex/ui/sync_center.py')
 
 
 def test_heatmap_du_vault_parse():
