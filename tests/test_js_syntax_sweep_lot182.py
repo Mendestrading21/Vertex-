@@ -82,6 +82,11 @@ def test_le_gardien_ne_tourne_pas_a_vide():
 
 
 def test_chaque_bloc_inline_de_chaque_page_parse():
+    # Aveu d'environnement plutôt que rouge trompeur : sans node, ce gardien ne
+    # PEUT pas mesurer — il le dit. Les environnements outillés le font tourner.
+    import shutil
+    if shutil.which('node') is None:
+        pytest.skip('node absent de cette machine — parse JS impossible ici')
     erreurs = []
     for route, (_, blocs) in _sweep().items():
         for i, b in enumerate(blocs):

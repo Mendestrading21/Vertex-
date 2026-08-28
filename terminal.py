@@ -978,9 +978,11 @@ def _loop():
 # l'interface yfinance qu'il consomme (.options + .option_chain(exp).calls/.puts).
 # ⚠️ ib_async n'est PAS thread-safe → toutes les requêtes passent par UN worker
 # dédié (file de jobs, clientId 41) qui possède la connexion. ⛔ LECTURE SEULE.
-import queue as _queue
+# Lot 40 — la FIFO nue est remplacée par la file à priorités/coalescence/
+# péremption/breaker (vertex/services/file_ibkr.py). Le worker reste UNIQUE.
+from vertex.services.file_ibkr import FileIBKR as _FileIBKR
 
-_optq = _queue.Queue()
+_optf = _FileIBKR()
 
 # ── Connexion IBKR configurable (honnêteté : les variables documentées dans
 #    .env.example sont désormais RÉELLEMENT respectées). IBKR_HOST/PORT/CLIENT_ID
@@ -1016,9 +1018,7 @@ def _ibkr_opt_worker():
         ib.RequestTimeout = 45
     except Exception:
         while True:                                  # drain : réponses immédiates None
-            _k, _a, box, evt = _optq.get()
-            box['res'] = None
-            evt.set()
+            _optf.terminer(_optf.prochain(), None)
 
     def conn():
         if ib.isConnected():
@@ -1035,10 +1035,12 @@ def _ibkr_opt_worker():
                            readonly=True, timeout=6)
                 ib.reqMarketDataType(1)              # temps réel (abonnement actif)
                 _ibkr_link.noter_succes(port, 'options')
+                _optf.noter_connexion(True)
                 return True
             except Exception:
                 continue
         _ibkr_link.noter_echec('options')
+        _optf.noter_connexion(False)                 # breaker : None immédiat pendant la fenêtre
         return False
 
     def meta(sym):
@@ -1314,27 +1316,30 @@ def _ibkr_opt_worker():
         return out
 
     while True:
-        kind, args, box, evt = _optq.get()
+        job = _optf.prochain()                       # priorités + péremption (lot 40)
+        kind, args, res = job.kind, job.args, None
         try:
-            if not conn():
-                box['res'] = None
+            if not _optf.connexion_permise():
+                res = None                           # breaker ouvert : pas de re-sonde
+            elif not conn():
+                res = None
             elif kind == 'meta':
-                box['res'] = meta(*args)
+                res = meta(*args)
             elif kind == 'chain':
-                box['res'] = chain(*args)
+                res = chain(*args)
             elif kind == 'fund':
-                box['res'] = fund(*args)
+                res = fund(*args)
             elif kind == 'news':
-                box['res'] = news()
+                res = news()
             elif kind == 'scan':
-                box['res'] = scan(*args)
+                res = scan(*args)
             elif kind == 'posq':
-                box['res'] = posq(*args)
+                res = posq(*args)
             #  Lot 2 — le job `positions` est RETIRÉ : il lisait le portefeuille
             #  du COMPTE via ib.positions(). readonly protegeait de l'ordre,
             #  pas de la confidentialite. Le worker ne sert plus que du marche.
         except Exception:
-            box['res'] = None
+            res = None
             # Échec de job (timeout/déconnexion) : on repart d'une connexion PROPRE.
             # Un socket semi-ouvert renverrait isConnected()=True et referait échouer
             # tous les jobs suivants — le disconnect force conn() à se reconnecter.
@@ -1342,14 +1347,13 @@ def _ibkr_opt_worker():
                 ib.disconnect()
             except Exception:
                 pass
-        evt.set()
+        _optf.terminer(job, res)
 
 
 def _opt_job(kind, args, timeout):
-    box, evt = {}, threading.Event()
-    _optq.put((kind, args, box, evt))
-    evt.wait(timeout)
-    return box.get('res')
+    #  Contrat historique conservé (None au timeout) — la file coalesce les
+    #  demandes identiques et n'exécute jamais un job que plus personne n'attend.
+    return _optf.soumettre(kind, args, timeout)
 
 
 def _persist_chain_full(sym, exp, right, rows, spot):

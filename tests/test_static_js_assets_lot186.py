@@ -33,6 +33,11 @@ def _js_files():
 # ── Syntaxe : chaque fichier JS du produit parse ─────────────────────────────
 
 def test_tous_les_fichiers_js_du_produit_parsent():
+    # Aveu d'environnement plutôt que rouge trompeur : sans node, ce gardien ne
+    # PEUT pas mesurer — il le dit. Les environnements outillés le font tourner.
+    import shutil
+    if shutil.which('node') is None:
+        pytest.skip('node absent de cette machine — parse JS impossible ici')
     fichiers = _js_files()
     assert len(fichiers) >= 30                      # anti-vide : le gardien contrôle
     erreurs = []
