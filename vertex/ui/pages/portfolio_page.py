@@ -25,30 +25,31 @@ INVARIANTS ABSOLUS (Constitution §17-22) :
 from __future__ import annotations
 
 
+from vertex.ui import vx2
 from vertex.ui.shell import json_for_script, render_shell
 
+# Ordre canonique de `navigation-and-pages.md` §8 : Synthèse, Positions,
+# Allocation, Options, Risque, Thèses. `performance` reste en queue — sa
+# migration vers /performance suppose de fusionner DEUX implémentations
+# d'équité vivantes, ce qui déborde d'une refonte visuelle (consigné).
 _VIEWS = (('team', 'Synthèse'), ('positions', 'Positions'),
-          ('performance', 'Performance'), ('risk', 'Risque'),
-          ('options', 'Options'), ('watchlist', 'Watchlist'))
+          ('allocation', 'Allocation'), ('options', 'Options'),
+          ('risk', 'Risque'), ('theses', 'Thèses'),
+          ('performance', 'Performance'))
+
+# `watchlist` était le nom de la sous-vue Thèses. L'URL reste valable : une
+# adresse partagée hier ne doit pas tomber sur la Synthèse sans un mot.
+_ALIAS = {'watchlist': 'theses'}
 
 
 def _tabs(view: str) -> str:
-    return ('<div class="vx-tabs" role="tablist">'
-            + ''.join(f'<a class="vx-tab" role="tab" aria-selected='
-                      f'"{"true" if v == view else "false"}" '
-                      f'href="/portfolio?view={v}">{label}</a>'
-                      for v, label in _VIEWS) + '</div>')
+    return vx2.tabs([{'label': label, 'href': f'/portfolio?view={v}',
+                      'actif': v == view} for v, label in _VIEWS],
+                    libelle='Sous-vues du portefeuille')
 
 
 _CONTENT = """
-<div class="vx-page-header vx-page-lead"><div><h1>Portefeuille</h1>
-<div class="vx-sub">Où mon capital est-il exposé, et quelle position exige une décision ?</div></div>
-<div class="vx-actions vx-toolbar">
-  <span id="pf-fresh" style="align-self:center"></span>
-  <button class="vx-btn vx-btn-sm vx-btn-primary" onclick="VXEntities.openAddModal('','position')">+ Position</button>
-  <button class="vx-btn vx-btn-sm" onclick="VXEntities.openAddModal('','watchlist')">+ Watchlist</button>
-  <a class="vx-btn vx-btn-sm vx-btn-ghost" href="/tracking">Suivis →</a>
-</div></div>
+%%HEADER%%
 %%TABS%%
 <div class="vx-grid vx-mt4" id="pf-summary" aria-label="Synthèse portefeuille"></div>
 <div id="pf-body" class="vx-mt4">%%LOADING%%</div>
@@ -83,6 +84,7 @@ _JS = r"""
 (function(){
 'use strict';
 const VIEW=%%VIEW%%;
+const VX2_ALLOC_ABSENCES=%%ABSENCES%%;
 const $=(id)=>document.getElementById(id);
 const E=()=>window.VXEntities;
 function esc(s){return String(s??'').replace(/[<>&"']/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[c]));}
@@ -308,7 +310,7 @@ function corrHeatmap(hostId,corr){
   const rows=syms.map(a=>({label:a,cells:syms.map(b=>{const v=raw(a,b);
     return {value:(a===b||v==null)?null:-v,   // négation : haute corrélation → corail
             label:(v==null?'—':(+v).toFixed(2)),title:a+' / '+b+' : '+(v==null?'n/d':(+v).toFixed(2))};})}));
-  VXCharts.heatmapCard(hostId,{title:'Corrélations du portefeuille',
+  VXCharts.heatmapCard(hostId,{title:'Corrélations du portefeuille',unit:'coefficient',
     question:'La diversification est-elle réelle ou illusoire ?',
     conclusion:(corr.average!=null?('corrélation moyenne '+(+corr.average).toFixed(2)):'')+(corr.warning?' — '+corr.warning:''),
     columns:syms,rows:rows,min:-1,max:1,source:('risk_engine · rendements '+(window.__pfLive?'réels':'de repli')),timestamp:window.__pfTs||null,mode:(window.__pfLive?'live':'fallback'),
@@ -413,7 +415,7 @@ async function renderTeam(){
   if(!pos.length){
     ($('pf-body')||{}).innerHTML=VX.states.emptyDesk(
       'Aucune position déclarée — le portefeuille répond « où suis-je exposé ? » '
-      +'dès la première position. Déclare une position ou importe depuis IBKR (lecture seule).',
+      +'dès la première position. Les positions se déclarent dans Vertex — le compte courtier n\'est jamais lu.',
       '<button class="vx-btn vx-btn-sm vx-btn-primary" onclick="VXEntities.openAddModal(\'\',\'position\')">Déclarer une position</button>'
       +' <a class="vx-btn vx-btn-sm vx-btn-ghost" href="/opportunities">Chercher des candidats →</a>');
     return;
@@ -431,7 +433,7 @@ async function renderTeam(){
         <span class="vx-chart-question">Où est concentré le capital, et qui gagne/perd ?</span></div>
       <div id="pf-alloc-tree" style="height:260px"></div>
       ${compositionBar(rich)}
-      <div class="vx-card-foot"><span class="vx-meta">Taille = poids (valeur au marché ou au coût) · couleur = P&amp;L latent (vert gagnant / rouge perdant / gris sans marque). Positions déclarées, aucune valeur inventée.</span></div>
+      <div class="vx-card-foot"><span class="vx-meta">Taille = poids (valeur au marché ou au coût) · couleur = P&amp;L latent quand il est connu (vert gagnant / rouge perdant), sinon concentration (rouge &gt; 25 % · ambre ≥ 15 % · vert en dessous). Positions déclarées, aucune valeur inventée.</span></div>
     </section>
     <div class="vx-grid">
     <div class="vx-col-8" id="pf-team-cols"></div>
@@ -514,7 +516,12 @@ async function renderTeam(){
   const totalTree=rich.reduce((a,t)=>a+Math.max(0,t.value??t.invested??0),0);
   if(window.VXCharts&&VXCharts.treemap){
     const cc=VXCharts.colors;const el=$('pf-alloc-tree');const w=(el&&el.clientWidth)||900;
-    VXCharts.treemap(el,{width:w,height:260,
+    VXCharts.treemap(el,{width:w,height:260,unit:'$ investi',
+      /* La carte hôte pose déjà la question (« Où est concentré le capital,
+         et qui gagne/perd ? ») : la redire ici la doublerait. */
+      source:window.__pfLive?'IBKR/desk':'desk (repli)',timestamp:window.__pfTs||null,
+      mode:window.__pfLive?'live':'fallback',
+      limits:'aire = capital engagé · couleur = P&L quand il est connu, sinon concentration (rouge > 25 %)',
       items:rich.map(t=>({label:t.sym,value:Math.max(1,t.value??t.invested??0),
         sub:(t.pl!=null?((t.pl>=0?'+':'')+VX.fmt.num(t.pl,1)+'%')
              :(plConnu?(t.type!=='STK'?t.type:'')
@@ -613,15 +620,16 @@ async function renderPositions(){
       '<button class="vx-btn vx-btn-sm vx-btn-primary" onclick="VXEntities.openAddModal(\'\',\'position\')">Déclarer une position</button>');
     return;
   }
-  let ibkr=null,posState=null,alerts=null;
-  try{ibkr=await VX.fetch('/api/ibkr/positions',{ttl:120000});}catch(e){}
+  /* Lot 2 — frontiere IBKR market-data-only : Vertex ne lit plus les
+     positions du COMPTE courtier. Le portefeuille est celui que l'utilisateur
+     declare ; IBKR ne sert plus qu'a coter. */
+  let posState=null,alerts=null;
   try{posState=await VX.fetch('/api/positions/state',{ttl:30000});}catch(e){}
   const posById={};((posState&&posState.positions)||[]).forEach(p=>{posById[String(p.position_id)]=p;});
   const srcLabel=(s)=>({IBKR:'IBKR',MANUAL:'Manuelle',PAPER:'Paper',SIMULATED:'Simulation',IMPORTED:'Importée'}[s]||'Manuelle');
   const groups={Actions:rich.filter(t=>t.type==='STK'),Options:rich.filter(t=>t.type!=='STK')};
   ($('pf-body')||{}).innerHTML=
-    (posState?actionListHtml(posState):'')+
-    (ibkr&&ibkr.ok===false?'<div class="vx-stale-banner">IBKR hors ligne — marques desk/EOD utilisées (aucune valeur inventée).</div>':'')
+    (posState?actionListHtml(posState):'')
     +Object.entries(groups).map(([g,list])=>`
     <section class="vx-card vx-mb3"><div class="vx-card-header"><span class="vx-card-title">${g}</span>
       <span class="vx-meta vx-right">${list.length}</span></div>
@@ -645,7 +653,7 @@ async function renderPositions(){
       :VX.states.empty('Aucune position '+g.toLowerCase()+'.')}
     </section>`).join('')
     +`<div class="vx-card-footer">${VX.updateIndicator(window.__pfTs||null,window.__pfLive?'IBKR/desk':'desk (repli)',window.__pfLive?'live':'fallback')}
-      · IBKR: ${ibkr&&ibkr.count!==undefined?ibkr.count+' position(s) broker (lecture seule)':'hors ligne'} · lecture seule — aucun ordre</div>`;
+      · portefeuille déclaré dans Vertex — IBKR ne sert qu'à coter · lecture seule — aucun ordre</div>`;
 }
 
 /* ═══ PERFORMANCE (LOT G — migrée depuis Journal, domicile unique) ═══ */
@@ -677,14 +685,14 @@ async function renderPerformance(){
   if(eq.length>=2&&window.VXCharts&&VXCharts.equityCard){
     const labels=eq.map(p=>p.d),values=eq.map(p=>Number(p.v));
     const up=values[values.length-1]>=values[0];
-    VXCharts.equityCard('pf-perf-equity',{title:'Courbe d’équité (cumulée)',timeframe:eq.length+' points',
+    VXCharts.equityCard('pf-perf-equity',{title:'Courbe d’équité (cumulée)',unit:'$',timeframe:eq.length+' points',
       question:'Le capital progresse-t-il régulièrement ?',
       conclusion:up?'Équité en progression sur la période.':'Équité en retrait sur la période.',
       labels,values,height:240,source:'clôtures déclarées (myTradesEquity)',timestamp:window.__pfTs||null,mode:'delayed',
       explain:{shows:'La série d’équité issue de tes clôtures de positions.',
         why:'Une méthode saine produit une pente régulière, pas des à-coups.',
         confirm:'Nouveaux plus hauts avec drawdowns contenus.',invalidate:'Série de plus bas d’équité.'}});
-    VXCharts.drawdownCard('pf-perf-drawdown',{title:'Drawdown depuis les pics',
+    VXCharts.drawdownCard('pf-perf-drawdown',{title:'Drawdown depuis les pics',unit:'%',
       question:'Les pertes de portefeuille restent-elles contrôlées ?',
       conclusion:'Dérivé arithmétiquement de la courbe d’équité.',
       labels,values,height:240,source:'clôtures déclarées (myTradesEquity)',timestamp:window.__pfTs||null,mode:'delayed',
@@ -706,7 +714,7 @@ async function renderPerformance(){
     const years=[...new Set(months.map(m2=>m2.slice(0,4)))];
     const MN=['01','02','03','04','05','06','07','08','09','10','11','12'];
     const ML=['J','F','M','A','M','J','J','A','S','O','N','D'];
-    VXCharts.heatmapCard('pf-perf-monthly',{title:'P&L moyen par mois (clôtures)',
+    VXCharts.heatmapCard('pf-perf-monthly',{title:'P&L moyen par mois (clôtures)',unit:'%',
       question:'Y a-t-il des périodes de sur- ou sous-performance ?',
       conclusion:months.length+' mois avec clôtures · moyenne simple des % par trade.',columns:ML,
       rows:years.map(y=>({label:y,cells:MN.map(mm=>{const arr=byMonth[y+'-'+mm];
@@ -720,7 +728,7 @@ async function renderPerformance(){
   const rich=enrich(pos,await quotesFor(pos));
   const withAbs=rich.filter(t=>t.plAbs!=null).sort((a,b)=>b.plAbs-a.plAbs);
   if(withAbs.length&&window.VXCharts&&VXCharts.card&&VXCharts.bars){
-    VXCharts.card('pf-perf-contrib',{title:'Contribution au P&L (positions ouvertes)',
+    VXCharts.card('pf-perf-contrib',{title:'Contribution au P&L (positions ouvertes)',unit:'$',
       question:'Qui porte le résultat latent ?',
       conclusion:withAbs[0].sym+' domine ('+((withAbs[0].plAbs>=0?'+':'')+VX.fmt.price(withAbs[0].plAbs))+').',
       height:Math.max(160,Math.min(300,withAbs.length*30)),source:window.__pfLive?'IBKR/desk':'desk (repli)',
@@ -809,7 +817,11 @@ async function renderOptions(){
       · Greeks agrégés affichés uniquement avec IBKR (jamais estimés en agrégat)</div></section>`;
   if(window.VXCharts&&VXCharts.treemap){
     const cc=VXCharts.colors;const el=document.getElementById('pf-opt-tree');const w=(el&&el.clientWidth)||900;
-    VXCharts.treemap(el,{width:w,height:220,
+    VXCharts.treemap(el,{width:w,height:220,unit:'$ investi',
+      /* Question déjà posée par la carte hôte : « Où est concentré le capital
+         options ? » */
+      source:window.__pfLive?'IBKR/desk':'desk (repli)',timestamp:window.__pfTs||null,
+      mode:window.__pfLive?'live':'fallback',limits:'aire = prime engagée par contrat',
       items:rich.map(t=>({label:t.sym+' '+(t.strike||''),value:Math.max(1,t.invested||0),
         sub:(t.type==='PUT'?'PUT':'CALL')+(t.exp?' '+t.exp:''),
         color:(t.type==='PUT'?(cc.violet||'#9c79d0'):(cc.neutral||'#8f8a83'))})),
@@ -832,7 +844,7 @@ function renderOptMix(rich){
     +'<div id="pf-opt-dte"></div>'
     +'<div class="vx-card-foot"><span class="vx-meta">Jours avant échéance (DTE) par position déclarée · une barre courte = expiration proche.</span></div></section>';
   if(window.VXCharts&&VXCharts.donutCard&&(calls||puts)){
-    VXCharts.donutCard('pf-opt-ring',{title:'CALL vs PUT',
+    VXCharts.donutCard('pf-opt-ring',{title:'CALL vs PUT',unit:'contrats',
       question:'Le portefeuille options est-il directionnel ?',
       conclusion:calls+' call(s) · '+puts+' put(s)',
       labels:['CALL','PUT'],values:[calls,puts],colors:['var(--vx-neutral)','var(--vx-option)'],height:200,
@@ -904,54 +916,13 @@ async function renderCombinedOptions(rich){
   }).join('');
 }
 
-/* ═══ RAPPROCHEMENT P&L — quatre sources, aucune ne gagne en silence ═══
-   Mesure du 24 août 2026 sur compte réel : accountSummary 1 024,03 ·
-   reqPnL 928,57 · portefeuille 1 024,03 · Vertex 753,90. L'écart de 270 USD
-   venait d'UNE ligne (URA, valorisée 7 760,00 contre 8 032,84) et de deux
-   lignes suivies mais non détenues.
-   Afficher un seul de ces chiffres rendrait le P&L vrai ou faux selon un
-   arbitrage que personne n'a pris. La carte les montre tous, nomme l'écart et
-   ne tranche pas. */
-async function renderPnlRecon(){
-  const host=$('pf-pnl-recon'); if(!host) return;
-  let d=null;
-  try{ d=await VX.fetch('/api/positions/pnl-reconciliation',{ttl:15000}); }
-  catch(e){ (host||{}).innerHTML='<section class="vx-card vx-mb3">'
-      +VX.states.error('Rapprochement P&L indisponible')+'</section>'; return; }
-  if(!d) return;
-  const NOMS={resume:'Résumé de compte',temps_reel:'Temps réel (reqPnL)',
-              portefeuille:'Somme des lignes',vertex:'Calcul Vertex'};
-  const src=d.sources||{}, lignes=Object.keys(NOMS).map(k=>{
-    const v=src[k];
-    return '<div class="vx-kpi vx-card vx-card--compact" style="grid-column:span 3">'
-      +'<span class="vx-kpi-label">'+NOMS[k]+'</span>'
-      +'<span class="vx-kpi-value" style="font-size:20px">'
-      +(v==null?'n/d':VX.fmt.num(v))+'</span>'
-      +'<span class="vx-meta">'+(v==null?'source absente':'P&L non réalisé')+'</span></div>';
-  }).join('');
-  const pl=d.par_ligne||{}, div=pl.lignes_divergentes||[];
-  const detail=div.length? '<ul class="vx-list">'+div.map(x=>
-      '<li><b>'+esc(x.symbole)+'</b> — Vertex '+VX.fmt.num(x.pnl_vertex)
-      +' contre '+VX.fmt.num(x.pnl_courtier)+' chez le courtier · écart '
-      +VX.fmt.num(x.ecart)+'</li>').join('')+'</ul>' : '';
-  const orphelines=(pl.absentes_chez_le_courtier||[]);
-  const orphBloc=orphelines.length?'<div class="vx-meta">Suivies par Vertex mais '
-      +'NON détenues par le compte : '+orphelines.map(esc).join(' · ')+'</div>':'';
-  const concordant=d.concordant;
-  const ton=concordant===true?'neutral':concordant===null?'warning':'warning';
-  const titre=concordant===true?'Les sources de P&L concordent'
-      :concordant===null?'Aucune source de P&L n\'a répondu'
-      :'Les sources de P&L divergent';
-  (host||{}).innerHTML='<section class="vx-card vx-mb3" aria-label="Rapprochement du P&L">'
-    +'<div class="vx-card-header"><span class="vx-card-title">Rapprochement du P&amp;L</span>'
-    +'<span class="vx-meta vx-right">lecture seule · Vertex ne tranche pas</span></div>'
-    +'<div class="vx-insight" data-tone="'+ton+'"><b>'+esc(titre)+'</b>'
-    +'<div class="vx-meta">'+esc(d.note||'')+'</div></div>'
-    +'<div class="vx-grid vx-kpi-strip vx-mb3">'+lignes+'</div>'
-    +detail+orphBloc
-    +(d.erreur_courtier?'<div class="vx-meta">Courtier : '+esc(d.erreur_courtier)+'</div>':'')
-    +'</section>';
-}
+/* Lot 2 — le rapprochement du P&L contre le courtier est RETIRÉ, avec sa
+   route. Il lisait accountSummary, reqPnL et le portefeuille du compte —
+   exactement ce que la frontière market-data-only interdit, readonly ou pas.
+   Constat au passage : son hôte `pf-pnl-recon` n'existait dans AUCUNE vue ;
+   la carte ne se peignait jamais. On retire donc une capacité déjà morte à
+   l'écran, pas un affichage vivant. Le P&L affiché reste celui que Vertex
+   calcule sur les positions déclarées, cotées par symbole. */
 
 /* ═══ RISQUE PRIORISÉ (LOT F — moteur risk_engine, positions réelles §26) ═══ */
 async function renderRisk(){
@@ -1072,9 +1043,7 @@ async function renderRisk(){
         } else {_sh.innerHTML=_se.map(function(e){return kv(e[0],e[1]+' %');}).join('');}
       }
     }catch(e){}
-    /* Le rapprochement se peint APRES le reste : il interroge le courtier et
-       ne doit pas retarder l'affichage du risque. Son hote existe deja. */
-    renderPnlRecon();
+
   }catch(e){($('pf-body')||{}).innerHTML=VX.states.error('Moteur de risque injoignable : '+e.message);}
 }
 
@@ -1311,18 +1280,270 @@ async function renderDiscipline(){
   }
   $('pf-body').appendChild(host);
 }
-const RENDER={team:renderTeam,positions:renderPositions,performance:renderPerformance,
-  options:renderOptions,risk:async function(){await renderRisk();await renderStress();await renderDiscipline();await renderHiddenDeps();},watchlist:renderWatchlist};
-async function pfFresh(){try{
-  const el=$('pf-fresh');if(!el||!window.VX||!VX.freshness)return;
+/* ═══ ALLOCATION ET EXPOSITIONS ══════════════════════════════════════════
+   Sous-vue canonique manquante (`portfolio-center.md` § Allocation) : la page
+   savait dessiner des poids, mais nulle part elle ne repondait « ou suis-je
+   concentre, et sur quoi ne sais-je PAS repondre ».
+
+   Tout vient de `/api/portfolio/context` (moteur `portfolio_context`) : poids,
+   HHI, mix par actif, mix sectoriel, couverture du referentiel, budget de
+   risque, expositions factorielles. Aucun chiffre n'est calcule ici — pas meme
+   un total : le moteur les porte deja, et un second calcul divergerait.
+   Devise, pays, theme et look-through ETF sont DECLARES absents, pas simules. */
+/* `unite` est OBLIGATOIRE a l'appel : la premiere version suffixait « % » en
+   dur, et le budget de risque — qui est en dollars — s'affichait « 3280,0 % ».
+   Une echelle qui ment sur son unite est pire qu'une echelle absente. */
+function allocBars(entries,unite,opt){
+  opt=opt||{};
+  const es=(entries||[]).filter(e=>e&&isFinite(e.v)&&e.v>0).sort((a,b)=>b.v-a.v);
+  if(!es.length)return '';
+  const mx=Math.max.apply(null,es.map(e=>e.v));
+  const dire=(v)=>(unite==='%')
+    ? ((v<0.05?'&lt; 0,1':VX.fmt.num(v,1))+'&nbsp;%')
+    : (VX.fmt.num(v,0)+'&nbsp;'+unite);
+  return '<div class="vx-wbars">'+es.map(e=>`<div class="vx-wbar">`
+    +`<span class="wb-name">${esc(e.k)}</span>`
+    +`<span class="wb-track"><i style="width:${Math.max(2,e.v/mx*100).toFixed(0)}%`
+    +`${e.color?';background:'+e.color:''}"></i></span>`
+    +`<span class="wb-val">${dire(e.v)}</span></div>`).join('')
+    +(opt.note?`<div class="vx-meta vx-mt2">${esc(opt.note)}</div>`:'')+'</div>';
+}
+/* Une couleur par TYPE d'actif, jamais par titre : le violet est reserve aux
+   options (regle de palette), le reste reste structurel argent/gris. */
+function allocColor(assetType){
+  return {OPTION:'var(--vx-options)',ETF:'var(--vx-steel-3, #7f8794)'}[assetType]
+    ||'var(--vx-silver, #c9ced8)';
+}
+async function renderAllocation(){
+  const body=$('pf-body');if(!body)return;
+  /* Pas de cockpit `renderSummary` ici : il valorise AU COUT quand les marques
+     manquent, le moteur valorise A LA MARQUE. Les deux tuiles s'appelaient
+     « Valeur » et affichaient deux nombres differents a trois centimetres
+     d'ecart. Cette sous-vue ne montre que la valorisation du moteur. */
+  const pos=E().positions();
+  ($('pf-summary')||{}).innerHTML='';
+  let d=null,err=null;
+  try{d=await VX.fetch('/api/portfolio/context',{ttl:60000});}catch(e){err=e;}
+  if(err){body.innerHTML=VX.states.error('Contexte portefeuille indisponible : '+err.message);return;}
+  if(!d||!d.available){
+    body.innerHTML='<div class="vx2-state" data-kind="empty" role="status">'
+      +'<span class="vx2-state-ghost" aria-hidden="true"><i></i><i></i><i></i><i></i></span>'
+      +'<p class="vx2-state-title">Allocation incalculable</p>'
+      +'<p class="vx2-state-cause">'+esc((d&&d.reason)||'contexte portefeuille indisponible')+'</p>'
+      +'<p class="vx2-state-cause">Les poids, la concentration et le mix sectoriel '
+      +'exigent au moins une position déclarée et valorisée.</p>'
+      +'<div class="vx2-state-actions">'
+      +'<button type="button" class="vx2-btn" data-variante="primaire" '
+      +'onclick="VXEntities.openAddModal(\'\',\'position\')">Déclarer une position</button></div></div>';
+    return;
+  }
+  /* Type d'actif par titre : le moteur donne le mix, la position donne le type.
+     La jointure sert UNIQUEMENT a colorer — aucun poids n'est recalcule. */
+  const typeOf={};pos.forEach(t=>{typeOf[String(t.sym).toUpperCase()]=(t.type==='STK')?'STOCK':(t.type==='ETF'?'ETF':'OPTION');});
+  const b=d.bounds||{},maxW=(d.sizing&&d.sizing.max_stock_weight_pct)||15;
+  const hhiTone=d.hhi==null?'':(d.hhi>=0.25?'neg':d.hhi>=0.18?'warn':'pos');
+  const topOver=(d.top_weight_pct||0)>maxW;
+  const cov=d.sector_coverage||{};
+  const rb=d.risk_budget||{};
+  /* Tons canoniques : la CSS 2.0 lit `positive|negative|caution|missing` sur la
+     VALEUR, pas sur la carte. Les abreviations `pos/neg/warn` employees ailleurs
+     dans ce fichier ne peignent rien ici — d'ou la traduction. */
+  const TON={pos:'positive',neg:'negative',warn:'caution','':'',undefined:''};
+  const k=(label,val,sub,tone)=>`<div class="vx2-metric">`
+    +`<span class="vx2-metric-label">${label}</span>`
+    +`<span class="vx2-metric-value" data-tone="${TON[tone]||''}">${val}</span>`
+    +(sub?`<span class="vx2-metric-meta">${sub}</span>`:'')+`</div>`;
+
+  body.innerHTML=`
+    <div class="vx2-strip vx-mb3">
+      ${k('Valeur suivie',VX.fmt.num(d.total_value,0)+' $',esc((d.provenance||[]).join(' + '))||'—')}
+      ${k('Lignes',d.n_positions+' / '+(b.min??'?')+'–'+(b.max??'?'),
+          d.in_bounds?'dans les bornes':(d.n_positions<(b.min||0)?'sous la cible · '+d.free_slots+' place(s)':'au-dessus de la cible'),
+          d.in_bounds?'pos':'warn')}
+      ${k('Poids du plus gros titre',VX.fmt.num(d.top_weight_pct,1)+' %',
+          esc(d.top_symbol||'—')+(topOver?' · au-dessus du plafond '+maxW+' %':' · plafond '+maxW+' %'),
+          topOver?'neg':'')}
+      ${k('HHI',d.hhi!=null?VX.fmt.num(d.hhi,3):'—',
+          d.hhi==null?'non calculable':(d.hhi>=0.25?'concentré':d.hhi>=0.18?'modérément concentré':'dispersé'),hhiTone)}
+    </div>
+    ${d.valuation_note?`<div class="vx2-banner" data-kind="prudence" role="status"><span>${esc(d.valuation_note)}</span></div>`:''}
+    ${d.asset_mix_note?`<div class="vx2-banner" data-kind="prudence" role="status"><span>${esc(d.asset_mix_note)}</span></div>`:''}
+    <div class="vx-grid vx-mb3">
+      <div class="vx-col-7"><div class="vx2-surface">
+        <div class="vx2-card-head"><span class="vx2-card-title">Poids par position</span>
+        <span class="vx2-card-question">Où le capital est-il réellement concentré ?</span></div>
+        <div id="pf-alloc-treemap" style="height:280px"></div>
+        <div class="vx2-stamp vx-mt2">Aire = poids au portefeuille · argent = action · violet = option.</div>
+        <div id="pf-alloc-note" class="vx-mt2"></div>
+      </div></div>
+      <div class="vx-col-5"><div class="vx2-surface">
+        <div class="vx2-card-head"><span class="vx2-card-title">Mix par type d’actif</span></div>
+        ${allocBars(Object.keys(d.asset_mix||{}).map(a=>({k:a,v:d.asset_mix[a].weight_pct,color:allocColor(a)})),'%',
+          {note:'Un type d’actif absent du référentiel n’est jamais classé par défaut.'})}
+      </div></div>
+    </div>
+    <div class="vx-grid vx-mb3">
+      <div class="vx-col-6"><div class="vx2-surface">
+        <div class="vx2-card-head"><span class="vx2-card-title">Exposition sectorielle</span>
+        <span class="vx2-card-question">Quel secteur porte le risque commun ?</span></div>
+        ${cov.available
+          ? allocBars(Object.keys(d.sector_mix||{}).map(sc=>({k:sc,v:d.sector_mix[sc].weight_pct})),'%')
+            +(cov.unclassified_value_pct>0
+              ? `<div class="vx2-banner" data-kind="prudence" role="status"><span>`
+                +`${VX.fmt.num(cov.unclassified_value_pct,1)} % de la valeur hors référentiel sectoriel`
+                +` (${esc((cov.unclassified_symbols||[]).join(', ')||'—')}) — non répartie, jamais attribuée d’office.</span></div>`
+              : '')
+          : `<div class="vx2-state" data-kind="missing" role="status">`
+            +`<p class="vx2-state-title">Secteurs non couverts</p>`
+            +`<p class="vx2-state-cause">Aucun titre du portefeuille n’est présent dans le référentiel sectoriel.</p></div>`}
+      </div></div>
+      <div class="vx-col-6"><div class="vx2-surface">
+        <div class="vx2-card-head"><span class="vx2-card-title">Budget de risque au stop</span>
+        <span class="vx2-card-question">Combien le plan de sortie met-il en jeu ?</span></div>
+        ${rb.available
+          ? `<div class="vx2-strip vx-mb2">
+               ${k('Risque connu',VX.fmt.num(rb.known_risk_to_stop,0)+' $','stop × quantité')}
+               ${k('Couverture',VX.fmt.num(rb.coverage_pct,0)+' %',rb.covered_positions+' / '+rb.total_positions+' position(s)',
+                   rb.coverage_pct>=80?'pos':'warn')}
+             </div>`
+            +allocBars((rb.by_position||[]).map(x=>({k:x.symbol,v:x.risk_to_stop})),'$',
+               {note:'Échelle en dollars de risque au stop, pas en pourcentage de poids.'})
+            +((rb.unmeasured||[]).length?`<div class="vx2-banner" data-kind="prudence" role="status"><span>`
+               +`${(rb.unmeasured||[]).length} position(s) sans risque mesurable : `
+               +`${esc((rb.unmeasured||[]).map(u=>u.symbol+' — '+u.reason).join(' · '))}</span></div>`:'')
+          : `<div class="vx2-state" data-kind="missing" role="status">`
+            +`<p class="vx2-state-title">Budget de risque non mesurable</p>`
+            +`<p class="vx2-state-cause">Aucune position ne porte à la fois une cote, un stop et une quantité.</p></div>`}
+      </div></div>
+    </div>
+    <div class="vx-grid vx-mb3"><div class="vx-col-12" id="pf-alloc-corr"></div></div>
+    <div class="vx-grid vx-mb3"><div class="vx-col-12"><div class="vx2-surface">
+      <div class="vx2-card-head"><span class="vx2-card-title">Expositions factorielles</span></div>
+      ${(d.factor_exposure&&d.factor_exposure.available)
+        ? allocBars(Object.keys(d.factor_exposure.factors||{})
+            .filter(f=>d.factor_exposure.factors[f].value!=null)
+            .map(f=>({k:f,v:d.factor_exposure.factors[f].value})),'')
+        : `<div class="vx2-state" data-kind="missing" role="status">`
+          +`<p class="vx2-state-title">Facteurs non couverts</p>`
+          +`<p class="vx2-state-cause">Le moteur factoriel existe mais ne couvre `
+          +`${VX.fmt.num((d.factor_exposure||{}).coverage_pct_max||0,0)} % de la valeur : `
+          +`marché, bêta, taille, valeur, qualité et croissance restent non mesurés ici.</p></div>`}
+    </div></div></div>
+    <div class="vx-grid"><div class="vx-col-12">${VX2_ALLOC_ABSENCES}</div></div>`;
+
+  /* Treemap des poids — le moteur donne `weights`, la carte ne fait que
+     l'ordonner et l'aerer. Aucun poids n'est recompose. */
+  if(window.VXCharts&&VXCharts.treemap){
+    const items=Object.keys(d.weights||{}).map(sym=>({label:sym,value:+d.weights[sym],
+      color:allocColor(typeOf[sym]||'STOCK'),sub:''}));
+    VXCharts.treemap('pf-alloc-treemap',{items:items,unit:'% du portefeuille',
+      /* Question déjà posée par la surface hôte, juste au-dessus. */
+      source:'portfolio_context',timestamp:d.as_of||null,mode:'delayed',
+      limits:'aire = poids au portefeuille · argent = action · violet = option',
+      width:640,height:280,fmt:(v)=>VX.fmt.num(v,1)+' %',
+      emptyHtml:'<div class="vx2-state" data-kind="empty"><p class="vx2-state-title">Aucun poids calculable</p></div>'});
+    /* Une tuile sous ~0,3 % du cadre ne recoit aucun libelle lisible : elle
+       disparait dans le trait de separation. La taire ferait lire « tout le
+       portefeuille est ici » — on la NOMME sous le graphique. */
+    const invisibles=items.filter(i=>i.value>0&&i.value<0.3).map(i=>i.label);
+    const note=$('pf-alloc-note');
+    if(note&&invisibles.length)note.innerHTML='<span class="vx2-badge" data-state="missing">'
+      +invisibles.length+' position(s) trop petite(s) pour être dessinée(s)&nbsp;: '
+      +esc(invisibles.join(', '))+'</span>';
+  }
+  corrHeatmap('pf-alloc-corr',d.correlations||{});
+}
+
+/* ═══ THESES ════════════════════════════════════════════════════════════
+   `portfolio-center.md` range watchlist ET theses dans une meme sous-vue :
+   « chaque element conserve pourquoi maintenant, catalyseur, invalidation,
+   horizon, priorite, prochaine revue ». La watchlist portait deja ce contrat ;
+   les theses des positions OUVERTES, elles, n'etaient lisibles nulle part —
+   `thesisState()` les calculait pour une pastille de tableau, et le texte de
+   la these ne s'affichait qu'au survol d'un attribut `title`.
+
+   Rien n'est calcule ici : `thesisState` et `nextAction` sont les fonctions
+   deja employees par la vue Positions, appelees telles quelles.
+
+   La carte n'utilise PAS `.vx2-rowcard` : cette classe vit dans
+   `.vx2-rowcards`, qui est `display:none` au-dessus de 760 px — c'est le
+   repli mobile des tables, pas une carte de contenu. */
+const THESE_ETAT={neg:'stale',warn:'delayed',pos:'live',muted:'missing'};
+/* Le reste du fichier ecrit `type!=='STK'` ; le desk ne produit que STK, CALL
+   et PUT, donc les deux formes coincident aujourd'hui. Celle-ci dit ce qu'elle
+   teste, et ne rangerait pas un ETF parmi les options. */
+const estOption=(t)=>t.type==='CALL'||t.type==='PUT'||t.right==='C'||t.right==='P';
+async function thesesPositions(){
+  const pos=E().positions();
+  if(!pos.length)return '';
+  const rich=enrich(pos,await quotesFor(pos));
+  const cell=(label,html)=>`<div class="vx2-these-cell"><dt>${label}</dt><dd>${html}</dd></div>`;
+  const abs=(txt)=>`<span class="vx2-absent">${txt}</span>`;
+  const cartes=rich.map(t=>{
+    const st=thesisState(t),act=nextAction(t),snap=t.entrySnap||{};
+    const stop=Number(snap.stop);
+    const hasStop=isFinite(stop)&&stop>0;
+    const mark=estOption(t)?t.underSpot:t.mark;
+    const dist=(hasStop&&mark!=null)?((mark-stop)/stop*100):null;
+    return `<article class="vx2-these" data-etat="${st.key}">
+      <div class="vx2-these-head">
+        <button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" data-open-analysis="${esc(t.sym)}">${esc(t.sym)}</button>
+        <span class="vx2-badge" data-state="${THESE_ETAT[st.tone]||'missing'}">${esc(st.label)}</span>
+        ${estOption(t)?'<span class="vx2-badge" data-state="option">Option</span>':''}
+      </div>
+      <p class="vx2-these-texte">${snap.thesis?esc(snap.thesis)
+        :abs('Thèse non écrite — sans thèse écrite, aucun fait ne peut l’invalider.')}</p>
+      <dl class="vx2-these-grid">
+        ${cell('Invalidation',hasStop?'<span class="vx2-mono">'+VX.fmt.price(stop)+'</span>':abs('non définie'))}
+        ${cell('Distance',dist!=null?'<span class="vx2-mono">'+(dist>=0?'+':'')+VX.fmt.num(dist,1)+'&nbsp;%</span>':abs('n.d.'))}
+        ${cell('Objectif',snap.tgt!=null?'<span class="vx2-mono">'+VX.fmt.price(snap.tgt)+'</span>':abs('non défini'))}
+        ${cell('Catalyseur',snap.catalyst?esc(snap.catalyst):abs('n.d.'))}
+        ${cell('Depuis le',t.added?esc(t.added):abs('n.d.'))}
+      </dl>
+      <p class="vx2-these-action"><b>Prochaine action analytique&nbsp;:</b>
+        <span class="${toneCls(act.tone)}">${esc(act.label)}</span></p>
+    </article>`;}).join('');
+  return `<section class="vx2-section" aria-label="Thèses des positions ouvertes">
+    <div class="vx2-section-head"><h2 class="vx2-section-title">Thèses des positions ouvertes</h2>
+      <span class="vx2-section-note">${rich.length} position(s) — l’état de thèse ne se déduit jamais du seul prix</span></div>
+    <div class="vx2-theses">${cartes}</div>
+    <p class="vx2-stamp vx-mt2">Seul le franchissement de l’invalidation prédéfinie casse une thèse.
+      Une baisse de prix, à elle seule, ne la casse jamais.</p></section>`;
+}
+async function renderTheses(){
+  await renderWatchlist();
+  const body=$('pf-body');if(!body)return;
+  const html=await thesesPositions();
+  if(!html)return;
+  /* `data-open-analysis` porte deja un delegue global (vx-entities.js) :
+     ne rien recabler ici, sinon chaque clic ouvrirait deux fois. */
+  const holder=document.createElement('div');
+  holder.innerHTML=html;
+  const sec=holder.firstElementChild;
+  if(sec)body.insertBefore(sec,body.firstChild);
+}
+
+const RENDER={team:renderTeam,positions:renderPositions,
+  allocation:renderAllocation,options:renderOptions,
+  risk:async function(){await renderRisk();await renderStress();await renderDiscipline();await renderHiddenDeps();},
+  theses:renderTheses,performance:renderPerformance};
+async function pfFresh(){
+  const el=$('pf-fresh');if(!el)return;
+  /* `VX.freshness.assess({ageMs:null})` rend l'etat `unknown`, dont le libelle
+     est le tiret « — ». Pose seul a cote d'un bouton, ce tiret ne nommait ni
+     sa grandeur ni son absence : l'ecran affichait un signe, pas une
+     information. Quand l'age manque, on ecrit POURQUOI. */
+  const dire=(txt,etat)=>{el.innerHTML='<span class="vx2-badge" data-state="'+etat+'">'+txt+'</span>';};
+  if(!window.VX||!VX.freshness){dire('Fraîcheur non évaluée','missing');return;}
   let pk=VX.fetch.peek('/api/session/manifest');
   if(!pk){try{await VX.fetch('/api/session/manifest',{ttl:30000});pk=VX.fetch.peek('/api/session/manifest');}catch(e){}}
   const live=!(window.__vxStatus&&window.__vxStatus.demo);
-  /* Âge HONNÊTE = ancienneté réelle de la session (manifest.age_s), pas l'âge de
-     l'entrée de cache : un manifest resservi doit refléter l'âge de la DONNÉE. */
+  /* Age HONNETE = anciennete reelle de la session (manifest.age_s), pas l'age de
+     l'entree de cache : un manifest resservi doit refleter l'age de la DONNEE. */
   const a=(pk&&pk.data&&typeof pk.data.age_s==='number')?pk.data.age_s*1000:null;
+  if(a==null){dire('Session non horodatée — âge inconnu','missing');return;}
   el.innerHTML=VX.freshness.chip(VX.freshness.assess({ageMs:a,live:live}));
-}catch(e){}}
+}
 function boot(){pfFresh();(RENDER[VIEW]||renderTeam)().catch(e=>{($('pf-body')||{}).innerHTML=VX.states.error(e.message);});}
 if(window.VXCharts&&window.Chart)boot();else window.addEventListener('load',boot,{once:true});
 ['vx:position-changed','vx:watchlist-changed','vx:follow-changed','vx:favorites-changed']
@@ -1332,12 +1553,67 @@ if(window.VXCharts&&window.Chart)boot();else window.addEventListener('load',boot
 """
 
 
+# `portfolio-center.md` réclame six axes d'exposition. Vertex en calcule deux.
+# Les quatre autres sont DÉCLARÉS absents : la refonte 2.0 est visuelle et ne
+# développe aucun moteur — fabriquer un pays ou une devise dans un template
+# produirait un chiffre sans source, ce que la règle n°4 interdit.
+_ABSENCES = (
+    '<div class="vx2-strip">'
+    + vx2.capacite_absente(
+        quoi='Exposition par devise',
+        pourquoi='Les positions déclarées ne portent pas de devise exploitable '
+                 'et aucun moteur de change n’alimente le portefeuille.')
+    + vx2.capacite_absente(
+        quoi='Exposition par pays',
+        pourquoi='Aucun référentiel pays n’est branché ; le référentiel '
+                 'sectoriel existant ne porte pas de domiciliation.')
+    + vx2.capacite_absente(
+        quoi='Exposition par thème',
+        pourquoi='Vertex ne tient pas de taxonomie thématique canonique.')
+    + vx2.capacite_absente(
+        quoi='Transparence ETF (look-through)',
+        pourquoi='Elle exige les composants datés de chaque ETF ; sans holdings '
+                 'à date, un ETF est compté comme une ligne, jamais éclaté.')
+    + '</div>')
+
+
+def _entete(view: str) -> str:
+    """En-tête + barre de contexte. La fraîcheur porte un LIBELLÉ : l'ancien
+    emplacement rendait un tiret nu, à côté d'un bouton, sans dire de quoi il
+    parlait — un `—` qui ne nomme pas sa grandeur n'informe de rien."""
+    return (
+        vx2.page_header(
+            surtitre='Gérer', titre='Portefeuille',
+            question='Que possède le portefeuille, pourquoi, et avec quels risques ?',
+            actions=(
+                vx2.bouton('Déclarer une position', variante='primary',
+                           attrs=' onclick="VXEntities.openAddModal(\'\',\'position\')"')
+                + vx2.bouton('Ajouter à la watchlist',
+                             attrs=' onclick="VXEntities.openAddModal(\'\',\'watchlist\')"')
+                + vx2.bouton('Ouvrir le Suivi', href='/follow-up', variante='ghost')))
+        + vx2.context_bar([
+            {'label': 'Périmètre', 'contenu':
+                '<span class="vx2-stamp">Positions déclarées au desk '
+                '<b>+ IBKR en lecture seule</b></span>'},
+            {'label': 'Valorisation', 'contenu':
+                '<span class="vx2-stamp">Marque du scan, sinon '
+                '<b>au coût</b> — jamais un prix inventé</span>'},
+            {'label': 'Fraîcheur', 'contenu':
+                '<span id="pf-fresh">'
+                + vx2.badge_etat('missing', texte='Lecture…') + '</span>'},
+        ]))
+
+
 def render(view: str = 'team') -> str:
+    view = _ALIAS.get(view, view)
     view = view if view in dict(_VIEWS) else 'team'
-    content = (_CONTENT.replace('%%TABS%%', _tabs(view))
+    content = (_CONTENT.replace('%%HEADER%%', _entete(view))
+               .replace('%%TABS%%', _tabs(view))
                .replace('%%LOADING%%', '<div class="vx-skeleton" style="height:120px"></div>'))
     label = dict(_VIEWS)[view]
     return render_shell(title=f'Portefeuille · {label}', active='portfolio',
                         space_label='Portefeuille', sub_label=label,
-                        content=content, page_js=_JS.replace('%%VIEW%%', json_for_script(view)),
+                        content=content,
+                        page_js=(_JS.replace('%%VIEW%%', json_for_script(view))
+                                 .replace('%%ABSENCES%%', json_for_script(_ABSENCES))),
                         page_label=f'Portefeuille {label}')

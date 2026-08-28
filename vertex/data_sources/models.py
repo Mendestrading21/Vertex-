@@ -33,7 +33,14 @@ GREEKS_FALLBACK = 'FALLBACK_ESTIMATE'
 
 @dataclass
 class ProvenancedValue:
-    """Une valeur + d'où elle vient + quand + à quel point on peut s'y fier."""
+    """Une valeur + d'où elle vient + quand + à quel point on peut s'y fier.
+
+    Lot 5 — portée au contrat canonique du skill (enveloppe
+    `connection-and-resilience-matrix.md`). Les champs historiques ne changent
+    ni de nom ni de défaut ; les nouveaux ont tous un défaut None/''/[] :
+    aucune fixture ne casse, et surtout AUCUN défaut n'invente une valeur —
+    une unité ou une devise par défaut serait une invention.
+    """
     value: Any = None
     source: str = SOURCE_UNAVAILABLE
     source_mode: str = MODE_NONE
@@ -42,6 +49,27 @@ class ProvenancedValue:
     quality: str = QUALITY_MISSING
     fallback_used: bool = False
     warnings: list = field(default_factory=list)
+
+    #  ── Contrat canonique (lot 5) ────────────────────────────────────────
+    #  `unit` : unité du champ (USD, %, contrats, actions…) — None = non
+    #  déclarée, jamais devinée. `currency` : devise si monétaire.
+    unit: str | None = None
+    currency: str | None = None
+    #  Identité d'instrument (symbole qualifié, conId…) — pas le symbole nu.
+    instrument_id: str | None = None
+    #  Séparer l'heure d'OBSERVATION chez la source de l'heure de RÉCEPTION
+    #  ici : l'écart entre les deux est la latence, et la confondre avec
+    #  l'âge rend une donnée lente « fraîche » à tort.
+    observed_at: str = ''
+    received_at: str = ''
+    #  Droit d'accès à la donnée (souscription temps réel, différé…).
+    entitlement: str | None = None
+    #  Version du schéma de l'enveloppe — pour détecter la dérive.
+    schema_version: str = '1.1'
+    #  Chaîne de production : chaque étape s'ajoute, aucune ne s'efface.
+    lineage: list = field(default_factory=list)
+    #  Erreur portée par la valeur (et non levée) : la panne est une donnée.
+    error: str | None = None
 
     def to_dict(self) -> dict:
         return asdict(self)

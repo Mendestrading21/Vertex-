@@ -1,0 +1,28 @@
+[
+  {
+    "route": "/performance?view=real",
+    "console": [],
+    "pageerrors": [],
+    "shots": {
+      "desktop": "docs/vertex-2-0/preuves/lot-25-apres/performance-view-real-desktop.png",
+      "mobile": "docs/vertex-2-0/preuves/lot-25-apres/performance-view-real-mobile.png"
+    },
+    "overflow": {
+      "desktop": 0,
+      "mobile": 0
+    }
+  },
+  {
+    "route": "/performance?view=track-record",
+    "console": [],
+    "pageerrors": [],
+    "shots": {
+      "desktop": "docs/vertex-2-0/preuves/lot-25-apres/performance-view-track-record-desktop.png",
+      "mobile": "docs/vertex-2-0/preuves/lot-25-apres/performance-view-track-record-mobile.png"
+    },
+    "overflow": {
+      "desktop": 0,
+      "mobile": 0
+    }
+  }
+]

@@ -6,17 +6,18 @@ modulaire, avec parité**. Avant `vertex/app/factory.py`, 22
 lignes 147 et 2456 : personne ne pouvait répondre à « quelles routes
 l'application sert-elle ? » sans lire 2 300 lignes.
 
-## La collision qui aurait cassé en silence
+## La collision qui aurait cassé en silence — RÉSOLUE au lot 9
 
-Deux blueprints déclarent **le même chemin** — `/api/anomalies/<sym>`, par
-`analysis_api` (sans injection) et `strategy_os_api` (à injection). Werkzeug
-garde les deux règles ; c'est le **dispatch** qui tranche.
+Deux blueprints déclaraient **le même chemin** — `/api/anomalies/<sym>`. Le
+dispatch tranchait (analysis_api gagnait), et l'ordre d'enregistrement était
+la seule chose qui empêchait un basculement silencieux de handler.
 
-Regrouper les enregistrements sans injection **après** `strategy_os_api` aurait
-donc changé le handler servi, sans erreur, sans test rouge, sans trace. Le groupe
-est placé avant, et ce fichier garde ce choix.
-
-Mesuré des deux côtés : `analysis_api.api_anomalies` gagne **avant comme après**.
+Au lot 9, la règle masquée de `strategy_os_api` a été **retirée** : son seul
+consommateur (la page legacy `/strategy-os`) est une redirection 301. Le
+propriétaire unique est `analysis_api.api_anomalies`, et un gardien générique
+(`test_collisions_routes_lot09`) échoue désormais sur TOUTE route à deux
+propriétaires — l'ordre d'enregistrement n'est plus une protection, c'est un
+détail.
 
 ## `create_app()` : le piège du `root_path`
 
@@ -58,13 +59,14 @@ def test_le_dispatch_de_la_route_en_collision_est_inchange(application):
         % point)
 
 
-def test_les_deux_regles_en_collision_coexistent_toujours(application):
-    """Werkzeug garde les deux ; en perdre une serait une autre régression —
-    plus visible, mais tout aussi silencieuse côté utilisateur."""
+def test_la_route_anomalies_a_un_seul_proprietaire(application):
+    """Lot 9 : la règle masquée de strategy_os_api est retirée — ce banc
+    gardait la coexistence pour figer le vainqueur du dispatch ; il garde
+    désormais l'état cible : UN propriétaire, le canonique."""
     points = sorted(r.endpoint for r in application.url_map.iter_rules()
                     if r.rule == '/api/anomalies/<sym>')
-    assert points == ['analysis_api.api_anomalies', 'strategy_os.anomalies_for'], (
-        'la collision connue a change de forme : %s' % points)
+    assert points == ['analysis_api.api_anomalies'], (
+        'la route anomalies a change de proprietaire(s) : %s' % points)
 
 
 def test_le_registre_declare_ce_qui_est_reellement_enregistre(application):

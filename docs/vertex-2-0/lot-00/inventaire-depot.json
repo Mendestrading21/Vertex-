@@ -1,0 +1,41 @@
+{
+  "active_skills": [
+    "vertex-2-0"
+  ],
+  "auditors": [
+    "vertex-data-auditor.md",
+    "vertex-decision-auditor.md",
+    "vertex-performance-auditor.md",
+    "vertex-product-auditor.md",
+    "vertex-qa-auditor.md",
+    "vertex-ui-auditor.md"
+  ],
+  "except_exception_approx": 382,
+  "files": 3356,
+  "python_files": 907,
+  "route_decorators_approx": 175,
+  "silent_except_approx": 174,
+  "suffixes": {
+    ".TAG": 1,
+    ".bat": 3,
+    ".cmd": 1,
+    ".command": 2,
+    ".css": 20,
+    ".example": 1,
+    ".ini": 1,
+    ".js": 49,
+    ".json": 52,
+    ".md": 1022,
+    ".pine": 1,
+    ".png": 394,
+    ".py": 907,
+    ".pyc": 879,
+    ".sh": 1,
+    ".txt": 3,
+    ".woff2": 12,
+    ".yaml": 1,
+    ".yml": 1,
+    "[sans extension]": 5
+  },
+  "test_files": 473
+}

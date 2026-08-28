@@ -23,8 +23,9 @@ def render_index(view: str = '') -> str:
             ('4', 'Preuves — fondamentaux, catalyseurs et risques'),
         ])
     content = """
-<div class="vx-page-header"><div><h1>Analyse</h1>
-<div class="vx-sub">Une recherche, une décision lisible, les preuves ensuite.</div></div></div>
+<div class="vx-page-header"><div><p class="vx2-eyebrow">Explorer</p><h1>Analyse</h1>
+<div class="vx-sub">Ce dossier mérite-t-il du capital potentiel, et sous quelles
+conditions&nbsp;?</div></div></div>
 <style id="an-index-css">
 .an-dim{display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px dashed var(--vx-border-soft)}
 .an-dim:last-child{border-bottom:none}
@@ -130,7 +131,7 @@ _SECTIONS = """
     <span class="vx-right vx-flex">
       <span class="vx-flex" style="gap:2px;margin-right:6px" role="group" aria-label="Mode d'analyse">
         <span class="vx-btn vx-btn-sm vx-btn-primary" aria-current="true" title="Mode actuel : analyse de l'action">Action</span>
-        <a class="vx-btn vx-btn-sm" href="/options/%%SYM%%" title="Dossier options : chaîne, probabilités, IV, scénarios, stratégies">Options</a>
+        <a class="vx-btn vx-btn-sm" href="/options/dossier/%%SYM%%" title="Dossier options : chaîne, probabilités, IV, scénarios, stratégies">Options</a>
       </span>
       <button class="vx-btn vx-btn-icon vx-btn-ghost" id="an-fav" aria-label="Favori" title="Favori">★</button>
       <button class="vx-btn vx-btn-sm vx-btn-soft" id="an-follow"
@@ -139,7 +140,22 @@ _SECTIONS = """
       <button class="vx-btn vx-btn-sm" data-entity-menu="%%SYM%%">Actions ▾</button>
     </span>
   </div>
-</div>
+</section><!-- an-hero : c'était un </div>, donc une fermante ORPHELINE que le
+     navigateur ignore. La <section> restait ouverte et tout le dossier —
+     scores, physique, workspace, rail — s'imbriquait dans cette carte collante :
+     cartes empilées les unes sur les autres, colonnes réduites à un mot par
+     ligne. Le défaut préexistait à la refonte ; il a été vu sur la capture. -->
+<!-- ── VERDICT CANONIQUE ──────────────────────────────────────────────────
+     Ce conteneur MANQUAIT. `paintDecision()` faisait bien `$('an-verdict')`,
+     mais l'élément n'existait dans aucune section : la garde `if(V)` avalait
+     silencieusement le rendu. Résultat mesuré au navigateur — `#an-verdict`
+     absent, `.vx-verdict-card` absente : le verdict canonique était calculé,
+     récupéré, puis JETÉ. Le dossier passait de l'identité aux scénarios sans
+     jamais dire ce que Vertex conclut.
+     Le renderer n'a pas été touché : on lui rend son domicile. -->
+<div id="an-trace" class="vx-mt3">%%TRACE%%</div>
+<div id="an-verdict" class="vx-mt3"></div>
+
 <!-- Scores + radar : SORTIS du hero collant → la barre d'identité (titre/prix/décision)
      reste seule en haut au défilement, le reste de l'analyse défile librement. -->
 <!-- Scores et These vivent DANS le workspace §22, plus bas. Les deux cartes
@@ -265,6 +281,9 @@ _SECTIONS = """
     <p class="vx-chart-question">Question sur ce titre — réponse ancrée dans les chiffres disponibles.</p>
     <div data-body>
       <input id="an-cp-q" class="vx-input" aria-label="Question sur ce titre" placeholder="ex. Quel est le risque principal ici ?" maxlength="500" autocomplete="off" style="margin-bottom:.4rem" />
+      <label class="vx-meta" style="display:flex;align-items:center;gap:6px;margin-bottom:.4rem;cursor:pointer">
+        <input type="checkbox" id="an-cp-pos" /> Inclure mes positions déclarées dans la question (vie privée : exclues par défaut)
+      </label>
       <button class="vx-btn vx-btn-sm vx-btn-primary" id="an-cp-go">Demander</button>
       <div id="an-cp-out" class="vx-mt2" aria-live="polite"></div>
       <div class="vx-meta vx-mt1">Lecture seule — aucune exécution.</div>
@@ -292,7 +311,7 @@ _SECTIONS = """
 <section class="vx-card vx-mt4" id="an-options" hidden>
   <div class="vx-card-header"><span class="vx-card-title">Options — Vertex Dynamic Options</span>
     <span class="vx-actions"><a class="vx-btn vx-btn-sm vx-btn-ghost"
-      href="/options/%%SYM%%">Dossier options complet →</a></span></div>
+      href="/options/dossier/%%SYM%%">Dossier options complet →</a></span></div>
   <div data-body>%%LOADING%%</div>
 </section>
 <div class="vx-grid vx-mt4">
@@ -490,7 +509,7 @@ function paintQuadrant(cf,sm,peers,demo){
       x:{title:{display:true,text:'Croissance CA (%)'},grid:{color:'rgba(255,255,255,.06)'}},
       y:{title:{display:true,text:'ROE (%)'},grid:{color:'rgba(255,255,255,.06)'}}},
       plugins:{tooltip:{callbacks:{label:function(it){var p=it.raw;return p.sym+' — croissance '+p.x.toFixed(1)+'% · ROE '+p.y.toFixed(0)+'%';}}}}}};
-  VXCharts.card('an-quadrant',{title:'Croissance × rentabilité vs pairs',
+  VXCharts.card('an-quadrant',{title:'Croissance × rentabilité vs pairs',unit:'%',
     question:'Le titre allie-t-il croissance ET rentabilité ?',
     conclusion:(ok(cf.rev_growth)&&ok(cf.roe)&&sm)?((cf.rev_growth*100>=(sm.median_growth||0)&&cf.roe*100>=(sm.median_roe||0))?'Cadran qualité — croissance et rentabilité au-dessus du secteur':'Au moins un axe sous la médiane sectorielle'):'',
     height:320,legend:[{label:SYM,color:cc.brand},{label:'Pairs',color:cc.neutral},{label:'Médiane',color:cc.warning}],
@@ -548,7 +567,7 @@ function paintQuarters(cf,demo){
       x:{grid:{display:false}}},
       plugins:{tooltip:{callbacks:{label:_qtip}}}}};
   VXCharts.card('an-quarters',{
-    title:'Croissance trimestrielle',question:'Le chiffre d’affaires et le résultat progressent-ils ?',
+    title:'Croissance trimestrielle',unit:'%',question:'Le chiffre d’affaires et le résultat progressent-ils ?',
     conclusion:(function(){const r0=qs[0].rev,r1=qs[qs.length-1].rev;
       return (r0&&r1)?('CA '+(r1>=r0?'en hausse':'en baisse')+' sur '+qs.length+' trimestres'):(qs.length+' trimestres');})(),
     height:300,legend:[{label:'Chiffre d’affaires',color:cc.neutral},{label:'Résultat net',color:cc.positive},{label:'Marge nette',color:cc.brand}],
@@ -1085,7 +1104,10 @@ async function loadDossier(){
     +kv('ROE',me.roe!==undefined&&me.roe!==null?VX.fmt.pct(me.roe*100,0):null)
     +_kvif('Dette / EBITDA',cf.debt_to_ebitda!=null?(+cf.debt_to_ebitda).toFixed(2)+'×':null)
     +_kvif('Cash-flow libre',fmtBig(cf.fcf))
-    +kv('Médiane sectorielle P/E',t&&t.sector_median&&(t.sector_median.median_pe??t.sector_median))
+    /* mediane : SEULEMENT la valeur numerique — le repli sur l'objet entier
+       rendait « [object Object] » quand sector_median etait un dict vide
+       (mesure au navigateur, dossier sans fondamentaux). */
+    +kv('Médiane sectorielle P/E',(t&&t.sector_median&&t.sector_median.median_pe!=null)?(+t.sector_median.median_pe).toFixed(1):null)
     +_kvif('Prochains résultats',cf.earnings_date)
     +(peers.length>1?`<div class="vx-meta vx-mt2">Pairs : ${peers.filter(p=>p.symbol!==SYM).slice(0,4).map(p=>
       `<button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" data-open-analysis="${p.symbol}">${p.symbol}</button>`).join('')}</div>`:''));
@@ -1342,7 +1364,7 @@ async function loadDossier(){
       const host=document.getElementById('an-options-chain');
       if(host){host.className='vx-card';host.innerHTML='<div class="vx-card-header"><span class="vx-card-title">Chaîne — meilleurs contrats</span></div>'
         +VX.states.empty('Aucun contrat exploitable pour '+esc(SYM)+' (IBKR hors ligne ou titre sans options liquides).',
-          '<a class="vx-btn vx-btn-sm" href="/options/'+SYM+'">Ouvrir le dossier options</a>');}
+          '<a class="vx-btn vx-btn-sm" href="/options/dossier/'+SYM+'">Ouvrir le dossier options</a>');}
       const bb=document.getElementById('an-options-bubble');if(bb)bb.innerHTML='';
     }
   }catch(e){
@@ -1415,10 +1437,55 @@ async function loadAnalyst(){
   if(sen){const el=$b('an-sentiment');if(el)el.innerHTML+=`<div class="vx-mt2" style="border-top:1px solid var(--vx-border,#30292B);padding-top:8px">${sen}</div>`;}
 }
 /* ── Carte-Verdict + Carte-Scénario + Raisonnement du comité (decision stack) ── */
+/* DecisionTrace du dossier : Donnée → Moteur → Décision → Portefeuille.
+   N'ÉCRIT QUE du texte et un ton dans des nœuds déjà rendus par vx2 ; aucun
+   balisage n'est fabriqué ici, et aucune valeur n'est dérivée : chaque nœud
+   lit ce que le moteur a rendu. Un nœud sans donnée reste à « — » en gris. */
+function paintTrace(dec){
+  const set=(id,val,meta,tone)=>{
+    const n=$(id); if(!n)return;
+    n.setAttribute('data-tone',tone||'neutral');
+    const v=n.querySelector('.vx2-trace-value'), m=n.querySelector('.vx2-trace-meta');
+    if(v)v.textContent=(val===null||val===undefined||val==='')?'\u2014':String(val);
+    if(m)m.textContent=meta||'';
+  };
+  const TONE={green:'positive',red:'negative',amber:'caution',orange:'caution',gray:'neutral'};
+
+  /* Donnée : prix réel + qualité du dossier, telle que le moteur la note. */
+  const px=(TICKER&&TICKER.detail&&TICKER.detail.price!=null)?VX.fmt.price(TICKER.detail.price):null;
+  const dq=dec&&dec.data_quality&&dec.data_quality.grade?('qualit\u00e9 '+dec.data_quality.grade):null;
+  const mode=(typeof demoState==='function'&&demoState())?'d\u00e9mo':'diff\u00e9r\u00e9e';
+  set('an-trace-donnee',px,dq?(dq+' \u00b7 '+mode):mode,px?'neutral':'missing');
+
+  /* Moteur : confiance, telle qu'il la rend. Aucun seuil décidé ici. */
+  const conf=(dec&&dec.confidence!=null)?dec.confidence:null;
+  set('an-trace-moteur',conf!=null?(conf+'/100'):null,
+      dec&&dec.grade?('note '+dec.grade):'confiance moteur',
+      conf!=null?'neutral':'missing');
+
+  /* Décision : le verdict canonique, avec le ton que le moteur lui donne. */
+  if(dec&&dec.final_decision==='DATA_INSUFFICIENT'){
+    set('an-trace-decision','Vertex ne tranche pas','donn\u00e9es insuffisantes','caution');
+  }else{
+    set('an-trace-decision',(dec&&(dec.decision_label||dec.final_decision))||null,
+        dec&&dec.vehicle?('v\u00e9hicule '+dec.vehicle):'verdict canonique',
+        TONE[(dec&&dec.decision_tone)||'gray']||'neutral');
+  }
+
+  /* Portefeuille : le titre est-il déjà détenu ? Compte de positions réelles. */
+  let pos=[];try{pos=(window.VXEntities?window.VXEntities.positions():[])||[];}catch(e){}
+  const detenu=pos.filter(t=>String(t.sym||'').toUpperCase()===SYM);
+  if(!pos.length){set('an-trace-portefeuille','Aucune position','rien \u00e0 confronter','missing');}
+  else if(detenu.length){set('an-trace-portefeuille','D\u00e9j\u00e0 d\u00e9tenu',
+      detenu.length+(detenu.length>1?' lignes':' ligne'),'caution');}
+  else{set('an-trace-portefeuille','Non d\u00e9tenu',pos.length+' positions ailleurs','neutral');}
+}
+
 function pctRet(entry,tgt){if(entry==null||tgt==null||!entry)return null;return (tgt-entry)/entry*100;}
 async function loadDecisionStack(){
   let dec=null;
   try{dec=await VX.fetch('/api/decision/'+SYM,{ttl:60000});}catch(e){}
+  paintTrace(dec);
   const V=$('an-verdict'),SC=$('an-scenarios'),CO=$('an-committee');
   if(!dec){if(V)V.innerHTML='<div class="vx-card">'+VX.states.error('Décision indisponible')+'</div>';return;}
   /* DATA_INSUFFICIENT → état honnête, aucune conviction. */
@@ -1514,7 +1581,8 @@ function demoState(){return !!(window.__vxStatus&&window.__vxStatus.demo);}
     if(!question){VX.toast&&VX.toast('Écris une question','warn');return;}
     out.innerHTML='<div class="vx-empty">Le copilote analyse '+SYM+'…</div>';
     fetch('/api/copilot/ask',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({question:question,symbol:SYM})})
+      body:JSON.stringify({question:question,symbol:SYM,
+        avec_positions:!!($('an-cp-pos')&&$('an-cp-pos').checked)})})
       .then(r=>r.json()).then(d=>{
         if(!d.ok){out.innerHTML='<div class="vx-error-banner">'+esc(d.error||'réponse indisponible')+'</div>';return;}
         out.innerHTML='<div class="vx-insight" data-tone="action" style="white-space:pre-wrap;font-size:12.5px">'+esc(d.answer)+'</div>'
@@ -1647,13 +1715,39 @@ _MOBILE_BAR = """
 """
 
 
+def _trace_dossier() -> str:
+    """Squelette de la DecisionTrace du dossier — `analyse-hero`, deuxième des
+    cinq emplacements canoniques.
+
+    Le serveur ne connaît ici que le symbole : tout le dossier est chargé par
+    le client. Il rend donc les quatre nœuds à `—` avec le ton « missing », et
+    `paintTrace()` les complète depuis la décision réellement reçue. Aucun nœud
+    ne part sur une valeur optimiste.
+
+    Le balisage vient de `vx2` : une classe `.vx2-*` ne s'écrit que là.
+    """
+    from vertex.ui import vx2
+    return vx2.decision_trace([
+        {'label': 'Donnée', 'valeur': '—', 'meta': 'lecture du dossier…',
+         'tone': 'missing', 'ident': 'an-trace-donnee'},
+        {'label': 'Moteur', 'valeur': '—', 'meta': 'confiance —',
+         'tone': 'missing', 'ident': 'an-trace-moteur'},
+        {'label': 'Décision', 'valeur': '—', 'meta': 'verdict —',
+         'tone': 'missing', 'ident': 'an-trace-decision'},
+        {'label': 'Portefeuille', 'valeur': '—', 'meta': 'positions —',
+         'tone': 'missing', 'ident': 'an-trace-portefeuille'},
+    ], emplacement='analyse-hero')
+
+
 def render(sym: str) -> str:
     sym = sym.upper()[:8]
     safe = ''.join(ch for ch in sym if ch.isalnum() or ch in '.-')
-    content = ('<div class="vx-page-header"><div><h1>' + safe + '</h1>'
+    content = ('<div class="vx-page-header"><div><p class="vx2-eyebrow">Explorer</p>'
+               '<h1>' + safe + '</h1>'
                '<div class="vx-sub">Cette entreprise et cette opportunité '
                'méritent-elles du capital maintenant ?</div></div></div>'
                + _SECTIONS.replace('%%SYM%%', safe)
+               .replace('%%TRACE%%', _trace_dossier())
                .replace('%%LOADING%%', '<div class="vx-skeleton" style="height:48px"></div>'))
     js = _JS.replace('%%SYM_JSON%%', json_for_script(safe))
     return render_shell(title=f'{safe} · Analyse', active='analysis',

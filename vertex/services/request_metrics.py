@@ -38,6 +38,10 @@ def summary():
             'mean_ms': round(sum(values) / count, 3),
             'p50_ms': values[(count - 1) // 2],
             'p95_ms': values[min(count - 1, max(0, int(count * .95) - 1))],
+            #  Lot 8 — p99 : c'est elle qui voit les pannes. p95 lisse encore
+            #  un appel sur vingt, et c'est precisement celui-la (la chaine a
+            #  75 s derriere la file unique) qui fait l'experience reelle.
+            'p99_ms': values[min(count - 1, max(0, int(count * .99) - 1))],
             'max_ms': values[-1],
             'error_count': sum(1 for row in rows if row['status_code'] >= 400),
         }

@@ -1,0 +1,15 @@
+[
+  {
+    "route": "/design-system",
+    "console": [],
+    "pageerrors": [],
+    "shots": {
+      "desktop": "docs/vertex-2-0/preuves/lot-01-apres/design-system-desktop.png",
+      "mobile": "docs/vertex-2-0/preuves/lot-01-apres/design-system-mobile.png"
+    },
+    "overflow": {
+      "desktop": 0,
+      "mobile": 0
+    }
+  }
+]

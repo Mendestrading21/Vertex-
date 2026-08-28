@@ -1,0 +1,182 @@
+[
+  {
+    "route": "/",
+    "console": [],
+    "pageerrors": [],
+    "shots": {
+      "desktop": "docs/vertex-2-0/lot-00/captures-avant/accueil-desktop.png",
+      "tablette": "docs/vertex-2-0/lot-00/captures-avant/accueil-tablette.png",
+      "mobile": "docs/vertex-2-0/lot-00/captures-avant/accueil-mobile.png"
+    },
+    "overflow": {
+      "desktop": 0,
+      "tablette": 0,
+      "mobile": 0
+    }
+  },
+  {
+    "route": "/calendar",
+    "console": [],
+    "pageerrors": [],
+    "shots": {
+      "desktop": "docs/vertex-2-0/lot-00/captures-avant/calendar-desktop.png",
+      "tablette": "docs/vertex-2-0/lot-00/captures-avant/calendar-tablette.png",
+      "mobile": "docs/vertex-2-0/lot-00/captures-avant/calendar-mobile.png"
+    },
+    "overflow": {
+      "desktop": 0,
+      "tablette": 0,
+      "mobile": 0
+    }
+  },
+  {
+    "route": "/markets",
+    "console": [],
+    "pageerrors": [],
+    "shots": {
+      "desktop": "docs/vertex-2-0/lot-00/captures-avant/markets-desktop.png",
+      "tablette": "docs/vertex-2-0/lot-00/captures-avant/markets-tablette.png",
+      "mobile": "docs/vertex-2-0/lot-00/captures-avant/markets-mobile.png"
+    },
+    "overflow": {
+      "desktop": 0,
+      "tablette": 0,
+      "mobile": 0
+    }
+  },
+  {
+    "route": "/opportunities",
+    "console": [],
+    "pageerrors": [],
+    "shots": {
+      "desktop": "docs/vertex-2-0/lot-00/captures-avant/opportunities-desktop.png",
+      "tablette": "docs/vertex-2-0/lot-00/captures-avant/opportunities-tablette.png",
+      "mobile": "docs/vertex-2-0/lot-00/captures-avant/opportunities-mobile.png"
+    },
+    "overflow": {
+      "desktop": 0,
+      "tablette": 0,
+      "mobile": 0
+    }
+  },
+  {
+    "route": "/analysis",
+    "console": [],
+    "pageerrors": [],
+    "shots": {
+      "desktop": "docs/vertex-2-0/lot-00/captures-avant/analysis-desktop.png",
+      "tablette": "docs/vertex-2-0/lot-00/captures-avant/analysis-tablette.png",
+      "mobile": "docs/vertex-2-0/lot-00/captures-avant/analysis-mobile.png"
+    },
+    "overflow": {
+      "desktop": 0,
+      "tablette": 0,
+      "mobile": 0
+    }
+  },
+  {
+    "route": "/options",
+    "console": [],
+    "pageerrors": [],
+    "shots": {
+      "desktop": "docs/vertex-2-0/lot-00/captures-avant/options-desktop.png",
+      "tablette": "docs/vertex-2-0/lot-00/captures-avant/options-tablette.png",
+      "mobile": "docs/vertex-2-0/lot-00/captures-avant/options-mobile.png"
+    },
+    "overflow": {
+      "desktop": 0,
+      "tablette": 0,
+      "mobile": 0
+    }
+  },
+  {
+    "route": "/simulator",
+    "console": [],
+    "pageerrors": [],
+    "shots": {
+      "desktop": "docs/vertex-2-0/lot-00/captures-avant/simulator-desktop.png",
+      "tablette": "docs/vertex-2-0/lot-00/captures-avant/simulator-tablette.png",
+      "mobile": "docs/vertex-2-0/lot-00/captures-avant/simulator-mobile.png"
+    },
+    "overflow": {
+      "desktop": 0,
+      "tablette": 0,
+      "mobile": 0
+    }
+  },
+  {
+    "route": "/portfolio",
+    "console": [],
+    "pageerrors": [],
+    "shots": {
+      "desktop": "docs/vertex-2-0/lot-00/captures-avant/portfolio-desktop.png",
+      "tablette": "docs/vertex-2-0/lot-00/captures-avant/portfolio-tablette.png",
+      "mobile": "docs/vertex-2-0/lot-00/captures-avant/portfolio-mobile.png"
+    },
+    "overflow": {
+      "desktop": 0,
+      "tablette": 0,
+      "mobile": 0
+    }
+  },
+  {
+    "route": "/follow-up",
+    "console": [],
+    "pageerrors": [],
+    "shots": {
+      "desktop": "docs/vertex-2-0/lot-00/captures-avant/follow-up-desktop.png",
+      "tablette": "docs/vertex-2-0/lot-00/captures-avant/follow-up-tablette.png",
+      "mobile": "docs/vertex-2-0/lot-00/captures-avant/follow-up-mobile.png"
+    },
+    "overflow": {
+      "desktop": 0,
+      "tablette": 0,
+      "mobile": 0
+    }
+  },
+  {
+    "route": "/performance",
+    "console": [],
+    "pageerrors": [],
+    "shots": {
+      "desktop": "docs/vertex-2-0/lot-00/captures-avant/performance-desktop.png",
+      "tablette": "docs/vertex-2-0/lot-00/captures-avant/performance-tablette.png",
+      "mobile": "docs/vertex-2-0/lot-00/captures-avant/performance-mobile.png"
+    },
+    "overflow": {
+      "desktop": 0,
+      "tablette": 0,
+      "mobile": 0
+    }
+  },
+  {
+    "route": "/intelligence",
+    "console": [],
+    "pageerrors": [],
+    "shots": {
+      "desktop": "docs/vertex-2-0/lot-00/captures-avant/intelligence-desktop.png",
+      "tablette": "docs/vertex-2-0/lot-00/captures-avant/intelligence-tablette.png",
+      "mobile": "docs/vertex-2-0/lot-00/captures-avant/intelligence-mobile.png"
+    },
+    "overflow": {
+      "desktop": 0,
+      "tablette": 0,
+      "mobile": 0
+    }
+  },
+  {
+    "route": "/system",
+    "console": [],
+    "pageerrors": [],
+    "shots": {
+      "desktop": "docs/vertex-2-0/lot-00/captures-avant/system-desktop.png",
+      "tablette": "docs/vertex-2-0/lot-00/captures-avant/system-tablette.png",
+      "mobile": "docs/vertex-2-0/lot-00/captures-avant/system-mobile.png"
+    },
+    "overflow": {
+      "desktop": 0,
+      "tablette": 0,
+      "mobile": 0
+    }
+  }
+]

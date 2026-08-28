@@ -223,12 +223,34 @@ def make_blueprint(*, opt_job, ibkr_enabled, cotation_repli=None):
     bp = Blueprint('desk', __name__)
     desk_lock = threading.Lock()
     posq_cache = {}      # cotations des trades perso : {key: (ts, data)} — TTL 45 s
+    #  Lot 6 — les crochets vivent SUR le blueprint (bp._vx_hooks), pas dans
+    #  un global de module : chaque application construite porte les siens, et
+    #  un banc les atteint par app.blueprints['desk']._vx_hooks sans polluer
+    #  les autres. Un global s'etait fait ecraser par le premier banc venu.
+    hooks = {'posq_cache': posq_cache, 'opt_job': opt_job,
+             'ibkr_enabled': ibkr_enabled}
+    bp._vx_hooks = hooks
+
+    def _demo_exposee_sans_code():
+        """Vrai seulement pour l'instance publique de demonstration."""
+        from vertex.app.config import AUTH_ON as _auth, DEMO_MODE as _demo
+        from vertex.app.exposition import exposition as _expo
+        return bool(_demo and _expo(_auth)['ouvert_au_reseau'] and not _auth)
 
     @bp.route('/api/desk', methods=['GET', 'POST'])
     def api_desk():
         """Synchronisation du desk perso (trades, journal, favoris, capital, simulateur) entre appareils.
         Stockage local dans desk_data.json — dernier écrivain gagne (blob complet + timestamp)."""
         if request.method == 'POST':
+            #  Lot 4 — demo EXPOSEE non persistante : un desk public en
+            #  ecriture est un tableau blanc mondial. La LECTURE reste servie
+            #  (la demo se visite), la demo LOCALE (loopback) continue
+            #  d'ecrire — c'est le mode de travail quotidien. Le refus est
+            #  honnete : ok:false nomme, jamais un faux succes ni une 500.
+            if _demo_exposee_sans_code():
+                return jsonify({'ok': False, 'demo_exposee': True,
+                                'err': 'Demo publique : rien n\'est '
+                                       'enregistre sur ce serveur.'}), 200
             body = request.get_json(force=True, silent=True) or {}
             if not isinstance(body.get('data'), dict) or not body.get('ts'):
                 return jsonify({'ok': False, 'err': 'payload invalide'}), 400
@@ -297,6 +319,11 @@ def make_blueprint(*, opt_job, ibkr_enabled, cotation_repli=None):
     def api_desk_restore():
         """Restaure un snapshot quotidien → desk_data.json (ts=maintenant, donc
         tous les appareils re-tireront cette version). Nom STRICTEMENT validé."""
+        #  Lot 4 — meme garde que l'ecriture : restaurer EST ecrire.
+        if _demo_exposee_sans_code():
+            return jsonify({'ok': False, 'demo_exposee': True,
+                            'err': 'Demo publique : rien n\'est enregistre '
+                                   'sur ce serveur.'}), 200
         name = str((request.get_json(force=True, silent=True) or {}).get('name') or '')
         import re
         #  Deux familles, une seule grammaire de chaque — le nom reste
@@ -339,20 +366,12 @@ def make_blueprint(*, opt_job, ibkr_enabled, cotation_repli=None):
         syms = list(UNIVERSE)
         return jsonify({'count': len(syms), 'symbols': syms, 'tv': ','.join(syms)})
 
-    @bp.route('/api/ibkr/positions')
-    def api_ibkr_positions():
-        """Portefeuille TWS en LECTURE SEULE — pour l'import dans le Desk.
-        Hors connexion : erreur claire, jamais de données inventées."""
-        # ok:false en 200 : broker hors ligne = état attendu (pas une panne du
-        # serveur Vertex) — un 503 pollue la console à chaque visite Portefeuille.
-        if not ibkr_enabled:
-            return jsonify({'ok': False, 'positions': [],
-                            'err': 'IBKR non connecté (mode cloud/démo) — ouvre TWS ou Gateway puis réessaie.'}), 200
-        res = opt_job('positions', (), timeout=20)
-        if res is None:
-            return jsonify({'ok': False, 'positions': [],
-                            'err': 'TWS injoignable — vérifie que TWS/Gateway est ouvert et l\'API activée.'}), 200
-        return jsonify({'ok': True, 'positions': res, 'count': len(res)})
+    #  Lot 2 — la route d'import des positions du COMPTE est RETIRÉE.
+    #  « Lecture seule » protegait de l'ordre, pas de la confidentialite : lire
+    #  le portefeuille du courtier reste lire le compte. Le portefeuille de
+    #  Vertex est celui que l'utilisateur declare ; les positions historiques
+    #  deja importees restent lisibles dans le desk — on retire la capacite,
+    #  pas les donnees acceptees.
 
     @bp.route('/api/pos-quotes', methods=['POST'])
     def api_pos_quotes():
@@ -366,7 +385,10 @@ def make_blueprint(*, opt_job, ibkr_enabled, cotation_repli=None):
         # au fil des contrats cotés sur des semaines d'usage)
         for k in [k for k, (ts, _) in posq_cache.items() if now - ts > 20 * POSQ_TTL_S]:
             posq_cache.pop(k, None)
-        todo, out = [], {}
+        #  L'etat broker se lit de l'instance : un banc doit pouvoir simuler
+        #  « IBKR actif » sans ouvrir de socket.
+        broker_actif = bool(hooks['ibkr_enabled'])
+        todo, out, perimees = [], {}, []
         for p in poss:
             if not isinstance(p, dict):
                 continue
@@ -377,10 +399,28 @@ def make_blueprint(*, opt_job, ibkr_enabled, cotation_repli=None):
             c = posq_cache.get(key)
             if c and now - c[0] < POSQ_TTL_S:
                 out[key] = c[1]
+            elif c:
+                #  Lot 6 — servir le PERIME immediatement, etiquete, plutot que
+                #  payer jusqu'a 45 s de file worker (20/33/56 s mesurees) pour
+                #  une cle deja en memoire. Le rafraichissement part derriere.
+                out[key] = c[1]
+                perimees.append((key, p))
             else:
                 todo.append(p)
-        if todo and ibkr_enabled:
-            res = opt_job('posq', (todo,), timeout=45) or {}
+        if perimees and broker_actif:
+            def _rafraichir(lots=list(perimees)):
+                res = hooks['opt_job']('posq', ([p for _, p in lots],),
+                                           timeout=45) or {}
+                t2 = time.time()
+                for k, v in res.items():
+                    if v is not None:
+                        posq_cache[k] = (t2, v)
+            threading.Thread(target=_rafraichir, daemon=True).start()
+        if todo and broker_actif:
+            #  Seule attente restante : une cle JAMAIS cotee. Bornee a 12 s —
+            #  au-dela, le repli honnete ci-dessous prend la main et le
+            #  prochain passage lira le cache que le worker aura rempli.
+            res = hooks['opt_job']('posq', (todo,), timeout=12) or {}
             for k, v in res.items():
                 if v is not None:
                     posq_cache[k] = (now, v)
@@ -443,7 +483,11 @@ def make_blueprint(*, opt_job, ibkr_enabled, cotation_repli=None):
             _q['spread_pct'] = (round((_a - _b) / _mid * 100, 2)
                                 if (_mid and _b and _a) else None)
         return jsonify({'results': out, 'live': bool(ibkr_enabled),
-                        'fallback_used': bool(combles), 'ts': int(now)})
+                        'fallback_used': bool(combles), 'ts': int(now),
+                        #  Lot 6 — les cles servies depuis un cache au-dela du
+                        #  TTL : l'UI peut etiqueter « cote conservee » au lieu
+                        #  de laisser un age faux passer pour frais.
+                        'stale': [k for k, _ in perimees]})
 
     return bp
 

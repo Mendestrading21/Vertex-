@@ -76,7 +76,10 @@ def test_fragment_carries_navigation_metadata(client):
 def test_every_space_serves_a_fragment(client):
     """Chaque espace (hors Options) est navigable en client : fragment + bon data-active."""
     ids = {'/': 'briefing', '/opportunities': 'opportunities',
-           '/analysis': 'analysis', '/portfolio': 'portfolio', '/journal': 'journal',
+           '/analysis': 'analysis', '/portfolio': 'portfolio',
+           #  VERTEX 2.0 : le Journal est une sous-vue de Performance ; l'espace
+           #  actif que porte /journal est donc « performance ».
+           '/journal': 'performance',
            '/system': 'system'}
     for url, active in ids.items():
         frag = client.get(url, headers={'X-Vertex-Fragment': '1'}).get_data(as_text=True)

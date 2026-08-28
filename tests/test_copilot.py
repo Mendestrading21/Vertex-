@@ -31,7 +31,11 @@ def test_context_is_grounded_in_real_numbers():
     assert ctx['positioning']['net_gex_total'] is not None
     assert ctx['synthesis']['bias'] in ('haussier', 'baissier', 'neutre')
     assert ctx['detail']['price'] == 440
-    assert isinstance(ctx['positions'], list)
+    #  Lot 25 : positions exclues par défaut (vie privée), transmises sur
+    #  action explicite seulement — et l'exclusion est DITE au modèle.
+    assert 'NON_TRANSMISES' in str(ctx['positions'])
+    ctx2 = copilot.build_context(_scan_state(), 'MSFT', avec_positions=True)
+    assert isinstance(ctx2['positions'], list)
 
 
 def test_answer_fallback_without_key_is_honest(monkeypatch):

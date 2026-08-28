@@ -39,7 +39,8 @@ def opportunities_funnel():
     try:
         return jsonify(_funnel.build_funnel(scan_state.get('rows') or [],
                                             followed=_followed_count(),
-                                            positions=_positions_count()))
+                                            positions=_positions_count(),
+                                            scan_ts=scan_state.get('scan_ts')))
     except Exception as e:
         return jsonify({'stages': [], 'roles': [],
                         'error': 'opportunities_funnel_unavailable'}), 500

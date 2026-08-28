@@ -97,7 +97,7 @@
         + '<div class="vx-divider vx-mt3"></div>'
         + '<div class="vx-flex vx-wrap" style="gap:.4rem;margin-top:8px">'
         + '<a class="vx-btn vx-btn-sm vx-btn-primary" href="/analysis/' + esc(sym) + '">Analyse complète →</a>'
-        + '<a class="vx-btn vx-btn-sm" href="/options/' + esc(sym) + '">Options</a>'
+        + '<a class="vx-btn vx-btn-sm" href="/options/dossier/' + esc(sym) + '">Options</a>'
         + '<button class="vx-btn vx-btn-sm" onclick="VXEntities.openAddModal(\'' + esc(sym) + '\',\'follow\')">Suivre</button>'
         + '<button class="vx-btn vx-btn-sm" onclick="VXEntities.openAddModal(\'' + esc(sym) + '\',\'alert\')">Alerte</button>'
         + '</div>'

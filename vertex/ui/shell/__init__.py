@@ -7,19 +7,56 @@ le temps de la bascule des routes.
 """
 from __future__ import annotations
 
-SHELL_VERSION = 'vx-shell-1'
+SHELL_VERSION = 'vx-shell-2'
 
-# Navigation principale (§10). Marchés est FUSIONNÉ dans le Dashboard (/#markets) —
-# plus d'entrée dédiée : le Dashboard porte indices, taux, secteurs, breadth, VIX.
-PRIMARY_NAV = (
-    {'id': 'briefing', 'label': 'Dashboard', 'href': '/', 'icon': 'home'},
-    {'id': 'opportunities', 'label': 'Opportunités', 'href': '/opportunities', 'icon': 'radar'},
-    {'id': 'analysis', 'label': 'Analyse', 'href': '/analysis', 'icon': 'chart'},
-    {'id': 'portfolio', 'label': 'Portefeuille', 'href': '/portfolio', 'icon': 'briefcase'},
-    {'id': 'options', 'label': 'Options', 'href': '/options', 'icon': 'bolt'},
-    {'id': 'journal', 'label': 'Journal', 'href': '/journal', 'icon': 'book'},
+# ── Navigation Vertex 2.0 — groupée par TRAVAIL, pas par architecture ────────
+#
+# La forme précédente alignait sept entrées à plat : l'utilisateur ne distinguait
+# pas ce qu'il consulte tous les matins de ce qu'il explore ponctuellement. Les
+# quatre groupes disent ce à quoi chaque page sert :
+#
+#   Piloter       ce que je regarde maintenant
+#   Explorer      ce que j'étudie
+#   Gérer         ce que je possède et surveille
+#   Intelligence  ce qui explique
+#
+# Système reste épinglé en bas : c'est un utilitaire, pas une étape de travail.
+#
+# Aucune page n'a disparu dans la bascule. Marchés retrouve sa page propre,
+# Journal devient une sous-vue de Performance, Suivis devient Suivi — et les
+# anciennes URL continuent de répondre (voir LEGACY_REDIRECTS dans redesign.py).
+NAV_GROUPS = (
+    {'id': 'piloter', 'label': 'Piloter', 'items': (
+        {'id': 'briefing', 'label': "Aujourd'hui", 'href': '/', 'icon': 'home'},
+        {'id': 'calendar', 'label': 'Calendrier', 'href': '/calendar', 'icon': 'calendar'},
+    )},
+    {'id': 'explorer', 'label': 'Explorer', 'items': (
+        {'id': 'markets', 'label': 'Marchés', 'href': '/markets', 'icon': 'globe'},
+        {'id': 'opportunities', 'label': 'Opportunités', 'href': '/opportunities', 'icon': 'radar'},
+        {'id': 'analysis', 'label': 'Analyse', 'href': '/analysis', 'icon': 'chart'},
+        {'id': 'options', 'label': 'Options', 'href': '/options', 'icon': 'bolt'},
+        {'id': 'simulator', 'label': 'Simulateur', 'href': '/simulator', 'icon': 'sliders'},
+    )},
+    {'id': 'gerer', 'label': 'Gérer', 'items': (
+        {'id': 'portfolio', 'label': 'Portefeuille', 'href': '/portfolio', 'icon': 'briefcase'},
+        {'id': 'follow-up', 'label': 'Suivi', 'href': '/follow-up', 'icon': 'eye'},
+        {'id': 'performance', 'label': 'Performance', 'href': '/performance', 'icon': 'trend'},
+    )},
+    {'id': 'intelligence', 'label': 'Intelligence', 'items': (
+        {'id': 'intelligence', 'label': 'Vertex IA', 'href': '/intelligence', 'icon': 'brain'},
+    )},
+)
+
+#: Utilitaire épinglé — hors groupes de travail.
+PINNED_NAV = (
     {'id': 'system', 'label': 'Système', 'href': '/system', 'icon': 'settings'},
 )
+
+#: Registre PLAT des espaces servis. Reste la source unique pour tout ce qui
+#: itère sur la navigation (tests, mesures QA, palette de commandes) : la
+#: bascule vers des groupes ne devait pas casser ces consommateurs.
+PRIMARY_NAV = tuple(
+    it for g in NAV_GROUPS for it in g['items']) + PINNED_NAV
 
 # Icônes : SVG inline sobres (pas d'emojis comme langage principal).
 _ICONS = {
@@ -41,6 +78,10 @@ _ICONS = {
     'star': '<path d="m12 3 2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3z"/>',
     'bolt': '<path d="M13 2 4 14h6l-1 8 9-12h-6l1-8z"/>',
     'book': '<path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19a2 2 0 0 0 2 2h13"/>',
+    'calendar': '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4m8-4v4"/>',
+    'sliders': '<path d="M4 7h10M18 7h2M4 12h4M12 12h8M4 17h12M20 17h0"/>'
+               '<circle cx="16" cy="7" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="17" r="2"/>',
+    'eye': '<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/>',
 }
 
 
@@ -71,15 +112,25 @@ def icon(name: str, size: int = 18) -> str:
             f'stroke-linejoin="round" aria-hidden="true">{_ICONS.get(name, "")}</svg>')
 
 
-def _sidebar(active: str) -> str:
-    items = []
-    for it in PRIMARY_NAV:
-        current = ' aria-current="page"' if it['id'] == active else ''
-        items.append(
-            f'<a class="vx-nav-item" href="{it["href"]}" data-nav-id="{it["id"]}"{current}>'
+def _nav_link(it: dict, active: str) -> str:
+    current = ' aria-current="page"' if it['id'] == active else ''
+    return (f'<a class="vx-nav-item" href="{it["href"]}" data-nav-id="{it["id"]}"{current}>'
             f'{icon(it["icon"])}<span class="vx-nav-label">{it["label"]}</span></a>')
-    nav = ''.join(items[:-1])
-    system_item = items[-1]
+
+
+def _sidebar(active: str) -> str:
+    """Sidebar groupée par travail. Le titre de groupe est un vrai en-tête de
+    liste : il porte le regroupement pour l'œil ET pour un lecteur d'écran."""
+    groups = []
+    for g in NAV_GROUPS:
+        links = ''.join(_nav_link(it, active) for it in g['items'])
+        groups.append(
+            f'<div class="vx-nav-group" role="group" '
+            f'aria-labelledby="vx-navg-{g["id"]}">'
+            f'<p class="vx-nav-group-label" id="vx-navg-{g["id"]}">{g["label"]}</p>'
+            f'{links}</div>')
+    nav = ''.join(groups)
+    system_item = ''.join(_nav_link(it, active) for it in PINNED_NAV)
     return f'''<aside class="vx-sidebar" aria-label="Navigation principale">
   <div class="vx-sidebar-logo"><span class="vx-logo-mark">V</span>
     <span class="vx-logo-name">Vertex</span></div>
@@ -121,7 +172,7 @@ def _topbar(space_label: str, sub_label: str = '', space_href: str = '/') -> str
       autocomplete="off" aria-label="Recherche globale" />
     <span class="vx-kbd">⌘K</span></div>
   <div class="vx-topbar-right">
-    <button class="vx-btn vx-btn-sm vx-btn-primary" id="vx-add-btn">{icon('plus', 14)}<span class="vx-hide-mobile">Ajouter</span></button>
+    <button class="vx-btn vx-btn-sm vx-btn-primary" id="vx-add-btn" aria-label="Ajouter une position ou une idée">{icon('plus', 14)}<span class="vx-hide-mobile">Ajouter</span></button>
     <div class="vx-session vx-hide-mobile" id="vx-session">—<br><span class="vx-muted">New York —:—</span></div>
     <button class="vx-btn vx-btn-icon vx-btn-ghost" id="vx-connections-btn"
       aria-label="Connexions" title="Connexions (IBKR, TradingView, Claude, sync)">{icon('plug')}</button>
@@ -134,10 +185,14 @@ def _topbar(space_label: str, sub_label: str = '', space_href: str = '/') -> str
 
 
 def _mobile_bar(active: str) -> str:
-    order = ('briefing', 'opportunities', 'portfolio', 'analysis', 'performance')
+    """Cinq destinations maximum, et celles du travail quotidien : Aujourd'hui,
+    Opportunités, Portefeuille, Suivi, Performance. Le reste passe par « Plus »."""
+    order = ('briefing', 'opportunities', 'portfolio', 'follow-up', 'performance')
+    by_id = {it['id']: it for it in PRIMARY_NAV}
     links = []
-    for it in PRIMARY_NAV:
-        if it['id'] not in order:
+    for nav_id in order:
+        it = by_id.get(nav_id)
+        if it is None:
             continue
         current = ' aria-current="page"' if it['id'] == active else ''
         links.append(f'<a href="{it["href"]}"{current}>{icon(it["icon"], 20)}'
@@ -232,9 +287,8 @@ def render_shell(*, title: str, active: str, space_label: str, sub_label: str = 
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <link rel="apple-touch-icon" href="/static/icon-180.png">
 <link rel="manifest" href="/manifest.webmanifest">
-<link rel="preload" as="font" type="font/woff2" crossorigin href="/static/vertex/fonts/GeneralSans-Regular.woff2">
-<link rel="preload" as="font" type="font/woff2" crossorigin href="/static/vertex/fonts/GeneralSans-Medium.woff2">
-<link rel="preload" as="font" type="font/woff2" crossorigin href="/static/vertex/fonts/JetBrainsMono-Regular.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="/static/vertex/fonts/geist-variable.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="/static/vertex/fonts/geist-mono-variable.woff2">
 <link rel="stylesheet" href="/static/vertex/css/fonts.css">
 <link rel="stylesheet" href="/static/vertex/css/tokens.css">
 <link rel="stylesheet" href="/static/vertex/css/base.css">
@@ -253,6 +307,14 @@ def render_shell(*, title: str, active: str, space_label: str, sub_label: str = 
 <link rel="stylesheet" href="/static/vertex/css/cockpit.css">
 <link rel="stylesheet" href="/static/vertex/css/premium.css">
 <link rel="stylesheet" href="/static/vertex/css/glass.css">
+<link rel="stylesheet" href="/static/vertex/css/vertex-2-0.css">
+<noscript><style>
+  /* Sans JavaScript, aucun de ces squelettes ne sera jamais rempli : ils
+     promettent une donnee qui n'arrivera pas. Mesure au navigateur, moteur JS
+     coupe : 53 squelettes sur dix pages, dont 22 sur la page d'accueil. Un
+     ecran qui fait semblant de charger ment plus qu'un ecran qui dit non. */
+  .vx-skeleton,.vx2-skeleton{{display:none !important}}
+</style></noscript>
 </head>
 <body data-shell="{SHELL_VERSION}">
 <a class="vx-skip-link" href="#vx-content">Aller au contenu principal</a>
@@ -261,6 +323,14 @@ def render_shell(*, title: str, active: str, space_label: str, sub_label: str = 
 <div class="vx-main">
 {_topbar(space_label, sub_label, _space_href(active))}
 <main class="vx-content" id="vx-content" data-space="{active}" data-page-label="{page_label or space_label}">
+<noscript>
+  <div class="vx2-noscript" role="alert">
+    <b>JavaScript est désactivé.</b> La coque, la navigation et les liens
+    fonctionnent, mais <b>aucune donnée ne se charge</b> : chiffres, graphiques,
+    verdicts et fraîcheur viennent tous du navigateur. Rien de ce qui est
+    affiché ci-dessous n’est à jour. Active JavaScript pour lire Vertex.
+  </div>
+</noscript>
 {content}
 </main>
 </div>
@@ -272,9 +342,10 @@ def render_shell(*, title: str, active: str, space_label: str, sub_label: str = 
 <script src="/static/vertex/js/vx-core.js"></script>
 <script src="/static/vertex/js/vx-entities.js"></script>
 <script src="/static/vertex/js/vx-shell.js"></script>
+<script src="/static/vertex/js/vx-router.js" defer></script>
 <script src="/static/vertex/js/ui/inspector-drawer.js" defer></script>
 <script src="/static/vertex/js/live-updates.js" defer></script>
-<script src="/static/vertex/js/charts/chart-theme-obsidian-copper.js" defer></script>
+<script src="/static/vertex/js/charts/chart-theme-black-glass.js" defer></script>
 <script src="/static/vertex/js/charts/chart-core.js" defer></script>
 <script src="/static/vertex/js/charts/radar-chart.js" defer></script>
 {page_js}

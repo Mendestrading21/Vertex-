@@ -132,7 +132,9 @@ def test_options_page_renders_as_primary_space(client):
     r = client.get('/options')
     assert r.status_code == 200
     html = r.get_data(as_text=True)
-    assert '<h1>Options</h1>' in html
+    #  VERTEX 2.0 : le titre passe par `vx2.page_header`, qui pose la classe
+    #  canonique. Meme intention — la page porte bien son titre.
+    assert '<h1 class="vx2-title">Options</h1>' in html
     # Options est un espace PRINCIPAL canonique (n°6/8) : le nav le marque actif
     assert 'data-nav-id="options"' in html
     assert re.search(r'data-nav-id="options"[^>]*aria-current="page"', html) \
@@ -141,7 +143,9 @@ def test_options_page_renders_as_primary_space(client):
     #  fusionne dans le Dashboard qui porte indices, taux, secteurs,
     #  breadth et VIX. Le commentaire disait deja « fusionne » ; le compte
     #  ne l'avait pas suivi.
-    assert len(re.findall(r'class="vx-nav-item"', html)) == 7
+    #  VERTEX 2.0 : douze pages (onze de travail + Système épinglé), groupées
+    #  en Piloter / Explorer / Gérer / Intelligence.
+    assert len(re.findall(r'class="vx-nav-item"', html)) == 12
 
 
 def test_options_page_subviews(client):

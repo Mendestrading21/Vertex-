@@ -67,7 +67,9 @@ def test_les_quatre_routes_repondent_encore(application):
     client = application.test_client()
     attendus = {
         '/quotes': ('quotes', 'meta', 'fresh'),
-        '/ibkr': ('connected', 'positions'),
+        #  Lot 2 : `/ibkr` rend la preuve de socket — connected/mode/error —
+        #  et plus AUCUN champ de compte (positions, net_liq, cash retires).
+        '/ibkr': ('connected', 'mode'),
         '/api/alerts/status': ('fired', 'ts'),
         '/api/track-record': ('by_verdict', 'by_grade', 'by_regime'),
     }

@@ -137,7 +137,9 @@ def test_un_broker_sain_ne_declenche_rien():
                                    {'sym': 'MSFT', 'qty': 5}])
     assert [c['etat'] for c in r['cotations']] == ['REELLE', 'REELLE']
     assert [g['etat'] for g in r['greeks']] == ['PRESENTS', 'PRESENTS']
-    assert r['positions']['concordant']
+    #  Lot 2 : l'outil ne lit plus les positions du compte — il DECLARE la
+    #  mesure retiree au lieu de rendre un accord vide.
+    assert r['positions']['mesure'] == 'RETIREE'
     assert r['valeurs_fabriquees'] == []
     assert g5.verdict(r)['anomalies'] == []
     assert r['sondes_en_echec'] == [], (
@@ -161,7 +163,7 @@ def test_un_broker_sans_abonnement_est_vu_sans_etre_confondu():
     assert r['erreurs']['rythme'] == [100], (
         'un défaut d\'abonnement et une violation de rythme ne se corrigent '
         'pas au même endroit : les mélanger enverrait chercher au mauvais.')
-    assert r['positions']['declarees_non_detenues'] == ['TSLA']
+    assert r['positions']['mesure'] == 'RETIREE'
 
 
 def test_le_produit_ne_fabrique_rien_quand_le_broker_ne_donne_rien():

@@ -67,7 +67,8 @@ def _fournisseur(valeur, source: str, mode: str):
     return _f
 
 
-def resoudre_cotation(broker=None, secondaire=None, *,
+def resoudre_cotation(broker=None, secondaire=None, *, symbole: str = '',
+                      devise: str = '',
                       routeur: SourceRouter | None = None) -> ProvenancedValue:
     """Meilleure cotation disponible, étiquetée.
 
@@ -76,12 +77,24 @@ def resoudre_cotation(broker=None, secondaire=None, *,
 
     L'ordre n'est pas décidé ici : il vient de `source_router.PRIORITY`, seule
     table de priorité du produit.
+
+    Lot 5 — l'enveloppe rendue porte le contrat canonique quand l'appelant
+    sait le remplir : `instrument_id` (le symbole qualifié), `currency` (la
+    devise s'il la CONNAÎT — jamais un USD supposé), `unit` (un spot est un
+    prix), et le `lineage` de production. Les champs restent None/''
+    lorsqu'ils ne sont pas connus : l'absence est une donnée, pas un défaut.
     """
     r = routeur or SourceRouter()
     r.register(SOURCE_IBKR, MODE_LIVE, _fournisseur(broker, SOURCE_IBKR, MODE_LIVE))
     r.register(SOURCE_SECONDARY, MODE_DELAYED,
                _fournisseur(secondaire, SOURCE_SECONDARY, MODE_DELAYED))
-    return r.fetch()
+    pv = r.fetch()
+    if pv is not None:
+        pv.instrument_id = symbole.upper() or None
+        pv.currency = devise or None
+        pv.unit = 'prix' if pv.value is not None else None
+        pv.lineage.append('cotation_unifiee.resoudre_cotation')
+    return pv
 
 
 def en_charge_client(pv: ProvenancedValue) -> dict | None:

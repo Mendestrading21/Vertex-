@@ -35,7 +35,7 @@ PAGES = ROOT / 'vertex' / 'ui' / 'pages'
 
 SPACES = {'/': 'briefing', '/opportunities': 'opportunities',
           '/analysis': 'analysis', '/portfolio': 'portfolio', '/options': 'options',
-          '/journal': 'journal', '/system': 'system'}
+          '/journal': 'performance', '/system': 'system'}  # 2.0 : Journal = sous-vue de Performance
 
 
 @pytest.fixture(scope='module')

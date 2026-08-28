@@ -1,122 +1,121 @@
-# CLAUDE.md — Vertex 1.0
+# CLAUDE.md — Vertex
 
-## Instruction active unique
+## Autorité unique
 
-Utiliser exclusivement:
+Pour tout travail sur Vertex — audit, architecture, données, IA, marché,
+options, portefeuille, automatisations, performance, sécurité, interface,
+tests ou publication — utiliser exclusivement :
 
 ```text
-/vertex-1-0
+/vertex-2-0
 ```
 
-Skill actif: `.claude/skills/vertex-1-0/SKILL.md`.
-Les skills `vertex-skyler-v2`, `vertex-total-rebuild`, V4 et Signal OS sont
-historiques. Ne jamais relancer leurs workflows par lots.
+Skill maître : `.claude/skills/vertex-2-0/SKILL.md`.
 
-## Refonte « Black Glass Institutional » (kit installé)
-- Direction visuelle canonique = **Black Glass Institutional** : fond noir/graphite neutre, cartes en verre gris translucide, blanc/gris/argent en couleur structurelle, **sémantique stricte** (vert = positif, rouge = négatif/risque, orange = prudence/incertitude), **zéro bleu**, violet réservé aux options.
-- Contrats de référence : `docs/VERTEX_GLASS_REDESIGN_MASTER_PLAN.md` + `docs/claude/` (`VERTEX_GLASS_VISUAL_CONTRACT.md`, `VERTEX_CHART_CONTRACT.md`, `VERTEX_REFACTOR_RULES.md`, `VERTEX_PAGE_MATRIX.md`, `VERTEX_ACCEPTANCE_CHECKLIST.md`).
-- Skills d'orchestration : `.claude/skills/vertex-redesign-*` (orchestrator, foundations, une par espace, qa). Couche CSS = `vertex/static/vertex/css/glass.css` (chargée en dernier).
-
-## Règles critiques (violations = données perdues ou app cassée)
-1. **Clés de sync desk** : toute nouvelle clé localStorage à synchroniser doit être ajoutée dans **LES 4 listes** (`__DESK_KEYS` terminal.py, sSyncPush/Pull, `vertex/ui/journal.py`, `DESK_KEYS` de `vx_kit.py`) — sinon un push l'efface côté serveur. Test gardien : `tests/test_production.py::test_desk_sync_keys_single_source_of_truth`.
-2. **Apostrophes françaises dans les chaînes JS** de terminal.py : toujours échapper (`aujourd\\'hui`) — deux SyntaxError silencieuses ont déjà vécu.
-3. **Service worker** : tout changement de shell visible utilisateur → bump `td-shell-vN` dans `vertex/app/routes/system.py`.
-4. **Données RÉELLES uniquement** : jamais de chiffre inventé affiché comme réel. Donnée absente → `—`/`n/d` honnête. Le mot « démo » ne s'affiche que si le serveur le confirme.
-5. **News/textes externes** : toujours via `news_plus.sanitize_news()` avant de servir (XSS — rendus en innerHTML).
-6. **desk_data.json** : ne jamais l'écraser à la main ; en cas de doute, backups `desk_backup_*.json` + `/api/desk/restore`.
-
-## Invariants absolus
-
-1. Vertex est **analyse uniquement**.
-2. `vertex.app.config.READONLY` et `ANALYSIS_ONLY` restent toujours `True`.
-3. IBKR reste `readonly=True`.
-4. Aucun endpoint, bouton, fonction, ticket ou agent ne transmet un ordre.
-5. Aucune donnée financière n'est inventée ou remplacée silencieusement par
-   zéro.
-6. Un score élevé ne contourne jamais un hard gate.
-7. Claude n'est jamais le calculateur canonique.
-8. La constitution stratégique ne change qu'au moyen d'une nouvelle version
-   explicite et revue humainement.
-
-## Sources de vérité
-
-Ordre d'autorité:
-
-1. ce fichier;
-2. `.claude/skills/vertex-1-0/SKILL.md`;
-3. `docs/vertex-1.0/`;
-4. `vertex/strategy/release_profiles/vertex_strategy_v4.json`;
-5. code et tests du composant;
-6. documents historiques, uniquement comme preuves.
-
-En cas de contradiction, ouvrir ou mettre à jour
-`docs/vertex-1.0/DECISIONS.md`; ne pas créer une nouvelle doctrine.
+Il n'existe aucun second skill actif, aucun alias de compatibilité et aucune
+doctrine de page indépendante. Les anciens documents et noms de branches sont
+des preuves historiques, jamais des instructions concurrentes.
 
 ## Produit
 
-- Options: détention typique 2/4/6 semaines; DTE préféré 120–240; cible 180.
-- Actions: horizons 3/6/12 mois.
-- WMB Brief: contexte macro quotidien, daté et sourcé.
-- TradingView: signal authentifié de réévaluation, jamais un déclencheur
-  d'achat.
-- Huit espaces: Aujourd'hui, Marchés, Opportunités, Analyse, Portefeuille,
-  Options, Journal, Système.
+Vertex est un centre personnel d'intelligence de marché et d'aide à la
+décision. Il collecte, vérifie, analyse, note, compare et explique. L'humain
+reste le seul décideur et agit hors de Vertex.
 
-## Architecture canonique
+Boucle canonique :
 
 ```text
-sources
-  → normalisation + provenance + fraîcheur
-  → moteurs déterministes
-  → packet immuable
-  → hard gates
-  → scénarios + score + portefeuille
-  → décision canonique
-  → explication Claude
-  → UI + journal + audit
+OBSERVER → COMPRENDRE → DÉTECTER → ÉVALUER → ORIENTER
+→ SURVEILLER → MESURER → APPRENDRE
 ```
 
-Entrées:
+Les moteurs déterministes produisent les calculs, scores, scénarios, gates et
+orientations analytiques. Claude explique le packet existant, nomme les
+contradictions et les inconnues ; il ne devient jamais le calculateur ou le
+propriétaire du verdict.
 
-- local: `python -m vertex`;
-- WSGI: `vertex.runtime:app`;
-- `vertex.runtime` active `release_profiles` avant le chargement applicatif;
-- `terminal.py`: adaptateur historique et mode de rollback V3, à réduire; ne
-  pas y ajouter de nouvelle capacité sauf correctif indispensable avant
+## Invariants absolus
+
+1. `READONLY=True` et `ANALYSIS_ONLY=True` restent vrais.
+2. Aucun ordre live ou paper, transfert, exercice, ticket transmissible,
+   bouton achat/vente ou automatisation d'exécution.
+3. **IBKR est une source de données de marché uniquement.** Vertex ne lit,
+   n'importe, n'affiche ni ne rapproche jamais identifiant de compte, solde,
+   cash, NAV, positions, portefeuille, P&L, ordres, exécutions ou historique
+   IBKR.
+4. Les comptes et positions Vertex proviennent exclusivement des déclarations
+   volontaires de l'utilisateur. Une source externe ne les écrase jamais.
+5. Aucune donnée financière inventée. Absence, zéro, estimation, retard,
+   fallback, démo et erreur restent distincts.
+6. Toute valeur critique conserve source, timestamp, fraîcheur, qualité,
+   unité et limites.
+7. L'IA n'invente ni prix, prime, Greek, probabilité, score ou source ; elle ne
+   contourne jamais un hard gate.
+8. Une capacité non implémentée est nommée `NON_IMPLÉMENTÉE`, jamais présentée
+   comme une automatisation en attente.
+9. Aucun nettoyage par nom ou ancienneté : supprimer seulement après preuve
+   d'absence d'import, route, test, consommateur, donnée ou rollback utile.
+10. Une PR reste brouillon et n'est jamais fusionnée automatiquement.
+
+## Architecture de travail
+
+Le runtime au SHA de baseline ne respecte pas encore tous ces invariants : il
+contient notamment des lectures de compte/positions IBKR, plusieurs autorités
+de décision, deux collisions de routes et des jobs déclaratifs. Claude doit les
+traiter comme P0 du programme, jamais prétendre qu'ils sont déjà corrigés parce
+que ce contrat les interdit.
+
+- Entrée locale : `python -m vertex`.
+- WSGI : `vertex.runtime:app`.
+- `terminal.py` reste un adaptateur historique à réduire par strangler pattern ;
+  ne pas y ajouter une nouvelle capacité sauf correctif bloquant avant
   extraction.
+- Une page sert des snapshots bornés ; elle ne lance pas une collecte réseau
+  lente dans la requête utilisateur.
+- Un propriétaire canonique par capacité, route, métrique, composant et job.
+- Une PR cohérente par lot : ne pas mélanger frontière IBKR, migration de
+  données, moteur financier, refonte globale et nettoyage sans rapport.
 
-## Données et états
+## Identité visuelle
 
-Toute surface doit distinguer au minimum:
-`LIVE`, `DELAYED`, `STALE`, `DEMO`, `OFFLINE`, `MISSING`.
+Direction unique : **Vertex Black Glass — Signal Light**.
 
-Les objets décisionnels doivent conserver:
+- obsidienne et graphite, verre noir, argent et blanc cassé ;
+- Geist pour l'interface, Geist Mono pour tickers, prix et mesures ;
+- vert = positif, rouge = risque/négatif, ambre = prudence ou dégradation ;
+- violet = options, cyan = focus technique exceptionnel ;
+- une lumière dominante maximum par carte, deux par écran hors rouge/vert ;
+- bordures presque invisibles, aucun glow permanent, aucun arc-en-ciel,
+  aucun template SaaS ou esthétique casino ;
+- tout le texte visible en français clair.
 
-- source et timestamp;
-- fraîcheur et qualité;
-- faits, métriques, estimations et interprétations séparés;
-- contradictions et opinion minoritaire;
-- thèse, catalyseurs, invalidation et scénarios;
-- version des moteurs, du profil et du packet.
+## Navigation cible
 
-## Rôle de Claude
+- **Piloter** : Aujourd'hui, Calendrier.
+- **Explorer** : Marchés, Opportunités, Analyse, Options, Simulateur.
+- **Gérer** : Portefeuille, Suivi, Performance.
+- **Intelligence** : Vertex IA.
+- **Utilitaire** : Système.
 
-Autorisé: résumer, synthétiser, comparer, expliquer, rédiger le brief et
-signaler les contradictions.
+Une page cible n'est activée que lorsque ses routes, données, états et tests
+existent réellement. Sinon Claude conserve l'accès existant et documente le
+manque sans fabriquer de façade.
 
-Interdit: inventer prix/prime/Greek/probabilité/source; modifier score,
-scénario, risque ou verdict; contourner un hard gate; rendre une donnée
-absente conforme; transmettre ou préparer un ordre.
+## Workflow obligatoire
 
-## Workflow Git
-
-- partir du dernier `main`;
-- branche `agent/vertex-1-0-<sujet>`;
-- un objectif cohérent par PR, pas une branche par micro-tâche;
-- PR brouillon vers `main`;
-- aucune fusion automatique;
-- les centaines de branches `agent/skyler-v2-lot-*` sont historiques et ne
-  servent jamais de base.
+1. Partir du dernier `main`, relever SHA, état Git, PR ouvertes, CI et dette
+   déjà prise en charge.
+2. Lire le code, les tests et les consommateurs avant le document historique.
+3. Établir une baseline reproductible avant de modifier.
+4. Choisir le premier lot canonique non terminé dans le skill maître.
+5. Écrire le contrat du lot : problème, propriétaires, données, risques,
+   tests, preuves visuelles et rollback.
+6. Implémenter le changement minimal cohérent.
+7. Vérifier compile, tests ciblés, suite complète, sécurité, navigateur,
+   états dégradés, performance et données.
+8. Pour chaque page modifiée, produire captures avant/après en 1600, 1024 et
+   390 px, avec console et `/api/client-log` contrôlés.
+9. Ouvrir ou mettre à jour une PR brouillon ; attendre la décision humaine.
 
 ## Validation minimale
 
@@ -126,17 +125,6 @@ python -m pytest -q
 python -m pytest tests/test_no_orders.py -q
 ```
 
-Pour un changement runtime/UI, vérifier aussi:
-
-- `/healthz`;
-- `/api/client-log` = 0 erreur applicative;
-- les huit espaces en desktop et mobile;
-- mode démo, sans IBKR et panne partielle;
-- absence de fuite de secret ou de donnée de compte.
-
-## Conditions de livraison
-
-La PR doit documenter: objectif, fichiers propriétaires, preuve de tests,
-données/fraîcheur, risques, rollback, limites non vérifiées et décision humaine
-restante. Ne jamais déclarer « prêt à 100 % » sans CI verte et acceptation
-humaine du commit candidat.
+Ajouter les contrôles du domaine modifié et les 150 contrôles finaux du skill.
+Une suite verte ne remplace ni la preuve navigateur, ni la preuve des données,
+ni l'acceptation humaine.

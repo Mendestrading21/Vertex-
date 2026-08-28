@@ -87,7 +87,7 @@ def test_chaque_builder_charts_s_enregistre_sur_son_namespace():
     # gardé par test_js_theme_matches_python_palette).
     for f in sorted([c.replace(os.sep, '/') for c in glob.glob('vertex/static/vertex/js/charts/*.js')]):
         src = open(f, encoding='utf-8').read()
-        if f.endswith('chart-theme-obsidian-copper.js'):
+        if f.endswith('chart-theme-black-glass.js'):
             assert 'VXChartTheme' in src
         else:
             assert 'VXCharts' in src, f

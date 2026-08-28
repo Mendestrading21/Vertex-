@@ -62,7 +62,7 @@ import urllib.request
 from dataclasses import dataclass, field
 
 #: Plafond d'attente. Genereux DELIBEREMENT : D-024 documente `/api/positions/
-#: state` a 18-31 s et `/api/ibkr/positions` a 9-11 s. Un plafond de 8 s les
+#: state` a 18-31 s et `/api/ibkr/positions` (retiree au lot 2) a 9-11 s. Un plafond de 8 s les
 #: declarait en panne a chaque execution.
 PLAFOND_DEFAUT = 60.0
 

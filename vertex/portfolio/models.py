@@ -78,22 +78,10 @@ class PortfolioSnapshot:
         return out
 
 
-def from_ibkr_positions(pv_positions, prices: dict | None = None,
-                        sectors: dict | None = None, cash: float = 0.0,
-                        peak_equity: float | None = None) -> PortfolioSnapshot:
-    """Construit le snapshot depuis la ProvenancedValue de ibkr_positions (§6.9)."""
-    prices, sectors = prices or {}, sectors or {}
-    positions = []
-    for raw in (pv_positions.value or []) if pv_positions else []:
-        sym = raw['symbol']
-        positions.append(Position(symbol=sym, quantity=raw['quantity'],
-                                  avg_cost=raw.get('avg_cost'),
-                                  last_price=prices.get(sym),
-                                  sec_type=raw.get('sec_type', 'STK'),
-                                  sector=sectors.get(sym, '')))
-    return PortfolioSnapshot(positions=positions, cash=cash, provenance='REAL',
-                             as_of=getattr(pv_positions, 'timestamp', ''),
-                             peak_equity=peak_equity)
+#  Lot 2 — `from_ibkr_positions` est RETIRÉ : il construisait un snapshot de
+#  portefeuille depuis les positions du COMPTE courtier. La frontiere
+#  market-data-only l'interdit ; le snapshot REAL se construit depuis les
+#  positions declarees du desk.
 
 
 def simulated(positions: list[Position], cash: float = 0.0,

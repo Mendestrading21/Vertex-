@@ -58,7 +58,9 @@ if str(RACINE) not in sys.path:
 
 from tools.vertex_1_0 import mesurer_qa_espaces as _mes  # noqa: E402
 
-CSS = RACINE / 'vertex' / 'static' / 'vertex' / 'css' / 'neon-glass.css'
+#  Lot 24 : neon-glass.css (jamais servie) est supprimée ; les règles
+#  contractuelles gardées ici sont RAPATRIÉES dans la couche servie.
+CSS = RACINE / 'vertex' / 'static' / 'vertex' / 'css' / 'vertex-2-0.css'
 
 
 def _navigateur_dispo():
@@ -88,7 +90,7 @@ def _regle(selecteur):
 def test_la_rangee_d_entete_des_cartes_d_indices_peut_passer_a_la_ligne():
     """LA CORRECTION. Sans `flex-wrap`, rien dans cette rangée ne peut céder et
     le `overflow-x:hidden` de la carte coupe le surplus **en silence**."""
-    r = _regle('.vx-content[data-space="markets"] .vx-mk-idx-top')
+    r = _regle('#vx-content[data-space="markets"] .vx-mk-idx-top')
     assert r is not None, 'la regle .vx-mk-idx-top a disparu'
     assert 'flex-wrap:wrap' in r.replace(' ', ''), (
         'la rangee d\'en-tete des cartes d\'indices ne peut plus passer a la '
@@ -99,7 +101,7 @@ def test_la_rangee_d_entete_des_cartes_d_indices_peut_passer_a_la_ligne():
 def test_le_nom_de_l_indice_tronque_en_l_avouant():
     """`min-width:0` lève le plancher implicite des éléments flex ; l'ellipse
     dit au lecteur qu'il manque du texte, au lieu de le couper sans le dire."""
-    r = _regle('.vx-content[data-space="markets"] .vx-mk-idx-name')
+    r = _regle('#vx-content[data-space="markets"] .vx-mk-idx-name')
     assert r is not None
     compact = r.replace(' ', '').replace('\n', '')
     assert 'min-width:0' in compact, (
@@ -112,7 +114,7 @@ def test_le_nom_de_l_indice_tronque_en_l_avouant():
 def test_la_pastille_reste_a_droite_quand_elle_passe_a_la_ligne():
     """Le `margin-left:auto` est ce qui fait tenir la mise en page une fois la
     rangée passée en `wrap` : sans lui, la pastille se colle au nom."""
-    r = _regle('.vx-content[data-space="markets"] .vx-mk-idx-rel')
+    r = _regle('#vx-content[data-space="markets"] .vx-mk-idx-rel')
     assert r is not None
     assert 'margin-left:auto' in r.replace(' ', ''), (
         'la pastille de position relative n\'est plus poussee a droite')

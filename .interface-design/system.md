@@ -1,94 +1,103 @@
-# Vertex — Design System (interface-design)
+# Vertex — Système d'interface canonique
 
-> Source de vérité des décisions de craft pour VERTEX. Tenir ces valeurs :
-> espacements sur la grille, stratégie de profondeur unique, couleurs de la
-> palette, patterns documentés réutilisés (pas réinventés).
+> Mémoire de craft alignée sur `.claude/skills/vertex-2-0/SKILL.md`.
+> Le skill maître et ses références priment en cas de divergence.
 
-## Direction & feel
+## Intention
 
-**VERTEX BLACK GLASS INSTITUTIONAL** — terminal d'analyse de trading, lecture
-seule. Persona : trader qui scanne vite, veut la densité d'un cockpit sans bruit.
-Feel : noir profond, cartes en verre gris translucide, structure blanc/gris/argent,
-précis, premium sobre (pas gaming, pas néon). Le motion est *felt, not watched*.
-Une couleur = une signification. **Le bleu n'est jamais une identité ; le vert est
-réservé au positif.** Donnée absente = état vide honnête (jamais un chiffre inventé).
+**Vertex Black Glass — Signal Light** est un centre personnel de trading IA,
+calme, dense et précis. La lecture doit être évidente en cinq secondes : ce qui
+se passe, ce qui mérite l'attention, pourquoi et avec quel risque.
 
-Signature : le « V » argent sur obsidienne ; les surfaces en verre (translucide +
-blur + bordure argent fine + reflet) ; les états vides structurés avec mini-viz
-fantôme ; les badges de statut honnêtes (LIVE/DELAYED/STALE/DEMO).
+Ce fichier gouverne seulement l'interface. Les migrations métier suivent les
+lots du skill maître ; aucune logique, donnée ou promesse ne doit être créée
+dans la couche visuelle.
 
-## Architecture
+## Ce que les références imposent
 
-- Coque unique `vertex/ui/shell/` (8 espaces) ; pages `vertex/ui/pages/*.py`
-  → `render_shell(...)`.
-- CSS = `vertex/static/vertex/css/` : `tokens.css` (source des hex canoniques),
-  base, layout, components, buttons, states, forms, tables, charts, utilities,
-  animations, responsive, puis **`glass.css` chargé en dernier** (couche verre +
-  neutralisation argent — c'est la vérité d'exécution).
-- JS graphiques = `vertex/static/vertex/js/charts/` + thème `chart-theme-obsidian-copper.js`
-  (nom de fichier historique ; ses séries sont argent/gris, jamais bleu).
-- **Toujours** consommer les tokens (`var(--vx-*)`), jamais de hex en dur.
+Conserver : sidebar compacte, grands espaces analytiques, bandeau de KPI,
+tables professionnelles, sparklines sobres, glows locaux, verre noir,
+hiérarchie nette et véritable adaptation mobile.
 
-## Couleurs (tokens réels)
+Éviter : néon sur chaque bord, cartes multicolores, donuts décoratifs,
+blocs marketing, faux chiffres, navigation colorée comme un signal financier
+et terminal desktop simplement compressé sur mobile.
 
-- Fonds : `--vx-obsidian-950 … -800` (noir profond) · graphites `--vx-graphite-900 → -700`. Halo diffus neutre dans la sidebar.
-- Surfaces verre : `--vx-glass-1` (carte) · `--vx-glass-2` (élevée/secondaire) · `--vx-glass-3` (critique/sélectionnée) + `--vx-glass-border[-faint/-strong]`, `--vx-glass-sheen`, `--vx-blur-sm/md/lg`. Classes utilitaires `.vx-glass-*`.
-- Bordures : faint .055 · default .10 · strong .18 (rgba argent `222,227,237`).
-- Texte (4 niveaux) : primary `#f3f1ed` · secondary `#b7b3ad` · muted `#817d77` · faint `#5c626b`.
-- **Marque = argent** : `--vx-brand` = `--vx-silver #c9cdd4` · strong/hover `#e6e9ee` · `--vx-brand-gradient` = graphite `linear-gradient(135deg,#3a3f47,#23262c)`. (Les hex canoniques verts restent figés dans `tokens.css` mais sont overridés en argent par `glass.css`.)
-- Sémantiques STRICTES : positive `#36c889` · negative `#ed655c` · warning/amber `#dda23b` · option/violet `#9c79d0` (réservé options) · neutral-chart gris. Le vert = positif uniquement ; l'orange = prudence/incertitude.
-- Info = argent (jamais bleu). `--vx-cyan`/`--vx-blue` mappés sur des neutres.
-- Distribution ~60/30/10 : obsidienne domine, verre gris secondaire, argent = structure ; sémantique = accent rare et signifiant.
+## Signature
 
-## Profondeur (UNE stratégie)
+La signature unique est **Decision Trace** : une hairline argentée avec quatre
+nœuds `Données → Moteur → Orientation → Patrimoine déclaré`. Elle existe uniquement dans
+le hero Aujourd'hui, le drawer Opportunité, le hero Analyse, l'audit de décision
+IA et l'impact Portefeuille.
 
-Dark mode : **verre (translucidité + blur) + bordures argent + décalages de surface**
-en premier ; ombres douces en appoint + reflet interne haut. `--shadow-card`,
-`--shadow-float`, `--vx-glow-brand` (ring argent). Élévation = surface `--vx-glass-1 → -2 → -3`.
+Le **Vertex Beam** est seulement un reflet de matière très discret ; ce n'est
+pas une seconde signature et il n'est jamais permanent.
 
-## Typographie
+## Palette et distribution
 
-Font `Inter`, mono `IBM Plex Mono / SFMono`. Échelle : page 30-32 · section 17-19 · card 12-14 ·
-body 13 · meta 11 · KPI 24-30 / KPI-sm 20. **La hiérarchie vient du poids + couleur**,
-pas de la taille seule (ex. KPI : label 11/500/muted-tracked · value 28/800/mono-tabular
-· delta 12). `text-wrap: balance` sur titres, `pretty` sur paragraphes.
-`font-variant-numeric: tabular-nums` sur toute valeur dynamique.
+- 82 % obsidienne/graphite : `#050607`, `#090b0e`, `#0e1116`.
+- 13 % blanc/argent/gris : `#f5f7fa`, `#c9ced8`, `#b8bec8`, `#7a828f`.
+- 5 % signal : positif `#36c889`, risque `#ed655c`, prudence `#dda23b`,
+  options `#9c79d0`, analyse/focus exceptionnel `#65d8e8`.
 
-## Espacement & formes
+Une couleur lumineuse dominante maximum par carte et deux par écran, hors
+vert/rouge directionnels nécessaires. La séparation vient des surfaces, de
+l'espace et de hairlines presque invisibles, jamais de cadres lumineux.
 
-- Base 4px : `--vx-s1 4 … s4 16 s5 20 s6 24 s8 32 s16 64`. Padding symétrique.
-- Rayons (échelle) : sm 8-10 (inputs/boutons) · r 12 · lg 14-16 (cartes) · modal 16 · pill 999.
-- Densité : cartes padding s4 (16) ; compact s3 (12). Grille 12 col, max ~1600px, sidebar 240px.
+## Typographie, géométrie et densité
 
-## Motion (craft)
+Geist pour l'interface ; Geist Mono pour tickers, prix, pourcentages, dates et
+mesures. Chiffres tabulaires. Titres courts en français, sans longues capitales.
 
-- Courbe **ease-out marquée** : `--vx-ease-out: cubic-bezier(.23,1,.32,1)` (jamais ease-in).
-  `--vx-t-fast 140ms · --vx-t 200ms · --vx-t-slow 260ms` (tous en ease-out).
-- **Press feedback** `scale(.97-.98)` sur boutons/onglets/chips/tickers.
-- **Cartes** : lift `translateY(-1px)` au survol (+ bordure argent/ombre). Transform/opacity only.
-- **Entrée de page** : cascade `vx-rise` échelonnée (.04/.08/.12/.15s) sur `.vx-content > *`.
-- Durées < 300ms. `prefers-reduced-motion` : mouvement coupé, opacité gardée.
+- Grille 4 px ; espaces 8/12/16/20/24/32.
+- Sidebar 236 px, repliée 72 px ; topbar 60–64 px.
+- Contenu 12 colonnes, max 1600–1680 px.
+- Cartes 14–16 px ; contrôles 9–10 px.
+- Densité desktop 8/10, variance visuelle 4/10, motion 2/10.
 
-## Patterns de composants (mesures)
+## Navigation canonique
 
-- `.vx-btn` — 34px h · 7/14 pad · r-sm · 13/600 · variantes primary (verre graphite/argent)/secondary/soft/ghost/danger/success/link · `:active scale(.97)`.
-- `.vx-card` — verre `--vx-glass-1` · bordure argent · r-lg · pad 16 · hover lift. Variantes `--hero` (verre élevé, pad 20), `--compact` (pad 12), `.vx-elevated`, `.vx-active`/`--selected` (verre `-3` + liseré argent). Classes utilitaires `.vx-glass-*`.
-- `.vx-kpi` — label 11/muted/upper · value 28/800/mono/tabular · delta 12/mono · mini-graphe neutre (couleur seulement si directionnel).
-- `.vx-badge` — pill 11/600 · variantes decision/risk/status/entity/demo (couleur = sens).
-- `.vx-tab` — 13/600 · underline argent actif · count pill.
-- `.vx-conviction` — barres segmentées (piste neutre, remplissage argent → sémantique selon force).
-- **États** (`VX.states` dans vx-core.js) : loading (skeletons) · empty (mini-viz fantôme bars/line/ring + titre « Aucune donnée » + action) · stale/error/partial bannières. Jamais de rectangle vide.
-- **A11y** : `.vx-skip-link` (Tab → « Aller au contenu ») · `:focus-visible` ring argent 2px · cibles mobiles ≥ 40px · `.vx-sr-only`.
+- **Piloter** : Aujourd'hui, Calendrier.
+- **Explorer** : Marchés, Opportunités, Analyse, Options, Simulateur.
+- **Gérer** : Portefeuille, Suivi, Performance.
+- **Intelligence** : Vertex IA.
+- **Utilitaire épinglé** : Système.
 
-## Garde-fous (ne pas régresser)
+Recherche globale, état marché, fraîcheur, calendrier, alertes et profil
+restent dans la topbar. Journal vit dans Performance ; watchlist dans Suivi ou
+Portefeuille ; Design System reste une route interne de QA.
 
-- 0 hex bleu identité · argent = structure, vert = positif, rouge = négatif/risque, orange = prudence · READONLY intact · moteurs/données/décisions non touchés.
-- Suite complète verte, 0 débordement horizontal (desktop/tablette/mobile), 0 erreur console.
-- Toute nouvelle valeur : sur la grille 4px, tokens de la palette, une seule stratégie de profondeur (verre + bordures argent).
+## Composants et graphiques
 
-## Références visuelles
+Une seule famille de cartes, KPI, badges, contrôles, tables, drawers, états et
+ChartCard. Chaque widget de données rend visibles question, conclusion, source,
+timestamp, fraîcheur et état lorsque ces informations existent.
 
-Linear / Vercel / Stripe (densité, hover discrets, hiérarchie par poids) ·
-terminal Bloomberg (densité de données, honnêteté) · référence Black Glass fournie
-(cockpit sombre, cartes verre, sémantique stricte). Rejeter : SaaS générique
-multicolore, néons, glow permanent, donuts décoratifs, bleu identité.
+Le thème graphique peut changer conteneur, axes, grille, labels, tooltip,
+légende, interactions visuelles, resize et accessibilité. Séries, valeurs,
+calculs, agrégations, sources et timeframes canoniques restent inchangés.
+
+Le Simulateur est une surface analytique multi-actifs. Il compare des scénarios
+explicites pour Actions, ETF, Options et Forex avec le moteur canonique ; il ne
+promet pas une prévision, n'invente aucun calcul et ne prépare aucun ordre.
+
+Le Portefeuille affiche uniquement les enveloppes, cash et positions déclarés
+par l'utilisateur. IBKR peut sourcer une cote de marché ; il ne fournit jamais
+compte, position, coût, P&L ou patrimoine.
+
+## États, accessibilité et responsive
+
+Traiter loading, empty, partial, stale, delayed, offline, demo et error sans
+inventer de contenu. Contraste AA, focus visible, clavier, reduced motion et
+sens jamais porté par la couleur seule. Concevoir réellement pour 390, 768,
+1024, 1280 et 1600+ px ; les tables deviennent priorisées ou inspectables, pas
+illisibles.
+
+## Tests de craft
+
+- **Permutation** : Vertex ne doit pas devenir un template générique si le logo
+  est remplacé.
+- **Distance** : hiérarchie lisible en plissant les yeux.
+- **Signature** : Decision Trace seulement aux cinq emplacements.
+- **Tokens** : aucune couleur, ombre, rayon ou espacement répété en dur.
+- **Vérité** : avant/après utilise les mêmes données et comportements.

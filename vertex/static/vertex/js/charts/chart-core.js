@@ -396,7 +396,9 @@
   C.levelLines = function (levels) {
     /* levels: [{value,label,kind:'entry'|'stop'|'tp'|'support'|'resistance'}] */
     const colByKind = { entry: C.colors.info, stop: C.colors.negative, tp: C.colors.positive,
-      support: C.colors.cyan, resistance: C.colors.warning };
+      // Un support n'est ni positif ni analytique : c'est un NIVEAU.
+      // Il se lit en argent ; la prudence reste réservée à la résistance.
+      support: C.colors.brand, resistance: C.colors.warning };
     return {
       id: 'vxLevels',
       afterDatasetsDraw(chart) {
@@ -469,6 +471,40 @@
     return el;
   };
 
+
+  /* ── PIED DE PRIMITIVE ────────────────────────────────────────────────
+     `treemap` et `waterfall` rendent un SVG NU : contrairement a `C.card`,
+     ils n'ont jamais porte ni unite, ni source, ni horodatage. Le contrat
+     des graphiques (« question, conclusion, source, unite, periode ») ne
+     pouvait donc pas etre tenu la ou ils servent — et les options qu'on leur
+     passait etaient silencieusement ignorees.
+
+     Ce pied les rend effectives. Il ne s'affiche que si on lui donne quelque
+     chose : une primitive sans legende reste exactement ce qu'elle etait. */
+  /* La QUESTION se lit AVANT le graphique — c'est elle qui dit pourquoi on le
+     regarde. Les primitives nues n'en portaient aucune. */
+  function tetePrimitive(o) {
+    return o.question
+      ? '<p class="vx-chart-question vx-primitive-question">' + o.question + '</p>' : '';
+  }
+
+  function piedPrimitive(o) {
+    const age = (o.timestamp != null && window.VX && VX.updateIndicator)
+      ? VX.updateIndicator(o.timestamp, o.source || '', o.mode) : '';
+    const bouts = [];
+    if (o.unit) bouts.push('unité : ' + o.unit);
+    /*  `updateIndicator` NOMME deja la source. La repeter donnait
+        « · portfolio_context Différé · source : portfolio_context » — deux
+        fois la meme origine a trois centimetres d'ecart.  */
+    if (o.source && !age) bouts.push('source : ' + o.source);
+    if (o.period || o.timeframe) bouts.push(o.period || o.timeframe);
+    if (o.limits) bouts.push(o.limits);
+    if (!bouts.length && !age) return '';
+    return '<div class="vx-chart-foot vx-primitive-foot">'
+      + age + (bouts.length ? '<span class="vx-meta">' + bouts.join(' · ') + '</span>' : '')
+      + '</div>';
+  }
+
   /* ── Treemap (SVG squarifié) — poids relatif : portefeuille, segments, secteurs ──
      opts: {items:[{label, value>0, color?, sub?}], width, height, fmt?, emptyHtml?}
      Aspect ratios équilibrés (algorithme squarify). Accessible : chaque tuile role=img. */
@@ -521,7 +557,9 @@
         <text x="${(r.x + 6).toFixed(1)}" y="${(r.y + 30).toFixed(1)}" fill="rgba(255,255,255,.82)" font-size="10" style="font-variant-numeric:tabular-nums">${fmt(r.d.value)}${r.d.sub ? ' · ' + r.d.sub : ''}</text>`}
       </g>`;
     }).join('');
-    el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="100%" height="100%" preserveAspectRatio="none" style="display:block">${svg}</svg>`;
+    el.innerHTML = tetePrimitive(o)
+      + `<svg viewBox="0 0 ${W} ${H}" width="100%" height="100%" preserveAspectRatio="none" style="display:block">${svg}</svg>`
+      + piedPrimitive(o);
     return el;
   };
 
@@ -562,7 +600,9 @@
       svg += `<text x="${(x + bw / 2).toFixed(1)}" y="${(H - 9).toFixed(1)}" text-anchor="middle" font-size="9" fill="var(--vx-text-muted,#817d77)">${String(b.label).slice(0, Math.floor(bw / 6) + 2)}</text>`;
     });
     const aria = (o.ariaLabel || 'décomposition') + ' : ' + bars.map(b => b.label + ' ' + fmt(b.val)).join(', ');
-    el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="100%" height="100%" role="img" aria-label="${aria.replace(/"/g, '&quot;')}">${svg}</svg>`;
+    el.innerHTML = tetePrimitive(o)
+      + `<svg viewBox="0 0 ${W} ${H}" width="100%" height="100%" role="img" aria-label="${aria.replace(/"/g, '&quot;')}">${svg}</svg>`
+      + piedPrimitive(o);
     return el;
   };
 

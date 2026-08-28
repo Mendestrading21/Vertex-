@@ -119,11 +119,13 @@ def test_les_familles_tolerees_restent_justifiees():
     # Une tolérance sans justification devient un trou : chaque contrat de
     # gouvernance cité doit exister dans le skill ou les rapports.
     corpus = []
-    for rel in ('.claude/skills/vertex-skyler-v2/SKILL.md',):
-        chemin = os.path.join(_ROOT, rel)
-        if os.path.exists(chemin):
-            with open(chemin, encoding='utf-8', errors='ignore') as f:
-                corpus.append(f.read())
+    skill_root = os.path.join(_ROOT, '.claude/skills/vertex-2-0')
+    for racine, _, noms in os.walk(skill_root):
+        for nom in noms:
+            if nom.endswith('.md'):
+                with open(os.path.join(racine, nom), encoding='utf-8',
+                          errors='ignore') as f:
+                    corpus.append(f.read())
     for racine, _, noms in os.walk(os.path.join(_ROOT, 'docs')):
         for n in noms:
             if n.endswith('.md'):

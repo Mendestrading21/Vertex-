@@ -147,21 +147,40 @@ def run(symbols, *, provider=None, want_news=True, persist_store=True) -> dict:
             _save(snap)
         return snap
 
+    #  Lot 11 : chaque recherche consomme le budget partagé et laisse une
+    #  trace d'audit. Budget épuisé → surface ABSENTE honnête + erreur
+    #  consignée, jamais une exception ni un chiffre.
+    from vertex.ai import gateway as _gw
+
+    def _recherche(sym, surface, build, parse):
+        if not _gw.allow('enrichment', sym):
+            snap['surfaces'][surface][sym] = prov.absent('budget IA atteint')
+            errors.append('%s %s: budget IA atteint (rate_limited)'
+                          % (sym, 'quote' if surface == 'quotes' else 'news'))
+            return
+        t0 = time.monotonic()
+        try:
+            s, u = build(sym)
+            snap['surfaces'][surface][sym] = parse(provider.research_json(s, u))
+            _gw.record(source='enrichment', symbol=sym, ok=True,
+                       duration_ms=round((time.monotonic() - t0) * 1000, 1),
+                       model=snap['model'])
+        except Exception as exc:                       # noqa: BLE001 — jamais bloquant
+            snap['surfaces'][surface][sym] = prov.absent(
+                'erreur recherche cotation' if surface == 'quotes'
+                else 'erreur recherche actualité')
+            errors.append('%s %s: %s' % (sym, 'quote' if surface == 'quotes'
+                                         else 'news', exc.__class__.__name__))
+            _gw.record(source='enrichment', symbol=sym, ok=False,
+                       errors=[exc.__class__.__name__],
+                       duration_ms=round((time.monotonic() - t0) * 1000, 1),
+                       model=snap['model'])
+
     errors = []
     for sym in syms:
-        try:
-            s, u = build_quote_research(sym)
-            snap['surfaces']['quotes'][sym] = parse_quote(provider.research_json(s, u))
-        except Exception as exc:                       # noqa: BLE001 — jamais bloquant
-            snap['surfaces']['quotes'][sym] = prov.absent('erreur recherche cotation')
-            errors.append('%s quote: %s' % (sym, exc.__class__.__name__))
+        _recherche(sym, 'quotes', build_quote_research, parse_quote)
         if want_news:
-            try:
-                s, u = build_news_research(sym)
-                snap['surfaces']['news'][sym] = parse_news(provider.research_json(s, u))
-            except Exception as exc:                   # noqa: BLE001
-                snap['surfaces']['news'][sym] = prov.absent('erreur recherche actualité')
-                errors.append('%s news: %s' % (sym, exc.__class__.__name__))
+            _recherche(sym, 'news', build_news_research, parse_news)
 
     snap['errors'] = errors[:20]
     got = sum(1 for e in snap['surfaces']['quotes'].values() if e.get('value') is not None)

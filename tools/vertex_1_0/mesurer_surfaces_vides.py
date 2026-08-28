@@ -66,7 +66,7 @@ DEPEND_DU_BUREAU = (
     '/api/positions/state', '/api/journal', '/api/portefeuille',
     '/api/strategie', '/api/planning/ticket', '/api/pretrade/check',
     '/api/skyler/memory', '/api/portfolio/team', '/api/portfolio/stress',
-    '/api/portfolio/context', '/api/ibkr/positions',
+    '/api/portfolio/context',  # /api/ibkr/positions retiree au lot 2 (market-data-only)
 )
 
 #: Mots qui ne sont PAS une donnée : un statut n'est pas un contenu. Sans cette

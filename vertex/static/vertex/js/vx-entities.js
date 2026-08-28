@@ -487,6 +487,16 @@
           <div class="vx-field"><label>Strike (option)</label><input class="vx-input" id="f-strike" type="number" step="any" value="${c.strike ?? ''}" /></div>
           <div class="vx-field"><label>Expiration (option)</label><input class="vx-input" id="f-exp" placeholder="YYYY-MM-DD" value="${c.expiry ?? ''}" /></div>
         </div>
+        <div class="vx-form-row">
+          <div class="vx-field"><label>Objectif (sous-jacent)</label><input class="vx-input" id="f-tgt" type="number" step="any" value="${c.tgt ?? ''}" /></div>
+          <div class="vx-field"><label>Devise</label><select class="vx-select" id="f-ccy">
+            <option value="USD" selected>USD</option><option value="CHF">CHF</option>
+            <option value="EUR">EUR</option><option value="CAD">CAD</option></select></div>
+        </div>
+        <div class="vx-form-row">
+          <div class="vx-field"><label>Stratégie (libre)</label><input class="vx-input" id="f-strategy" placeholder="ex. swing 6 sem., LEAPS…" /></div>
+          <div class="vx-field"><label>Frais (totaux)</label><input class="vx-input" id="f-fees" type="number" step="any" /></div>
+        </div>
         <div class="vx-help">Registre déclaratif — Vertex n’envoie JAMAIS un ordre.</div>`;
       }
       if (dest === 'note') return `
@@ -507,11 +517,21 @@
         const qty = n('f-qty') || 1, unit = n('f-cost') || 0, typ = v('f-type');
         /* schéma desk historique : cost = TOTAL investi (option = prime×100×qté) */
         const total = typ === 'STK' ? qty * unit : qty * unit * 100;
+        /* Parité avec le schéma historique du desk (lot 3) : sans ces champs,
+           une position déclarée ICI n'avait jamais d'objectif (tp1=None dans
+           tout le pipeline), pas de devise, pas de stratégie — alors que la
+           même déclaration depuis le legacy les porte. models.py lit
+           snap.stop/snap.tgt d'abord, puis myStop/myTgt : on écrit les DEUX,
+           comme le legacy. */
         E.addPosition({ type: typ, sym, qty, cost: Math.round(total * 100) / 100,
           entryPrice: unit,
           strike: n('f-strike'), exp: v('f-exp') || null,
           right: typ === 'CALL' ? 'C' : (typ === 'PUT' ? 'P' : null),
-          entrySnap: { stop: n('f-stop') } });
+          myStop: n('f-stop'), myTgt: n('f-tgt'), target1: n('f-tgt'),
+          fees: n('f-fees'), currency: v('f-ccy') || 'USD',
+          strategy: v('f-strategy') || null,
+          entrySnap: { stop: n('f-stop'), tgt: n('f-tgt'),
+                       date: new Date().toISOString().slice(0, 10) } });
       } else if (dest === 'note') E.setNote(sym, v('f-text'));
       VX.shell.closeModal();
     }

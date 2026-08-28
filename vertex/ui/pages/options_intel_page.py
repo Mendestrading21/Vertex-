@@ -11,51 +11,62 @@ volatility/expected_move/event_risk/overview). Donnée absente → état honnêt
 """
 from __future__ import annotations
 
+from vertex.ui import vx2
 from vertex.ui.shell import render_shell
 
 # Onglets VISIBLES (canoniques PR n°6) — Structure d'abord : la Carte-Verdict
 # Options répond « cette structure offre-t-elle une asymétrie suffisante ? ».
+# Ordre canonique de `navigation-and-pages.md` §6. Trois vues étaient SERVIES
+# (routes 200, contenu intact) mais CACHÉES de la barre d'onglets : personne ne
+# pouvait les atteindre depuis l'interface. Elles y reviennent sous le nom du
+# contrat — `radar` EST le Scanner qu'il réclame.
+#
+# `structure`, `positioning` et `leaps` restent : le contrat ne les nomme pas,
+# mais elles portent du contenu réel qui n'appartient à aucune autre page.
 _VIEWS = (
+    ('overview', 'Vue d’ensemble'),
     ('structure', 'Structure'),
+    ('volatility', 'Volatilité'),
+    ('radar', 'Scanner'),
+    ('scenarios', 'Scénarios'),
+    ('positions', 'Positions'),
+    ('events', 'Événements'),
     ('positioning', 'Positionnement'),
     ('leaps', 'LEAPS'),
-    ('positions', 'Mes positions'),
-    ('volatility', 'Volatilité'),
-    ('events', 'Événements'),
 )
-# Vues encore servies (routes 200, contenu intact) mais hors barre d'onglets :
-# overview/radar/scenarios restent accessibles/testées, absorbées par Structure.
-_LEGACY_VIEWS = (
-    ('overview', 'Vue d’ensemble'),
-    ('radar', 'Radar contrats'),
-    ('scenarios', 'Scénarios'),
-)
-_ALL_VIEWS = _VIEWS + _LEGACY_VIEWS
-_VIEW_PARENT = {'overview': 'structure', 'radar': 'structure', 'scenarios': 'structure'}
+_LEGACY_VIEWS = ()
+_ALL_VIEWS = _VIEWS
+# Plus aucune vue orpheline : chacune est son propre onglet.
+_VIEW_PARENT = {}
+
+# La CHAÎNE CALL/strike/PUT — « la table spécialisée principale » du contrat —
+# est une PAGE à elle (`/options/dossier/<sym>`), pas une sous-vue. Elle figure
+# dans la barre et suit le sous-jacent actif ; la dupliquer ici serait pire que
+# d'y renvoyer.
+_ONGLET_CHAINE = ('Chaîne', 'vx-options-chain-tab')
 
 
 def _tabs(view: str) -> str:
-    items = []
     selected_view = _VIEW_PARENT.get(view, view)
-    for vid, label in _VIEWS:
-        sel = 'true' if vid == selected_view else 'false'
-        items.append('<a class="vx-tab" role="tab" href="?view=%s" '
-                     'aria-selected="%s" data-view-tab="%s">%s</a>' % (vid, sel, vid, label))
-    return ('<nav class="vx-tabs" role="tablist" aria-label="Sous-vues Options">'
-            + ''.join(items) + '</nav>')
+    # `data-view-tab` n'est PAS decoratif : `options-context.js` s'en sert pour
+    # retrouver ces liens et y injecter le sous-jacent actif. Le retirer faisait
+    # perdre le symbole a chaque changement d'onglet, en silence.
+    items = [{'label': label, 'href': f'?view={vid}',
+              'actif': vid == selected_view,
+              'attrs': f' data-view-tab="{vid}"'} for vid, label in _VIEWS]
+    # La chaîne : un onglet vers sa page, désactivé tant qu'aucun sous-jacent
+    # n'est choisi — un lien qui mènerait à une 404 est pire qu'un lien absent.
+    libelle, ident = _ONGLET_CHAINE
+    items.insert(3, {'label': libelle, 'href': '/options/dossier/', 'actif': False,
+                     'attrs': f' id="{ident}" aria-disabled="true" tabindex="-1"'
+                              ' title="Choisir un sous-jacent pour ouvrir sa chaîne"'})
+    return vx2.tabs(items, libelle='Sous-vues des Options')
 
 
 _STYLE = ""  # styles Options migrés dans le CSS partagé canonique
 
 _HEADER = """
-<header class="vx-page-lead">
-  <div class="vx-page-lead__main">
-    <div class="vx-page-lead__eyebrow">Intelligence de convexité</div>
-    <h1>Options</h1>
-    <p class="vx-page-lead__summary">Mesurer l’asymétrie, le prix de la volatilité et le risque d’événement avant toute décision.</p>
-    <div class="vx-page-lead__meta"><span class="vx-readonly-shield">Analyse uniquement · aucun ordre</span></div>
-  </div>
-</header>
+%%ENTETE%%
 %%TABS%%
 <section class="vx-card vx-options-context vx-mt3" aria-label="Contexte du sous-jacent">
   <div class="vx-options-context__copy">
@@ -65,6 +76,9 @@ _HEADER = """
   <label class="vx-field vx-options-context__field"><span>Symbole</span>
     <input id="vx-options-symbol" class="vx-input" placeholder="ex. AAPL" maxlength="12" autocomplete="off" aria-label="Sous-jacent actif"></label>
   <button class="vx-btn vx-btn-sm vx-btn-primary" id="vx-options-apply">Actualiser l’analyse</button>
+  <a class="vx-btn vx-btn-sm" id="vx-options-chain" href="/options/dossier/"
+     title="Chaîne CALL / strike / PUT, probabilités, IV, scénarios et stratégies">
+    Ouvrir la chaîne complète →</a>
 </section>
 <div id="vx-demo-banner"></div>
 """
@@ -77,7 +91,13 @@ _VIEW_CONTENT = {
   <input id="vx-os-sym" tabindex="-1"><button id="vx-os-go" type="button">Actualiser</button>
 </div>
 <div id="vx-os-chips" class="vx-options-shortcuts vx-mt3" aria-label="Sous-jacents du tableau"></div>
-<div id="vx-os-verdict" class="vx-mt3">%%LOADING%%</div>
+<div id="vx-os-verdict" class="vx-mt3">
+  <div class="vx2-state" data-kind="empty" role="status">
+    <span class="vx2-state-ghost" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+    <p class="vx2-state-title">Aucun sous-jacent s&eacute;lectionn&eacute;</p>
+    <p class="vx2-state-cause">Saisis un symbole ci-dessus, ou choisis-en un dans le
+      tableau d&rsquo;options, pour lire sa structure, son payoff et ses sensibilit&eacute;s.</p>
+  </div></div>
 <div id="vx-os-scenarios" class="vx-mt3"></div>
 <div class="vx-hero-grid vx-mt3">
   <section class="vx-card vx-hero-main" aria-label="Payoff à l'échéance">
@@ -87,7 +107,12 @@ _VIEW_CONTENT = {
   </section>
   <aside class="vx-card vx-insight-rail" aria-label="Sensibilités">
     <div class="vx-card-header"><span class="vx-card-title">Sensibilités (Greeks)</span></div>
-    <div id="vx-os-greeks"><div class="vx-empty">—</div></div>
+    <div id="vx-os-greeks">
+  <div class="vx2-state" data-kind="empty" role="status">
+    <p class="vx2-state-title">Sensibilit&eacute;s indisponibles</p>
+    <p class="vx2-state-cause">Elles viennent du contrat s&eacute;lectionn&eacute;. Aucune Greek
+      n&rsquo;est estim&eacute;e en son absence.</p>
+  </div></div>
   </aside>
 </div>
 <details class="vx-disclosure vx-mt3">
@@ -279,9 +304,38 @@ _PAGE_JS = (
 )
 
 
+def _entete() -> str:
+    """En-tête + contexte. Le bouclier « analyse uniquement » n'était qu'une
+    ligne de texte sous le sous-titre ; il entre dans la barre de contexte,
+    au même rang que la source et la fraîcheur."""
+    return (
+        vx2.page_header(
+            surtitre='Explorer', titre='Options',
+            question='Quelle exposition optionnelle est compréhensible, liquide '
+                     'et compatible avec le risque ?',
+            actions=vx2.bouton('Ouvrir le Simulateur', href='/simulator',
+                               variante='ghost'))
+        + vx2.context_bar([
+            {'label': 'Univers', 'contenu':
+                '<span class="vx2-stamp">Contrats du <b>dernier scan</b> ; '
+                'chaîne large si IBKR est connecté</span>'},
+            {'label': 'Nature', 'contenu':
+                '<span class="vx2-badge" data-state="option">Analyse uniquement '
+                '\u00b7 aucun ordre</span>'},
+            {'label': 'Sous-jacent', 'contenu':
+                '<span id="vx-opt-ctx-sym">'
+                + vx2.badge_etat('missing', texte='Aucun sous-jacent choisi')
+                + '</span>'},
+            {'label': 'Fraîcheur', 'contenu':
+                '<span id="vx-opt-ctx-fresh">'
+                + vx2.badge_etat('missing', texte='Lecture…') + '</span>'},
+        ]))
+
+
 def render(view: str = 'structure') -> str:
     view = view if view in dict(_ALL_VIEWS) else 'structure'
-    content = (_STYLE + _HEADER.replace('%%TABS%%', _tabs(view))
+    content = (_STYLE
+               + _HEADER.replace('%%ENTETE%%', _entete()).replace('%%TABS%%', _tabs(view))
                + _VIEW_CONTENT[view].replace('%%LOADING%%', _LOADING))
     return render_shell(
         title='Options Intelligence',

@@ -55,8 +55,13 @@ def _positions_for(symbol=None):
     return out[:20]
 
 
-def build_context(scan_state, symbol=None):
-    """Contexte RÉEL du copilote : digest de session + positionnement du titre + desk."""
+def build_context(scan_state, symbol=None, avec_positions=False):
+    """Contexte RÉEL du copilote : digest de session + positionnement du titre.
+
+    Lot 25 — minimisation PII : positions déclarées et post-mortem du journal
+    ne partent dans le prompt QUE sur action explicite (`avec_positions`).
+    L'exclusion est DITE au modèle — sans quoi il conclurait « aucune
+    position », ce qui serait un mensonge."""
     from vertex.engines import session_digest
     from vertex.options import gex as _gex, flow as _flow, dealer_synthesis as _ds
     scan_state = scan_state or {}
@@ -77,6 +82,10 @@ def build_context(scan_state, symbol=None):
                                      symbol=sym)
         ctx['detail'] = {'price': detail.get('price'), 'score': detail.get('score'),
                          'earnings_in_days': detail.get('earnings_in_days')}
+    if not avec_positions:
+        ctx['positions'] = ('NON_TRANSMISES (vie privée — activer « inclure '
+                            'mes positions » pour les joindre à la question)')
+        return ctx
     ctx['positions'] = _positions_for(sym)
     # Post-mortem du journal (résumé chiffré) : ancre les questions de discipline
     # (« quelles sont mes erreurs récurrentes ? ») dans les trades RÉELS clôturés.
@@ -99,8 +108,10 @@ def build_context(scan_state, symbol=None):
     return ctx
 
 
-def _fallback(ctx, symbol):
-    """Repli déterministe honnête (aucune clé Claude) : récits moteurs existants."""
+def _fallback(ctx, symbol, conseil_cle=True):
+    """Repli déterministe honnête : récits moteurs existants. `conseil_cle`
+    est faux quand la clé EXISTE mais que le budget d'appels est atteint —
+    conseiller de configurer la clé serait alors un mensonge."""
     parts = []
     syn = ctx.get('synthesis') or {}
     if syn.get('narrative'):
@@ -109,50 +120,78 @@ def _fallback(ctx, symbol):
     reg = (dg.get('regime') or {})
     if reg.get('label'):
         parts.append('Climat de marché : %s.' % reg['label'])
-    pos = ctx.get('positions') or []
-    if pos:
+    pos = ctx.get('positions')
+    if isinstance(pos, list) and pos:      # jamais compter la chaîne d'exclusion
         parts.append('%d position(s) déclarée(s)%s dans le desk.' % (
             len(pos), (' sur ' + symbol) if symbol else ''))
     if not parts:
         parts.append('Pas assez de données réelles pour répondre — lance une analyse '
                      'ou attends la fin du scan.')
-    parts.append('(Réponse assemblée par les moteurs déterministes — configure '
-                 'ANTHROPIC_API_KEY pour la synthèse rédigée par Claude.)')
+    if conseil_cle:
+        parts.append('(Réponse assemblée par les moteurs déterministes — configure '
+                     'ANTHROPIC_API_KEY pour la synthèse rédigée par Claude.)')
+    else:
+        parts.append('(Réponse assemblée par les moteurs déterministes — limite '
+                     'd\'appels IA atteinte, réessaie dans une minute.)')
     return ' '.join(parts)
 
 
-def answer(question, scan_state, symbol=None):
+def answer(question, scan_state, symbol=None, avec_positions=False):
     """Réponse du copilote. Retourne un dict JSON-sérialisable, jamais d'exception."""
     q = str(question or '').strip()[:MAX_QUESTION]
     sym = (str(symbol or '').upper()[:12] or None)
     if not q:
         return {'ok': False, 'error': 'question vide', 'source': None, 'answer': None}
     try:
-        ctx = build_context(scan_state, sym)
+        ctx = build_context(scan_state, sym, avec_positions=bool(avec_positions))
     except Exception as e:
         return {'ok': False, 'error': 'contexte indisponible: %s' % e,
                 'source': None, 'answer': None}
 
+    #  Lot 11 : l'appel Claude passe par la porte partagée (budget + audit).
+    #  Un refus de budget n'est PAS une panne : repli déterministe, libellé
+    #  qui dit la VRAIE raison. La porte n'est consultée que si la couche IA
+    #  est disponible — sans clé, rien n'est consommé.
+    label_repli = 'Moteurs déterministes (Claude non configuré ou indisponible)'
+    conseil_cle = True
     if briefs.available():
-        try:
-            from anthropic import Anthropic
-            client = Anthropic()
-            payload = json.dumps(ctx, ensure_ascii=False, default=str)[:14000]
-            msg = client.messages.create(
-                model=MODEL, max_tokens=600, system=_SYSTEM,
-                messages=[{'role': 'user', 'content':
-                           'CONTEXTE JSON (données réelles Vertex) :\n%s\n\nQUESTION : %s'
-                           % (payload, q)}])
-            txt = (msg.content[0].text or '').strip()
-            if txt:
-                return {'ok': True, 'answer': txt, 'source': 'claude', 'model': MODEL,
-                        'symbol': sym, 'label': 'Analyse via Claude — estimation, pas une donnée broker',
-                        'readonly': True}
-        except Exception:
-            pass                                    # repli déterministe ci-dessous
-    return {'ok': True, 'answer': _fallback(ctx, sym), 'source': 'deterministic',
-            'model': None, 'symbol': sym,
-            'label': 'Moteurs déterministes (Claude non configuré ou indisponible)',
+        from vertex.ai import gateway as _gw
+        if not _gw.allow('copilot', sym or ''):
+            label_repli = ('Moteurs déterministes (limite d\'appels IA atteinte '
+                           '— réessaie dans une minute)')
+            conseil_cle = False
+        else:
+            import time as _time
+            t0 = _time.monotonic()
+            try:
+                from anthropic import Anthropic
+                client = Anthropic()
+                payload = json.dumps(ctx, ensure_ascii=False, default=str)[:14000]
+                msg = client.messages.create(
+                    model=MODEL, max_tokens=600, system=_SYSTEM,
+                    messages=[{'role': 'user', 'content':
+                               'CONTEXTE JSON (données réelles Vertex) :\n%s\n\nQUESTION : %s'
+                               % (payload, q)}])
+                txt = (msg.content[0].text or '').strip()
+                if txt:
+                    _gw.record(source='copilot', symbol=sym or '', ok=True,
+                               duration_ms=round((_time.monotonic() - t0) * 1000, 1),
+                               model=MODEL)
+                    return {'ok': True, 'answer': txt, 'source': 'claude', 'model': MODEL,
+                            'symbol': sym, 'label': 'Analyse via Claude — estimation, pas une donnée broker',
+                            'readonly': True}
+                _gw.record(source='copilot', symbol=sym or '', ok=False,
+                           errors=['empty_response'],
+                           duration_ms=round((_time.monotonic() - t0) * 1000, 1),
+                           model=MODEL)
+            except Exception as exc:                # repli déterministe ci-dessous
+                _gw.record(source='copilot', symbol=sym or '', ok=False,
+                           errors=[exc.__class__.__name__],
+                           duration_ms=round((_time.monotonic() - t0) * 1000, 1),
+                           model=MODEL)
+    return {'ok': True, 'answer': _fallback(ctx, sym, conseil_cle),
+            'source': 'deterministic',
+            'model': None, 'symbol': sym, 'label': label_repli,
             'readonly': True}
 
 

@@ -29,9 +29,12 @@ def _to_position(trade: dict, source: str) -> dict:
 
 
 def load_positions(desk_blob: dict | None = None,
-                   ibkr_positions: list | None = None,
                    include_closed: bool = False) -> list[dict]:
-    """Toutes les positions, toutes sources — chaque entrée étiquetée."""
+    """Positions DÉCLARÉES (manuelles + simulées explicites), étiquetées.
+
+    Lot 25 : le paramètre `ibkr_positions` et sa branche sont retirés — le
+    portefeuille est déclaré par l'utilisateur, jamais lu chez le courtier
+    (invariant market-data-only). Tous les appelants passaient déjà None."""
     out: list[dict] = []
     blob = desk_blob or {}
 
@@ -50,24 +53,6 @@ def load_positions(desk_blob: dict | None = None,
                 p['status'] = p['lifecycle_status'] = 'CLOSED'
                 out.append(p)
 
-    for raw in (ibkr_positions or []):
-        if not isinstance(raw, dict):
-            continue
-        qty = raw.get('qty') or raw.get('position')
-        trade = {'id': f"IBKR:{raw.get('conId') or raw.get('sym')}",
-                 'sym': raw.get('sym') or raw.get('symbol'),
-                 'type': ('CALL' if raw.get('right') == 'C' else
-                          'PUT' if raw.get('right') == 'P' else 'STK'),
-                 'right': raw.get('right'), 'strike': raw.get('strike'),
-                 'exp': raw.get('exp'), 'qty': qty,
-                 'cost': (raw.get('avgCost') or 0) * (qty or 0)
-                         if raw.get('avgCost') is not None and qty else None,
-                 'currency': raw.get('currency') or 'USD',
-                 'account_id': raw.get('account'),
-                 'conid': raw.get('conId')}
-        p = _to_position(trade, 'IBKR')
-        p['source_reference'] = f"ibkr:{raw.get('account') or ''}"
-        out.append(p)
     return out
 
 

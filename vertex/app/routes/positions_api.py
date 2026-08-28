@@ -22,52 +22,13 @@ def make_blueprint(scan_state: dict, *, opt_job=None, ibkr_enabled=False) -> Blu
     def _desk_blob():
         return persist.load_json('desk_data.json', {}) or {}
 
-    #: Les positions du courtier, tenues QUELQUES SECONDES — avec sa politique
-    #: de fraîcheur écrite, pas un cache anonyme.
-    #:
-    #: Mesuré : `/api/positions/state`, `/report`, `/alerts`, `/audit` et
-    #: `/reconcile` appellent tous `_ibkr_positions()`, et chaque appel met un
-    #: travail en file chez le worker options — derrière la rotation des
-    #: chaînes. Une page qui affiche cinq de ces cartes payait donc cinq
-    #: attentes : 20 s, 33 s, 56 s mesurées. Les cinq lisaient pourtant le MÊME
-    #: état de compte.
-    #:
-    #: QUINZE secondes, et le raisonnement compte plus que le chiffre. Deux
-    #: secondes ne servaient à rien : l'appel au courtier dure lui-même ~20 s,
-    #: donc la mémoire avait toujours expiré avant la route suivante — je
-    #: corrigeais la redondance alors que le coût est la latence.
-    #:
-    #: Quinze secondes ne rendent pas la donnée plus vieille qu'elle n'est
-    #: déjà : quand la réponse s'affiche, elle a DÉJÀ une vingtaine de secondes.
-    #: Ce que la borne change, c'est qu'une page cesse de payer cette attente
-    #: cinq fois. Elle reste courte devant l'horizon du produit — options tenues
-    #: 2 à 6 semaines, actions 3 à 12 mois.
-    #:
-    #: Ce qu'elle ne corrige PAS, et il faut le dire : la première attente. Elle
-    #: vient de la file du worker options, partagée avec la rotation des
-    #: chaînes — un défaut d'architecture, antérieur, qu'un cache ne résout pas.
-    _POS_TTL_S = 15.0
-    _pos_memo = {'ts': 0.0, 'valeur': None}
+    #  Lot 2 — frontiere IBKR market-data-only : les positions du COMPTE ne
+    #  sont plus lues. Chaque route passe None a load_positions/recalculate_all
+    #  et la seule source de portefeuille est le desk declare. Le verrou et le
+    #  memo restent pour les COTATIONS (_quotes) : coter un symbole est du
+    #  marche, lire un compte n'en est pas.
     _pos_verrou = threading.Lock()
     _q_memo = {'clef': None, 'ts': 0.0, 'valeur': None}
-
-    def _ibkr_positions():
-        if not ibkr_enabled or opt_job is None:
-            return None
-        with _pos_verrou:
-            if _pos_memo['valeur'] is not None and (time.time() - _pos_memo['ts']) < _POS_TTL_S:
-                return _pos_memo['valeur']
-        try:
-            valeur = opt_job('positions', (), timeout=20)
-        except Exception:  # noqa: BLE001
-            return None
-        #  On ne retient QUE ce qui a abouti : mémoriser un échec le ferait
-        #  durer deux secondes de plus, et un compte lisible passerait pour
-        #  muet alors qu'il ne l'était qu'un instant.
-        if valeur is not None:
-            with _pos_verrou:
-                _pos_memo['ts'], _pos_memo['valeur'] = time.time(), valeur
-        return valeur
 
     def _quotes(positions):
         """Cote via le worker IBKR (posq) quand disponible — sinon None."""
@@ -110,128 +71,47 @@ def make_blueprint(scan_state: dict, *, opt_job=None, ibkr_enabled=False) -> Blu
         from vertex.positions.recalculator import recalculate_all
         from vertex.positions.repository import load_positions
         blob = _desk_blob()
-        ibkr = _ibkr_positions()
-        base = load_positions(blob, ibkr)
+        base = load_positions(blob)
         quotes = _quotes([p for p in base if p.get('status') != 'CLOSED'])
-        state = recalculate_all(scan_state, blob, quotes, ibkr)
+        state = recalculate_all(scan_state, blob, quotes)
+        #  `live` dit desormais : « les COTATIONS viennent du marche en
+        #  direct ». Il ne dit plus rien d'un compte : il n'y en a plus.
         state['live'] = bool(ibkr_enabled)
         return jsonify(state)
 
-    #: Le rapprochement des P&L, et sa borne PROPRE.
-    #:
-    #: 15 s ne servaient à rien : l'appel mesuré dure **54,7 s** — résumé de
-    #: compte, souscription `reqPnL` avec son attente, et lignes de
-    #: portefeuille. La mémoire expirait donc toujours avant l'appel suivant,
-    #: et n'était jamais servie. C'est exactement le piège de D-023, refait ici
-    #: par réflexe : une borne plus courte que la latence qu'elle corrige ne
-    #: corrige rien.
-    #:
-    #: 120 s, et le raisonnement tient à l'horizon du produit : un P&L non
-    #: réalisé sur des options tenues 2 à 6 semaines ne se lit pas à la
-    #: seconde. La réponse porte déjà près d'une minute quand elle s'affiche.
-    _PNL_TTL_S = 120.0
-    _pnl_memo = {'ts': 0.0, 'valeur': None}
-
-    @bp.route('/api/positions/pnl-reconciliation')
-    def positions_pnl_reconciliation():
-        """Confronte les QUATRE P&L non réalisés. Ne désigne aucun gagnant.
-
-        Mesuré le 24 août 2026 sur le compte réel : `accountSummary` rend
-        1 024,03 USD et `reqPnL` 928,57 — **95,46 USD d'écart** au même instant.
-        Les deux viennent du même courtier et ne calculent pas sur la même base.
-
-        En afficher un seul rendrait le P&L vrai ou faux selon un arbitrage que
-        personne n'a pris. La route les rend tous les quatre, nomme l'écart, et
-        laisse la décision à l'humain.
-        """
-        import time as _t
-
-        from vertex.data_sources import ibkr_compte as _cpt
-        from vertex.positions.recalculator import recalculate_all
-        from vertex.positions.repository import load_positions
-
-        with _pos_verrou:
-            if (_pnl_memo['valeur'] is not None
-                    and (_t.time() - _pnl_memo['ts']) < _PNL_TTL_S):
-                return jsonify(_pnl_memo['valeur'])
-
-        #  Source 4 — Vertex, calculée sur les positions déjà connues.
-        blob = _desk_blob()
-        ibkr = _ibkr_positions()
-        base = load_positions(blob, ibkr)
-        quotes = _quotes([p for p in base if p.get('status') != 'CLOSED'])
-        etat = recalculate_all(scan_state, blob, quotes, ibkr)
-        pnl_vertex = (etat.get('portfolio') or {}).get('unrealized_pnl')
-
-        #  Sources 1 à 3 — le courtier. Chacune peut manquer, et une absence
-        #  n'est PAS une divergence : la réconciliation le sait.
-        resume = temps_reel = portefeuille = None
-        lignes_courtier = []
-        erreur = None
-        if ibkr_enabled:
-            try:
-                from vertex.data_sources import ibkr_link as _lien
-                from vertex.data_sources.ibkr_gateway import IbkrGateway
-                gw = IbkrGateway(client_id=_lien.client_id('pnl'))
-                try:
-                    r = _cpt.resume_compte(gw)
-                    resume = _cpt.valeur(r, 'UnrealizedPnL')
-                    portefeuille = _cpt.pnl_portefeuille(gw)
-                    temps_reel = _cpt.pnl_temps_reel(gw)
-                    #  `positions()` ne valorise pas — c'est `portfolio()` qui
-                    #  porte le P&L par ligne. Prendre l'autre rendrait une
-                    #  comparaison dont tous les P&L courtier seraient absents,
-                    #  donc une réconciliation qui rassure à tort.
-                    lignes_courtier = _cpt.lignes_portefeuille(gw)
-                finally:
-                    try:
-                        if gw._ib:
-                            gw._ib.disconnect()
-                    except Exception as exc:      # noqa: BLE001
-                        erreur = 'fermeture: %s' % str(exc)[:80]
-            except Exception as exc:              # noqa: BLE001
-                #  TWS absent ou refus : les sources courtier restent None et le
-                #  DISENT. Un zéro ferait croire à un P&L nul.
-                erreur = '%s: %s' % (type(exc).__name__, str(exc)[:120])
-
-        out = _cpt.reconcilier_pnl(resume=resume, temps_reel=temps_reel,
-                                   portefeuille=portefeuille, vertex=pnl_vertex)
-        #  Le TOTAL ne dit pas où regarder. Mesuré le 24 août 2026 : 270,13 USD
-        #  d'écart global, et UNE seule ligne responsable — URA, valorisée
-        #  7 760,00 par Vertex et 8 032,84 par le courtier. Sans la comparaison
-        #  ligne à ligne, l'écart reste vrai et inexploitable.
-        out['par_ligne'] = _cpt.reconcilier_positions_pnl(
-            vertex_positions=etat.get('positions') or [],
-            broker_positions=lignes_courtier)
-        out['erreur_courtier'] = erreur
-        out['live'] = bool(ibkr_enabled)
-        with _pos_verrou:
-            _pnl_memo['ts'], _pnl_memo['valeur'] = _t.time(), out
-        return jsonify(out)
+    #  Lot 2 — la route de rapprochement du P&L courtier est RETIRÉE.
+    #  Elle lisait le resume de compte, le P&L temps reel et le portefeuille
+    #  du compte — la frontiere market-data-only l'interdit, readonly ou pas.
+    #  Son hote UI (`pf-pnl-recon`) n'existait d'ailleurs dans aucune vue : la
+    #  carte ne se peignait jamais. Le P&L de Vertex reste calcule sur les
+    #  positions declarees, cotees par symbole via `_quotes`.
 
     @bp.route('/api/positions/report')
     def positions_report():
         """Startup Position Report (§6) — détection/réconciliation."""
         from vertex.positions.detector import startup_position_report
-        return jsonify(startup_position_report(_desk_blob(), _ibkr_positions(),
-                                               ibkr_online=bool(ibkr_enabled)))
+        #  Plus de lecture de compte : le rapport ne detecte plus de cloture
+        #  par disparition chez le courtier (ibkr_online=False, fige).
+        return jsonify(startup_position_report(_desk_blob(),
+                                               ibkr_online=False))
 
     @bp.route('/api/positions/audit')
     def positions_audit():
         """Audit d'intégrité (§41) — HEALTHY/DEGRADED/CRITICAL."""
         from vertex.positions.audit import audit_positions
         from vertex.positions.repository import load_positions
-        return jsonify(audit_positions(load_positions(_desk_blob(), _ibkr_positions())))
+        return jsonify(audit_positions(load_positions(_desk_blob())))
 
     @bp.route('/api/positions/reconcile')
     def positions_reconcile():
         """Réconciliation locale ↔ IBKR (§7) — DATA_REPAIR_REQUIRED explicite."""
         from vertex.positions.repository import load_positions
         from vertex.positions.reconciler import reconcile
-        pos = load_positions(_desk_blob(), _ibkr_positions())
+        #  Sans lecture de compte, plus de cote courtier : la reconciliation
+        #  rend l'etat honnete « courtier non lu », jamais un faux accord.
+        pos = load_positions(_desk_blob())
         local = [p for p in pos if p['source'] != 'IBKR']
-        broker = [p for p in pos if p['source'] == 'IBKR']
-        return jsonify(reconcile(local, broker, ibkr_online=bool(ibkr_enabled)))
+        return jsonify(reconcile(local, [], ibkr_online=False))
 
     @bp.route('/api/portfolio/stress')
     def portfolio_stress():
@@ -318,9 +198,8 @@ def make_blueprint(scan_state: dict, *, opt_job=None, ibkr_enabled=False) -> Blu
         from vertex.positions.alerts import ALERTS
         from vertex.positions.repository import load_positions
         blob = _desk_blob()
-        ibkr = _ibkr_positions()
-        base = [p for p in load_positions(blob, ibkr) if p.get('status') != 'CLOSED']
-        state = recalculate_all(scan_state, blob, _quotes(base), ibkr)
+        base = [p for p in load_positions(blob) if p.get('status') != 'CLOSED']
+        state = recalculate_all(scan_state, blob, _quotes(base))
         fresh = ALERTS.evaluate(state['positions'])
         return jsonify({'new': fresh, 'active': ALERTS.active(),
                         'gamma': _gamma_events(state['positions'])})
@@ -378,10 +257,9 @@ def make_blueprint(scan_state: dict, *, opt_job=None, ibkr_enabled=False) -> Blu
         from vertex.positions.recalculator import recalculate_all
         from vertex.positions.change_detector import diff
         blob = _desk_blob()
-        ibkr = _ibkr_positions()
         from vertex.positions.repository import load_positions
-        base = [p for p in load_positions(blob, ibkr) if p.get('status') != 'CLOSED']
-        state = recalculate_all(scan_state, blob, _quotes(base), ibkr)
+        base = [p for p in load_positions(blob) if p.get('status') != 'CLOSED']
+        state = recalculate_all(scan_state, blob, _quotes(base))
         cur = next((p for p in state['positions'] if p['position_id'] == position_id), None)
         if not cur:
             return jsonify({'error': 'position introuvable', 'changed': False}), 200

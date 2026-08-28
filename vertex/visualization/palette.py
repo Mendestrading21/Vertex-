@@ -3,7 +3,7 @@
 UNE seule source de vérité pour les couleurs porteuses de sens. Interdit : une
 couleur choisie au hasard pour différencier deux séries. Chaque couleur porte
 une intention (marque, benchmark, positif, négatif, option…). Le thème
-graphique JS (`chart-theme-obsidian-copper.js`) DOIT rester cohérent avec ce
+graphique JS (`chart-theme-black-glass.js`) DOIT rester cohérent avec ce
 registre — un test le vérifie.
 
 Identité Vertex : CUIVRE SOBRE sur fond obsidienne. La marque reste une série

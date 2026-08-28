@@ -142,7 +142,7 @@
       if (cn.length >= 2) {
         var mk = function (key, col, w, dash) { return { data: cn.map(function (p) { return p[key]; }), borderColor: col, borderWidth: w, borderDash: dash || [], pointRadius: 0, fill: false, tension: .2 }; };
         VXCharts.card('vx-osym-cone', {
-          title: 'Cône de mouvement attendu', question: 'Jusqu’où ' + SYM + ' peut-il bouger à 1σ et 2σ ?',
+          title: 'Cône de mouvement attendu',unit:'cours', question: 'Jusqu’où ' + SYM + ' peut-il bouger à 1σ et 2σ ?',
           conclusion: 'Spot ' + VXf.price(d.spot), height: 220, source: 'scan · σ = spot·IV·√(DTE/365)', timestamp: Date.now(), mode: 'delayed',
           legend: [{ label: '1σ', color: cc.brand }, { label: '2σ', color: cc.neutral }],
           render: function (cv) { return VXCharts.mount(cv, { type: 'line',
@@ -151,7 +151,7 @@
       } else (document.getElementById('vx-osym-cone')||{}).innerHTML = '';
       var oi = (d.oi_by_strike && d.oi_by_strike.rows) || [];
       if (oi.length) VXCharts.card('vx-osym-oi', {
-        title: 'Open interest par strike', question: 'Où se concentrent les positions ouvertes ?',
+        title: 'Open interest par strike',unit:'contrats', question: 'Où se concentrent les positions ouvertes ?',
         conclusion: 'CALL vs PUT · spot ' + VXf.price(d.spot), height: 220, source: 'scan', timestamp: Date.now(), mode: 'delayed',
         legend: [{ label: 'CALL OI', color: '#c9cdd4' }, { label: 'PUT OI', color: '#9c79d0' }],
         render: function (cv) { return VXCharts.mount(cv, { type: 'bar',
@@ -194,14 +194,16 @@
       (sim.reward_risk != null ? '<div class="vx-meta vx-mt2">R:R du plan sur le contrat : <b class="vx-mono">' + VXf.num(sim.reward_risk, 2) + '</b>' + (sim.worst_planned_loss_pct != null ? ' · pire perte planifiée ' + VXf.pct(sim.worst_planned_loss_pct, 1) : '') + '</div>' : ''));
     ready(function () {
       VXCharts.heatmapCard('vx-osym-scenarios-hm', {
-        title: '', columns: days.map(function (j) { return 'J+' + j; }),
+        title: 'Scénarios spot × temps', unit: '$ de prime',
+        question: 'Que vaudrait le contrat selon le spot et le temps ?',
+        source: 'scenario_pricer', columns: days.map(function (j) { return 'J+' + j; }),
         rows: rows.map(function (r) { return { label: r.label, cells: days.map(function (j) { var c = r.node[String(j)] || {}; return { value: c.pnl_pct, label: c.pnl_pct != null ? Math.round(c.pnl_pct) + ' %' : '—', title: r.label + ' J+' + j + ' : ' + (c.pnl_pct != null ? c.pnl_pct + ' % (valeur ' + c.value + ')' : 'n/d') }; }) }; }),
         min: -80, max: 80, source: 'scenario_pricer (MODEL_ESTIMATE)', timestamp: Date.now(), mode: 'delayed',
         limits: 'estimation modèle Black-Scholes — pas une promesse'
       });
       var td = sim.time_decay || [];
       if (td.length >= 2) VXCharts.card('vx-osym-decay', {
-        title: 'Décote temps (theta)', question: 'Combien le temps grignote-t-il la prime, à spot figé ?', height: 200,
+        title: 'Décote temps (theta)',unit:'$ par jour', question: 'Combien le temps grignote-t-il la prime, à spot figé ?', height: 200,
         source: 'scenario_pricer', timestamp: Date.now(), mode: 'delayed',
         render: function (cv) { return VXCharts.mount(cv, { type: 'line',
           data: { labels: td.map(function (p) { return 'J+' + p.days; }), datasets: [{ data: td.map(function (p) { return p.value; }), borderColor: VXCharts.colors.warning, backgroundColor: 'rgba(221,162,59,.12)', fill: true, tension: .25, pointRadius: 2 }] },
@@ -383,7 +385,7 @@
       var ok = s && s.available !== false && s.by_expiry && Object.keys(s.by_expiry).length;
       if (VXCharts.volSurfaceCard) {
         VXCharts.volSurfaceCard('vx-osym-surface', ok ? s : {}, {
-          title: 'Surface de volatilité — strike × échéance',
+          title: 'Surface de volatilité — strike × échéance',unit:'% d’IV',
           question: 'Où l’IV est-elle riche ou pauvre selon le strike et l’échéance ?',
           source: (s && s.source) || 'chaîne large', timestamp: s && s.as_of, mode: 'delayed' });
       }

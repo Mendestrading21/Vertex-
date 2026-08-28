@@ -36,7 +36,7 @@ LAYOUT = ROOT / 'vertex/static/vertex/css/layout.css'
 RESPONSIVE = ROOT / 'vertex/static/vertex/css/responsive.css'
 CHARTS_CSS = ROOT / 'vertex/static/vertex/css/charts.css'
 CORE = ROOT / 'vertex/static/vertex/js/charts/chart-core.js'
-THEME = ROOT / 'vertex/static/vertex/js/charts/chart-theme-obsidian-copper.js'
+THEME = ROOT / 'vertex/static/vertex/js/charts/chart-theme-black-glass.js'
 HEATMAP = ROOT / 'vertex/static/vertex/js/charts/heatmap.js'
 
 

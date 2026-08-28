@@ -17,7 +17,8 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 PAGE = ROOT / 'vertex/ui/pages/analysis_page.py'
-THEME = ROOT / 'vertex/static/vertex/css/neon-glass.css'
+#  Lot 24 : les règles du rail vivent dans la couche SERVIE (rapatriées).
+THEME = ROOT / 'vertex/static/vertex/css/vertex-2-0.css'
 CHART_CORE = ROOT / 'vertex/static/vertex/js/charts/chart-core.js'
 ANOMALY_CHART = ROOT / 'vertex/static/vertex/js/charts/anomaly-scan.js'
 LWC_CHART = ROOT / 'vertex/static/vertex/js/charts/candlestick-lwc.js'

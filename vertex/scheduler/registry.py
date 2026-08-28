@@ -80,7 +80,8 @@ for name, desc, interval, _implemente in _CANONICAL_4:
     _JOBS[name] = {'name': name, 'description': desc, 'interval_s': interval,
                    'implemente': _implemente,
                    'last_run': None, 'last_ok': None, 'last_error': None,
-                   'runs': 0, 'last_duration_ms': None}
+                   'runs': 0, 'last_duration_ms': None,
+                   'echecs_consecutifs': 0}
 
 
 def beat(name: str, ok: bool = True, error: str | None = None,
@@ -90,11 +91,16 @@ def beat(name: str, ok: bool = True, error: str | None = None,
         j = _JOBS.setdefault(name, {'name': name, 'description': '', 'interval_s': None,
                                     'implemente': True,
                                     'last_run': None, 'last_ok': None, 'last_error': None,
-                                    'runs': 0, 'last_duration_ms': None})
+                                    'runs': 0, 'last_duration_ms': None,
+                                    'echecs_consecutifs': 0})
         j['last_run'] = time.time()
         j['last_ok'] = bool(ok)
         j['last_error'] = (str(error)[:200] if error else None)
         j['runs'] += 1
+        #  Lot 7 — le compteur de tempete : des echecs EN SERIE se comptent,
+        #  un succes remet a zero. Le registre le porte pour que l'ecran et
+        #  un futur circuit breaker lisent le meme chiffre.
+        j['echecs_consecutifs'] = 0 if ok else j.get('echecs_consecutifs', 0) + 1
         if duration_ms is not None:
             j['last_duration_ms'] = round(duration_ms)
 
@@ -108,6 +114,11 @@ def jobs() -> list[dict]:
       pas tourner ; dire « jamais exécuté » laisserait croire à une panne.
     - `EN_ATTENTE`     — implémenté, mais pas encore passé depuis le démarrage.
     - `ACTIF` / `ERREUR` — il a tourné, et son dernier passage a réussi ou non.
+    - `SILENCIEUX` (lot 7) — cadencé, déjà battu avec succès, et MUET depuis
+      plus de deux fois sa cadence : la boucle est morte ou coincée. Avant ce
+      lot, un job mort restait « ACTIF » pour toujours — un vert de façade sur
+      des alertes que personne n'évalue plus. ERREUR prime sur le silence :
+      un échec suivi de mutisme reste un échec.
     """
     now = time.time()
     out = []
@@ -123,8 +134,13 @@ def jobs() -> list[dict]:
                 j['etat'] = 'NON_IMPLEMENTE'
             elif j['last_run'] is None:
                 j['etat'] = 'EN_ATTENTE'
+            elif not j['last_ok']:
+                j['etat'] = 'ERREUR'
+            elif (j['interval_s']
+                    and (now - j['last_run']) > 2 * j['interval_s']):
+                j['etat'] = 'SILENCIEUX'
             else:
-                j['etat'] = 'ACTIF' if j['last_ok'] else 'ERREUR'
+                j['etat'] = 'ACTIF'
             out.append(j)
     return out
 

@@ -64,7 +64,18 @@ def test_journal_routes_200(client):
         r = client.get('/journal?view=' + v)
         assert r.status_code == 200, v
     r = client.get('/journal')
-    assert r.status_code == 200 and '<h1>Journal</h1>' in r.get_data(as_text=True)
+    #  VERTEX 2.0 : l'espace s'appelle Performance — « la méthode fonctionne-t-elle,
+    #  et est-elle bien appliquée ? ». Le Journal en est une SOUS-VUE : il mesure la
+    #  même chose, à l'échelle de la décision individuelle.
+    #  L'URL /journal continue de servir la page à l'identique, et c'est le point :
+    #  elle est en favori, liée dans le produit et présente dans une trentaine de
+    #  bancs. Ce qui a changé est le titre affiché, pas la disponibilité.
+    html = r.get_data(as_text=True)
+    #  VERTEX 2.0 : le titre passe par `vx2.page_header`, qui pose la classe
+    #  canonique. L'intention du banc — la page porte bien son titre — est
+    #  conservee ; seul le balisage a change.
+    assert r.status_code == 200 and '<h1 class="vx2-title">Performance</h1>' in html
+    assert 'Journal' in html, 'le Journal reste nommé quelque part dans la page'
 
 
 # ── Système = Hero technique cockpit ─────────────────────────────────────
@@ -81,5 +92,5 @@ def test_system_route_200_and_readonly(client):
     r = client.get('/system')
     assert r.status_code == 200
     html = r.get_data(as_text=True)
-    assert '<h1>Système</h1>' in html
+    assert '<h1 class="vx2-title">Système</h1>'  # VERTEX 2.0 : titre via vx2.page_header in html
     assert 'READONLY' in html  # invariant affiché

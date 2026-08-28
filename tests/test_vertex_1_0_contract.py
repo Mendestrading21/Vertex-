@@ -67,12 +67,19 @@ def test_product_constants_match_release_strategy_profile():
 
 
 def test_one_active_claude_skill_and_canonical_docs():
-    active = (ROOT / ".claude/skills/vertex-1-0/SKILL.md").read_text(encoding="utf-8")
-    old_skyler = (ROOT / ".claude/skills/vertex-skyler-v2/SKILL.md").read_text(encoding="utf-8")
-    old_rebuild = (ROOT / ".claude/skills/vertex-total-rebuild/SKILL.md").read_text(encoding="utf-8")
-    assert "ACTIVE_SKILL: vertex-1-0" in active
-    assert "DEPRECATED" in old_skyler
-    assert "DEPRECATED" in old_rebuild
+    skills_root = ROOT / ".claude/skills"
+    skills = sorted(
+        path.name for path in skills_root.iterdir()
+        if path.is_dir() and (path / "SKILL.md").is_file()
+    )
+    assert skills == ["vertex-2-0"]
+
+    active = (skills_root / "vertex-2-0/SKILL.md").read_text(encoding="utf-8")
+    claude = (ROOT / "CLAUDE.md").read_text(encoding="utf-8")
+    assert "IBKR fournit uniquement" in active
+    assert "portefeuille" in active.lower() and "déclar" in active.lower()
+    assert "/vertex-2-0" in claude
+    assert "/vertex-1-0" not in claude
     assert (ROOT / "docs/vertex-1.0/ARCHITECTURE.md").is_file()
     assert (ROOT / "docs/vertex-1.0/RELEASE_CHECKLIST.md").is_file()
 
