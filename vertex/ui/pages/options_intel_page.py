@@ -19,7 +19,10 @@ from vertex.ui.shell import render_shell
 # Ordre canonique de `navigation-and-pages.md` §6. Trois vues étaient SERVIES
 # (routes 200, contenu intact) mais CACHÉES de la barre d'onglets : personne ne
 # pouvait les atteindre depuis l'interface. Elles y reviennent sous le nom du
-# contrat — `radar` EST le Scanner qu'il réclame.
+# contrat. Lot 38 : les libellés suivent le CONTENU — la vue `radar` ouvre le
+# « Radar des contrats » et s'appelle Radar ; la vue `leaps` porte le vrai
+# scanner (critères, lancement, « Simuler ce contrat ») et s'appelle
+# Scanner LEAPS — c'est ELLE qui honore la sous-vue Scanner du contrat.
 #
 # `structure`, `positioning` et `leaps` restent : le contrat ne les nomme pas,
 # mais elles portent du contenu réel qui n'appartient à aucune autre page.
@@ -27,12 +30,12 @@ _VIEWS = (
     ('overview', 'Vue d’ensemble'),
     ('structure', 'Structure'),
     ('volatility', 'Volatilité'),
-    ('radar', 'Scanner'),
+    ('radar', 'Radar'),
     ('scenarios', 'Scénarios'),
     ('positions', 'Positions'),
     ('events', 'Événements'),
     ('positioning', 'Positionnement'),
-    ('leaps', 'LEAPS'),
+    ('leaps', 'Scanner LEAPS'),
 )
 _LEGACY_VIEWS = ()
 _ALL_VIEWS = _VIEWS
@@ -71,7 +74,7 @@ _HEADER = """
 <section class="vx-card vx-options-context vx-mt3" aria-label="Contexte du sous-jacent">
   <div class="vx-options-context__copy">
     <span class="vx-card-title">Sous-jacent actif</span>
-    <span class="vx-meta">Conservé entre les vues Structure, Positionnement, LEAPS, Volatilité et Événements.</span>
+    <span class="vx-meta">Conservé entre les vues Structure, Positionnement, Scanner LEAPS, Volatilité et Événements.</span>
   </div>
   <label class="vx-field vx-options-context__field"><span>Symbole</span>
     <input id="vx-options-symbol" class="vx-input" placeholder="ex. AAPL" maxlength="12" autocomplete="off" aria-label="Sous-jacent actif"></label>
