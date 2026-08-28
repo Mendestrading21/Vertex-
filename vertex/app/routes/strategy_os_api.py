@@ -10,7 +10,6 @@ from __future__ import annotations
 from flask import Blueprint, jsonify, request
 
 from vertex.alerts.engine import AlertEngine
-from vertex.anomalies.stock_anomalies import detect_stock_anomalies
 from vertex.ai.audit import AUDIT as _AI_AUDIT
 from vertex.data_sources.tradingview_signal_store import SIGNAL_STORE
 from vertex.engines.market_context import regime_inputs
@@ -112,19 +111,15 @@ def make_blueprint(scan_state: dict) -> Blueprint:
         from vertex.companies import company_twin
         return jsonify(company_twin(sym, scan_state))
 
-    @bp.route('/api/anomalies/<sym>')
-    def anomalies_for(sym):
-        sym = sym.upper()
-        detail = (scan_state.get('detail') or {}).get(sym) or {}
-        series = detail.get('series') or {}
-        closes = series.get('close') or []
-        bars = [{'date': '', 'open': c, 'high': c, 'low': c, 'close': c,
-                 'volume': None} for c in closes]
-        found = detect_stock_anomalies(sym, bars) if len(bars) >= 30 else []
-        return jsonify({'symbol': sym,
-                        'anomalies': [a.to_dict() for a in found],
-                        'note': ('série close-only du scan : gaps/volumes non couverts '
-                                 'sur cette route' if bars else 'aucune série disponible')})
+    #  Lot 9 — la route /api/anomalies/<sym> qui vivait ici est RETIRÉE.
+    #  Elle etait MASQUEE depuis toujours : analysis_api declare le meme
+    #  chemin et gagne au dispatch. Les deux formes de reponse divergeaient
+    #  (ici {anomalies:[...]}, la-bas le scan du moteur canonique), et le seul
+    #  consommateur de CETTE forme — la page legacy /strategy-os — est une
+    #  redirection 301 : du code mort des deux cotes. Le proprietaire unique
+    #  est analysis_api.api_anomalies, sur la serie canonique. Un gardien
+    #  generique (test_collisions_routes_lot09) interdit toute reapparition
+    #  d'une route a deux proprietaires.
 
     @bp.route('/api/portfolio/team', methods=['GET', 'POST'])
     def portfolio_team():

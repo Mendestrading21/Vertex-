@@ -58,10 +58,14 @@ def test_regime_route(client):
     assert 'adjustments' in data
 
 
-def test_anomalies_route(client):
-    data = client.get('/api/anomalies/NVDA').get_json()
-    assert data['symbol'] == 'NVDA'
-    assert isinstance(data['anomalies'], list)
+def test_anomalies_route_n_est_plus_declaree_ici(client):
+    #  Lot 9 : la route etait MASQUEE par analysis_api (meme chemin, premier
+    #  enregistre gagne) et sa forme {anomalies:[...]} ne servait que la page
+    #  legacy /strategy-os, devenue une redirection 301. Retiree — le
+    #  proprietaire unique est analysis_api.api_anomalies.
+    r = client.get('/api/anomalies/NVDA')
+    assert r.status_code == 404, (
+        'la route a deux proprietaires est revenue dans strategy_os_api.')
 
 
 def test_team_route_requires_explicit_positions(client):
