@@ -37,10 +37,20 @@ def test_zero_and_false_are_real_values_not_missing():
 
 
 def test_to_dict_contract_is_complete():
+    #  Lot 5 : l'enveloppe est portee au contrat canonique du skill — les huit
+    #  champs historiques ne bougent pas, neuf champs s'ajoutent (unite,
+    #  devise, identite d'instrument, observation/reception, entitlement,
+    #  version de schema, lineage, erreur). Le set reste EXACT : un champ qui
+    #  apparait sans passer par ce banc est une derive de schema.
     d = M.missing('n/d').to_dict()
     assert set(d) == {'value', 'source', 'source_mode', 'timestamp',
-                      'age_seconds', 'quality', 'fallback_used', 'warnings'}
+                      'age_seconds', 'quality', 'fallback_used', 'warnings',
+                      'unit', 'currency', 'instrument_id', 'observed_at',
+                      'received_at', 'entitlement', 'schema_version',
+                      'lineage', 'error'}
     assert d['warnings'] == ['n/d']
+    #  et aucun nouveau champ n'invente une valeur sur une absence :
+    assert d['unit'] is None and d['currency'] is None and d['error'] is None
 
 
 def test_warning_lists_are_never_shared_between_instances():
