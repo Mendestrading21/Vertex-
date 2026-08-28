@@ -17,6 +17,23 @@
   var ABSENT = '—';
   var MAX_COMPARAISONS = 3;
   var comparaisons = [];
+
+  /* Retour visible apres un clic. Le code appelait un helper global qui
+     n'existe NULLE PART dans le produit ; celui qui est servi s'appelle
+     `VX.toast`. Les trois appels etaient gardes par un `if` sur ce mauvais
+     nom, donc silencieux — le bouton « Ajouter a la comparaison » ne disait
+     rien, ni en cas de succes, ni quand il n'y avait pas encore de simulation
+     a ajouter.
+     Releve en CLIQUANT le bouton (tools/vertex_2_0_boutons_morts.py) : aucun
+     effet mesurable. Une garde sur un mauvais nom ne leve pas d'erreur ; elle
+     rend la panne invisible. */
+  function dire(message, ton) {
+    if (window.VX && typeof VX.toast === 'function') {
+      VX.toast(message, ton || 'info');
+      return true;
+    }
+    return false;
+  }
   var classeActive = 'option';
 
   function $(sel, root) { return (root || document).querySelector(sel); }
@@ -445,15 +462,14 @@
       cmp.addEventListener('click', function () {
         var d = window.__vxSimDernier;
         if (!d) {
-          if (window.vxToast) window.vxToast('Lance d’abord une simulation.');
+          dire('Lance d’abord une simulation.', 'warn');
           return;
         }
         if (comparaisons.length >= MAX_COMPARAISONS) comparaisons.shift();
         comparaisons.push(d);
         rendreComparaison();
-        if (window.vxToast) {
-          window.vxToast('Ajouté à la comparaison (' + comparaisons.length + '/' + MAX_COMPARAISONS + ').');
-        }
+        dire('Ajouté à la comparaison (' + comparaisons.length
+          + '/' + MAX_COMPARAISONS + ').', 'success');
       });
     }
     rendreComparaison();

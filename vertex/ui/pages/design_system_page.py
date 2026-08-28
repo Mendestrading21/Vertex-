@@ -380,7 +380,10 @@ document.addEventListener('click', function(e){
   if(!el) return;
   var cls = el.getAttribute('data-ds-copy') || '';
   try{ if(navigator.clipboard) navigator.clipboard.writeText('.' + cls.split(' ').join('.')); }catch(_){}
-  if(window.vxToast) window.vxToast('Classe copiée : ' + cls);
+  /* Meme defaut qu'au simulateur : le nom global appele n'existe pas, la
+     garde le rendait silencieux. Le helper servi est `VX.toast`. */
+  if(window.VX && typeof VX.toast === 'function')
+    VX.toast('Classe copiée : ' + cls, 'success');
 });
 </script>"""
 

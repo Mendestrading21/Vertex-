@@ -105,7 +105,29 @@ def _chip_categorie(valeur: str, libelle: str, actif: bool) -> str:
             f'aria-pressed="{presse}">{libelle}</button>')
 
 
-def _filtres() -> str:
+def _filtres(view: str) -> str:
+    """Barre de contexte. Elle dépend de la vue, et ce n'est pas cosmétique.
+
+    La vue **Options** ne lit pas `/cal-feed` : sa donnée est le desk local, et
+    `calendar.js` sort de `boot()` avant de câbler le moindre filtre. Les neuf
+    commandes — cinq horizons, trois types, « Mes positions seulement » —
+    s'affichaient donc exactement comme ailleurs et **ne faisaient rien**.
+
+    Relevé en les CLIQUANT (`tools/vertex_2_0_boutons_morts.py`) : aucune
+    mutation du DOM, aucune requête, aucun défilement, aucune écriture. Une
+    commande qui ne peut rien produire est une fausse fonctionnalité, que la
+    doctrine interdit. On ne la désactive pas — on ne la rend pas, et la barre
+    dit ce qu'elle mesure à la place.
+    """
+    if view == 'options':
+        return vx2.context_bar([
+            {'label': 'Source', 'contenu':
+                '<span>Vos <b>contrats déclarés</b> — pas le calendrier '
+                'officiel. Ni horizon ni type : cette vue ne filtre pas un '
+                'flux, elle date ce que vous détenez.</span>'},
+            {'label': 'Fraîcheur', 'contenu': '<span id="vx-cal-fraicheur">'
+                + vx2.badge_etat('missing', texte='Chargement…') + '</span>'},
+        ])
     horizons = ''.join(
         _chip_horizon(h, lbl, h == _HORIZON_DEFAUT)
         for h, lbl in (('0', "Aujourd'hui"), ('7', '7 jours'), ('14', '14 jours'),
@@ -214,7 +236,7 @@ def render(view: str = 'today') -> str:
                      'positions sont concernés ?',
             actions=vx2.bouton('Voir les opportunités', href='/opportunities',
                                variante='ghost'))
-        + _filtres()
+        + _filtres(view)
         + _tabs(view)
         + _couverture_bloc()
         + _VIEW_CONTENT
