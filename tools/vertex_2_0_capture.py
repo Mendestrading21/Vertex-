@@ -1,7 +1,14 @@
 """Capture d'écran réelle de Vertex pour les preuves de refonte visuelle 2.0.
 
 Lance un navigateur Chromium sur l'application RÉELLEMENT exécutée et
-enregistre desktop 1440x1000 + mobile 390x844. Aucune maquette externe.
+enregistre une capture par largeur cible. Aucune maquette externe.
+
+Les trois largeurs par defaut sont celles qu'exige le skill maitre Vertex 2.0 :
+**1600** (desktop de reference), **1024** (tablette) et **390** (mobile). Elles
+restaient auparavant figees a 1440/390 : la tablette n'etait jamais capturee,
+et c'est precisement la largeur ou deux fautes ont ete trouvees (les titres de
+groupe coupes de la barre laterale, et le raccourci clavier pose sur le texte).
+`--largeurs` permet d'en demander d'autres sans toucher au code.
 
 Usage :
     python tools/vertex_2_0_capture.py --base http://127.0.0.1:8099 \
@@ -16,8 +23,15 @@ import re
 import sys
 from pathlib import Path
 
-DESKTOP = (1440, 1000)
-MOBILE = (390, 844)
+#: Largeur -> hauteur de fenetre, et nom du fichier produit.
+LARGEURS_SKILL = {
+    1600: (1000, 'desktop'),
+    1024: (768, 'tablette'),
+    390: (844, 'mobile'),
+}
+#: En dessous de ce seuil, on emule un vrai appareil tactile : sans cela, les
+#: surcharges `@media (hover:none)` et les cibles de 44 px ne s'exercent pas.
+SEUIL_TACTILE = 430
 
 
 def slug(route: str) -> str:
@@ -28,6 +42,8 @@ def slug(route: str) -> str:
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument('--base', default='http://127.0.0.1:8099')
+    ap.add_argument('--largeurs', type=int, nargs='+', default=sorted(LARGEURS_SKILL, reverse=True),
+                    help='largeurs a capturer ; defaut 1600 1024 390 (skill maitre)')
     ap.add_argument('--out', required=True)
     ap.add_argument('--routes', nargs='+', required=True)
     ap.add_argument('--full-page', action='store_true')
@@ -49,12 +65,14 @@ def main() -> int:
         browser = pw.chromium.launch(**launch_kw)
         for route in args.routes:
             entry = {'route': route, 'console': [], 'pageerrors': [], 'shots': {}}
-            for name, (w, h) in (('desktop', DESKTOP), ('mobile', MOBILE)):
+            for w in args.largeurs:
+                h, name = LARGEURS_SKILL.get(w, (1000, str(w)))
+                tactile = w <= SEUIL_TACTILE
                 ctx = browser.new_context(
                     viewport={'width': w, 'height': h},
                     device_scale_factor=2,
-                    is_mobile=(name == 'mobile'),
-                    has_touch=(name == 'mobile'),
+                    is_mobile=tactile,
+                    has_touch=tactile,
                     locale='fr-FR',
                     timezone_id='Europe/Zurich',
                 )

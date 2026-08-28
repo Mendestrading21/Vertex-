@@ -1,0 +1,15 @@
+Capacités IBKR sensibles détectées: 13
+- terminal.py:2201: accountSummary()
+- terminal.py:2220: positions()
+- terminal.py:2208: managedAccounts()
+- terminal.py:1341: positions()
+- tools/vertex_1_0/mesurer_g5_live.py:337: positions()
+- vertex/data_sources/ibkr_compte.py:181: accountSummary()
+- vertex/data_sources/ibkr_compte.py:196: portfolio()
+- vertex/data_sources/ibkr_compte.py:262: reqPnL()
+- vertex/data_sources/ibkr_compte.py:180: managedAccounts()
+- vertex/data_sources/ibkr_compte.py:215: portfolio()
+- vertex/data_sources/ibkr_compte.py:257: managedAccounts()
+- vertex/data_sources/ibkr_positions.py:36: positions()
+- vertex/data_sources/ibkr_replay.py:507: positions()
+À classifier puis supprimer derrière MarketDataGateway au lot 2.
