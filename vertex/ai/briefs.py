@@ -25,6 +25,33 @@ def available():
     return Anthropic is not None and k.startswith('sk-ant-') and 'xxxx' not in k
 
 
+def _porte(symbol=''):
+    """Budget de débit partagé (lot 11) — consulté SEULEMENT si available()."""
+    from vertex.ai import gateway
+    return gateway.allow('briefs', symbol)
+
+
+def _appel_claude(symbol, **kwargs):
+    """`messages.create` sous audit partagé (durée, panne). Relève l'exception :
+    chaque site garde son repli existant (Google gratuit / texte source / {})."""
+    import time as _t
+    from vertex.ai import gateway
+    t0 = _t.monotonic()
+    try:
+        client = Anthropic()                # lit ANTHROPIC_API_KEY de l'environnement
+        msg = client.messages.create(**kwargs)
+        gateway.record(source='briefs', symbol=symbol, ok=True,
+                       duration_ms=round((_t.monotonic() - t0) * 1000, 1),
+                       model=kwargs.get('model', ''))
+        return msg
+    except Exception as exc:
+        gateway.record(source='briefs', symbol=symbol, ok=False,
+                       errors=[exc.__class__.__name__],
+                       duration_ms=round((_t.monotonic() - t0) * 1000, 1),
+                       model=kwargs.get('model', ''))
+        raise
+
+
 def _content_key(prefix, *parts):
     """Clé de mémo NON AMBIGUË (PRF-03 : complétude des clés de mémoïsation).
 
@@ -49,7 +76,7 @@ def fr_news(ticker, items):
         for it, fr in zip(items, c['fr']):
             it['fr'] = fr
         return items, c['why']
-    if not available():                     # pas de clé Anthropic → traduction FR GRATUITE (Google)
+    if not available() or not _porte(ticker):   # pas de clé OU budget atteint → FR GRATUITE (Google)
         frs = titles
         try:
             joined = _google_fr('\n'.join(titles))
@@ -64,7 +91,6 @@ def fr_news(ticker, items):
             it['fr'] = fr
         return items, None
     try:
-        client = Anthropic()                # lit ANTHROPIC_API_KEY de l'environnement
         lst = '\n'.join(f'{i + 1}. {t}' for i, t in enumerate(titles))
         prompt = (
             f"Tu es analyste marché. Traduis ces titres d'actualité financière sur {ticker} "
@@ -73,8 +99,8 @@ def fr_news(ticker, items):
             f"Réponds STRICTEMENT en JSON, rien d'autre : "
             f'{{"fr": [liste meme ordre], "why": "une phrase"}}\n\nTitres:\n{lst}'
         )
-        msg = client.messages.create(model=MODEL, max_tokens=800,
-                                     messages=[{'role': 'user', 'content': prompt}])
+        msg = _appel_claude(ticker, model=MODEL, max_tokens=800,
+                            messages=[{'role': 'user', 'content': prompt}])
         txt = msg.content[0].text.strip()
         if txt.startswith('```'):
             txt = txt.split('\n', 1)[1].rsplit('```', 1)[0] if '\n' in txt else txt
@@ -100,10 +126,9 @@ def company_brief(sym, summary):
     key = _content_key('brief', sym, summary)  # sym ET summary → clé non ambiguë (pas de collision)
     if key in _cache:
         return _cache[key]
-    if not available():
+    if not available() or not _porte(sym):
         return {}
     try:
-        client = Anthropic()
         prompt = (
             f"À partir de cette description factuelle de l'entreprise {sym}, produis un JSON "
             f"compact en français. Sois fidèle : n'invente rien, n'ajoute aucun chiffre absent. "
@@ -113,8 +138,8 @@ def company_brief(sym, summary):
             f'"moat" (son avantage concurrentiel, ~10 mots). '
             f"Réponds UNIQUEMENT par le JSON, sans préambule.\n\n{summary}"
         )
-        msg = client.messages.create(model=MODEL, max_tokens=400,
-                                     messages=[{'role': 'user', 'content': prompt}])
+        msg = _appel_claude(sym, model=MODEL, max_tokens=400,
+                            messages=[{'role': 'user', 'content': prompt}])
         txt = (msg.content[0].text or '').strip()
         if txt.startswith('```'):
             txt = txt.split('\n', 1)[1].rsplit('```', 1)[0] if '\n' in txt else txt
@@ -168,16 +193,15 @@ def fr_desc(sym, summary):
     key = _content_key('desc', sym, summary)  # sym ET summary → clé non ambiguë (pas de collision)
     if key in _cache:
         return _cache[key]
-    if available():
+    if available() and _porte(sym):
         try:
-            client = Anthropic()
             prompt = (
                 f"Traduis en français clair et naturel cette description de l'activité de "
                 f"l'entreprise {sym} (vocabulaire économique, fidèle, sans ajouter d'info). "
                 f"Réponds UNIQUEMENT par la traduction, sans guillemets ni préambule.\n\n{summary}"
             )
-            msg = client.messages.create(model=MODEL, max_tokens=600,
-                                         messages=[{'role': 'user', 'content': prompt}])
+            msg = _appel_claude(sym, model=MODEL, max_tokens=600,
+                                messages=[{'role': 'user', 'content': prompt}])
             fr = (msg.content[0].text or '').strip()
             if fr:
                 _cache[key] = fr
