@@ -144,3 +144,6 @@ navigateur 8 pages + 0 erreur console ; PR séparée ; rollback = revert.
 - `tests/test_options_lab.py` — 1 réf(s) : `PAGE_OPTIONS_LAB`
 - `tests/test_strategy_fit.py` — 1 réf(s) : `_vehicle_of`
 - `tests/test_swing.py` — 1 réf(s) : `_swing_project`
+
+> Lot 37 (Vertex 2.0) : `tests/test_home_art_lot181.py` RETIRÉ avec son module
+> `vertex/ui/home_art.py` (orphelin prouvé — voir docs/vertex-2-0/lot-37/).

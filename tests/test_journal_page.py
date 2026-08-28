@@ -1,50 +1,25 @@
 """
-tests/test_journal_page.py — Trade Journal 2.0 (page).
+tests/test_journal_page.py — Journal : espace servi et contrat de données.
 
-La page journal est montée depuis vertex/ui/journal.py : racine présente,
-formulaire compatible (mêmes ids que l'auto-journalisation du Desk),
-décisions épinglées conservées, et le moteur d'analyse embarqué.
+Historique : la page journal était générée par vertex/ui/journal.py, module
+retiré au lot 37 (aucune route ne le servait — /journal appartient à
+redesign). Ce qui reste vrai et gardé : l'URL /journal sert la coque 2.0,
+/performance aussi (deux espaces canoniques), et le contrat de données
+vxJournal (auto-journalisation du Desk) vit dans le JS réellement servi.
 """
 
 import terminal
-from vertex.ui import journal
-
-
-def test_form_ids_are_backward_compatible():
-    # l'auto-journalisation du Desk et la saisie manuelle utilisent ces ids
-    for fid in ('jTicker', 'jEntry', 'jStop', 'jTp', 'jExit', 'jPnl',
-                'jLesson', 'jMistake', 'jConf', 'jDisc', 'jTrigger'):
-        assert fid in journal.JS, fid
-
-
-def test_storage_schema_is_preserved():
-    # même clé localStorage + même sync desk que l'ancien journal
-    assert "localStorage.getItem('vxJournal'" in journal.JS
-    assert "/api/desk" in journal.JS
-
-
-def test_pinned_decisions_kept():
-    # les hôtes du bloc « décisions épinglées » (partagé avec /decisions)
-    assert 'djStats' in journal.JS and 'djList' in journal.JS
-
-
-def test_analysis_engine_sections_present():
-    for marker in ('aiScore', 'stats(', 'coach(', 'gamify(', 'mistakes(',
-                   'Coach Vertex', 'Base de connaissances', 'boucle de progression'):
-        assert marker in journal.JS or marker in journal.BODY, marker
 
 
 def test_route_serves_journal():
-    # PR n°2 : /journal est un ESPACE CANONIQUE (n°7) rendu directement (200),
-    # plus une redirection. Il rend le shell unique. Le schéma vxJournal
-    # (module journal.py) reste la source du contrat de données.
     c = terminal.app.test_client()
-    r = c.get('/journal')
-    assert r.status_code == 200 and b'vx-app' in r.data
-    # l'ancienne URL /performance redirige désormais vers /journal
-    rp = c.get('/performance')
-    #  VERTEX 2.0 : Performance devient l'espace canonique et /performance le
-    #  sert directement (200). /journal reste servi à l'identique — une URL en
-    #  favori et dans une trentaine de bancs ne devient pas introuvable pour la
-    #  commodité d'un plan de nommage.
-    assert rp.status_code == 200 and b'vx-app' in rp.data
+    for p in ('/journal', '/performance'):
+        r = c.get(p)
+        assert r.status_code == 200 and b'vx-app' in r.data, p
+
+
+def test_contrat_vxjournal_dans_le_js_servi():
+    ent = open('vertex/static/vertex/js/vx-entities.js', encoding='utf-8').read()
+    assert "'vxJournal'" in ent          # clé de sync préservée
+    assert 'journal()' in ent            # lecteur canonique
+    assert '/api/desk' in ent            # sync serveur du desk

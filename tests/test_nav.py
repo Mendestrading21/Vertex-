@@ -1,22 +1,13 @@
 """
-tests/test_nav.py — La navigation a UNE source par surface servie.
+tests/test_nav.py — La navigation a UNE source : la coque 2.0.
 
-Historique : vertex/ui/nav.py était réinjecté dans les gabarits inline de
-terminal.py. Cette couche pages est retirée (strangler, lot 36) — la
-navigation SERVIE appartient à la coque 2.0 (vertex/ui/shell). nav.py reste
-un module orphelin documenté (retrait = lot dédié avec ses preuves) ; ce banc
-garde ses invariants de forme et interdit à terminal.py de ressusciter une
-nav inline.
+Historique : vertex/ui/nav.py alimentait les gabarits inline de terminal.py.
+La couche pages est retirée (lot 36) et nav.py avec elle (lot 37) — la
+navigation SERVIE appartient à vertex/ui/shell. Ce banc interdit toute
+résurrection d'une nav inline côté terminal et garde les parcours cœur
+navigables sur la coque réellement servie.
 """
-
-from vertex.ui import nav
-
-
-def test_items_wellformed_and_unique():
-    for path, icon, label in nav.ITEMS:
-        assert path.startswith('/') and icon and label
-    paths = nav.paths()
-    assert len(paths) == len(set(paths))       # aucun doublon de chemin
+import terminal
 
 
 def test_terminal_ne_porte_plus_de_nav_inline():
@@ -26,7 +17,9 @@ def test_terminal_ne_porte_plus_de_nav_inline():
         'appartient à la coque 2.0 (vertex/ui/shell)')
 
 
-def test_core_workflows_are_in_nav():
-    # La nav redessinée (design 2026-07-08) : les pages cœur restent navigables.
-    for path in ('/', '/stocks', '/options', '/journal', '/settings'):
-        assert path in nav.paths()
+def test_core_workflows_navigables_sur_la_coque_servie():
+    html = terminal.app.test_client().get('/').get_data(as_text=True)
+    for path in ('/calendar', '/markets', '/opportunities', '/analysis',
+                 '/options', '/simulator', '/portfolio', '/follow-up',
+                 '/performance', '/system'):
+        assert 'href="%s"' % path in html, path + ' absent de la coque'

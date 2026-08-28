@@ -34,9 +34,9 @@ import pytest
 _ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # Reliques non servies (lot 327) + le Widget Lab, référence de design assumée.
+#  Les reliques non servies du lot 327 ont été retirées au lot 37 ; ne reste
+#  hors périmètre que le Widget Lab, référence de design assumée.
 _HORS_PERIMETRE = {
-    'vertex/ui/options_lab.py', 'vertex/ui/journal.py', 'vertex/ui/vault.py',
-    'vertex/ui/signals.py', 'vertex/ui/strategy_os.py',
     'vertex/ui/pages/widget_lab.py',
 }
 

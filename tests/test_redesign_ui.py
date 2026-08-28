@@ -269,21 +269,17 @@ def test_update_indicator_formats():
 
 # ── Synchronisation (§47) ─────────────────────────────────────────────
 def test_all_sync_keys_are_canonical():
-    """vx-entities.js DOIT porter exactement les mêmes clés que le kit global.
+    """vx-entities.js porte le contrat de sync complet (source unique servie).
 
-    Référence : vertex/ui/vx_kit.py (DESK_KEYS) depuis la purge É1 — terminal.py
-    n'héberge plus de copie de la liste.
+    Référence : l'ancre littérale de test_production (les anciennes références
+    vx_kit/journal, non servies, sont retirées — lot 37).
     """
     ent = (STATIC / 'js' / 'vx-entities.js').read_text(encoding='utf-8')
     m = re.search(r"DESK_KEYS\s*=\s*\[([^\]]+)\]", ent)
     assert m, 'DESK_KEYS absent de vx-entities.js'
     entity_keys = set(re.findall(r"'([^']+)'", m.group(1)))
-    kit = (ROOT / 'vertex/ui/vx_kit.py').read_text(encoding='utf-8')
-    m2 = re.search(r'DESK_KEYS\s*=\s*\[([^\]]+)\]', kit)
-    assert m2, 'DESK_KEYS absent de vertex/ui/vx_kit.py'
-    kit_keys = set(re.findall(r"'([^']+)'", m2.group(1)))
-    assert entity_keys == kit_keys, entity_keys ^ kit_keys
-    assert 'vxWatchlist' in entity_keys
+    assert {'vxWatchlist', 'vxAlerts', 'vxVault', 'vxJournal'} <= entity_keys
+    assert len(entity_keys) == 17
 
 
 def test_entity_schemas_preserved():
@@ -366,7 +362,7 @@ def test_service_worker_bumped(client):
     r = client.get('/sw.js')
     assert r.status_code == 200
     body = r.get_data(as_text=True)
-    assert 'td-shell-v276' in body, 'le shell a changé — la version du cache doit suivre'
+    assert 'td-shell-v277' in body, 'le shell a changé — la version du cache doit suivre'
     assert 'td-shell-v49' not in body
 
 
