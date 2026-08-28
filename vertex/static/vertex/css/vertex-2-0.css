@@ -1331,3 +1331,38 @@ html,body{max-width:100%;overflow-x:clip}
   --vx-glow-neg:none;
   --vx-glow-copper-soft:none;
 }
+
+/* === 29. Le bandeau sans JavaScript ========================================
+   Il ne s'affiche que si le moteur JS est coupe : il doit se lire tout de
+   suite et ne se confondre avec aucune carte. Ambre -- prudence, pas erreur :
+   rien n'est casse, mais rien n'est a jour. */
+.vx2-noscript{
+  margin:var(--vx2-s4);padding:var(--vx2-s3) var(--vx2-s4);
+  border:1px solid var(--vx-warning);border-radius:var(--vx2-r-card);
+  background:var(--vx-warning-soft,rgba(221,162,59,.10));
+  color:var(--vx-text-primary);font-size:var(--vx-fs-body);line-height:1.6;
+}
+
+/* === 30. Tablette : la barre laterale se replie sans que ses titres suivent ==
+   `responsive.css` force la barre compacte sous 1024 px et masque
+   `.vx-nav-label` -- mais le traitement « repliee » (titres de groupe caches,
+   filet de separation a la place) est accroche a `[data-sidebar="collapsed"]`,
+   que la requete media ne pose pas. Resultat mesure a 768 px : « EXPLORER »
+   rendu « EXPLORE », « INTELLIGENCE » rendu « INTELLIG ». Un mot coupe se lit
+   comme un bug, parce que c'en est un.
+   Le meme traitement s'applique donc aux deux causes de repli. */
+@media (max-width:1024px){
+  .vx-app .vx-nav-group-label{display:none}
+  .vx-app .vx-nav-group{
+    padding-top:var(--vx2-s2);border-top:1px solid var(--vx2-line-faint);
+    margin-bottom:var(--vx2-s2);
+  }
+  .vx-app .vx-nav-group:first-child{border-top:0;padding-top:0}
+}
+
+/* === 31. Le raccourci clavier se posait SUR le texte cherche ================
+   `.vx-kbd` est en position absolue a droite du champ, mais le champ ne lui
+   reservait aucune place : 12 px de rembourrage a droite. Tant que la fenetre
+   est large, le texte n'atteint pas la pastille ; des que le champ retrecit --
+   tablette, barre laterale ouverte -- « ...une page » passe DESSOUS. */
+.vx-topbar-search input{padding-right:46px}

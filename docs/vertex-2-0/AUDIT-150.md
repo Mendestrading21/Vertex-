@@ -140,7 +140,7 @@ Ce qu'elles n'ont pas reçu, c'est une refonte de leur **hiérarchie d'informati
 | 072 | Le résumé accessible annonce les valeurs clés | **RÉUSSI** pour les pages 2.0 | `<caption class="vx2-sr-only">` sur chaque table ; `resume_accessible` dans `chart_card`. |
 | 073 | Une bibliothèque externe possède licence et attribution documentées | **RÉUSSI** | Geist / Geist Mono : **SIL OFL 1.1**, copie intégrale dans `vertex/static/vertex/fonts/licences/GEIST-OFL.txt`. **Aucune** autre dépendance ajoutée — aucun code n'a été copié d'un dépôt tiers. |
 | 074 | Les plugins proof-of-concept sont durcis avant production | **NON APPLICABLE** | Aucun plugin introduit. |
-| 075 | Le fallback fonctionne quand Canvas/WebGL/JS échoue | **RÉUSSI partiellement** | `@supports not (backdrop-filter)` → graphite plein. Les tables équivalentes sont du **HTML**, donc lisibles sans Canvas. Le cas « JS entièrement désactivé » n'a pas été mesuré. |
+| 075 | Le fallback fonctionne quand Canvas/WebGL/JS échoue | **RÉUSSI — mesuré** (lot 27) | `@supports not (backdrop-filter)` → graphite plein ; les tables équivalentes sont du **HTML**, donc lisibles sans Canvas. Le cas « JS entièrement désactivé » **est désormais mesuré**, moteur JS coupé, et il a révélé un défaut réel : **53 squelettes visibles sur dix pages** — 22 sur la seule page d'accueil — promettaient une donnée qu'aucun script ne viendrait chercher. Un écran qui fait semblant de charger ment plus qu'un écran qui dit non. La coque porte maintenant un `<noscript><style>` qui masque tous les squelettes, et un bandeau qui dit **pourquoi** l'écran est muet — placé dans la colonne de contenu après qu'une première version, posée avant `.vx-app`, ait vu ses premiers mots passer sous la barre latérale fixe. Preuve rejouable : `tools/vertex_2_0_sans_js.py` — **0 constat sur les 12 pages**, contre-épreuve exécutée ; gardien `test_repli_sans_js_lot27.py`. |
 
 ---
 
@@ -215,7 +215,7 @@ Ce qu'elles n'ont pas reçu, c'est une refonte de leur **hiérarchie d'informati
 | 128 | Reduced motion supprime les transitions non essentielles | **RÉUSSI** | Mesuré sous `prefers-reduced-motion: reduce` : **0 élément sur 878** conserve une transition ou animation > 50 ms. |
 | 129 | Zoom 200 % conserve contenu et actions | **RÉUSSI** | Mesuré à 720 px CSS (équivalent 1440 à 200 %) : **0 débordement horizontal** sur les 12 pages. |
 | 130 | 390 et 430 px réellement utilisables | **RÉUSSI** | 0 débordement, 0 défaut d'accessibilité à 390×844. Captures mobiles des 12 pages. |
-| 131 | 768 et 1024 px ont une composition dédiée | **RÉUSSI partiellement** | 0 débordement mesuré aux deux largeurs. La grille 2.0 replie `col-3/4 → span 6` sous 1180 px et `→ span 12` sous 760 px. Une composition **spécifiquement conçue** pour la tablette n'a pas été dessinée. |
+| 131 | 768 et 1024 px ont une composition dédiée | **RÉUSSI** (lot 27) | 0 débordement aux deux largeurs, et la composition tablette est **regardée**, pas seulement mesurée. Deux fautes en sont sorties, invisibles à toute autre largeur : (a) `responsive.css` force la barre latérale compacte sous 1024 px et masque `.vx-nav-label`, mais le traitement « repliée » — titres de groupe cachés, filet à la place — est accroché à `[data-sidebar="collapsed"]`, que la requête média ne pose pas : à 768 px, « EXPLORER » rendait « EXPLORE » et « INTELLIGENCE » rendait « INTELLIG » ; (b) le raccourci `⌘K`, en position absolue à droite du champ de recherche, se posait **sur** le texte dès que le champ rétrécissait, faute de rembourrage réservé. Les deux sont corrigées. La composition à 1024 px déplace les actions à côté du titre, met la barre de contexte à deux par rangée et garde les onglets sur une ligne ; à 768 px, l'asymétrie 4/8, 5/7 et 3/9 passe en pile pour garder une largeur de lecture utile. |
 | 132 | 1280, 1440, 1600 et écran large gardent une ligne de lecture saine | **RÉUSSI** | `--vx2-content-max: 1660px`. 0 débordement à 1280/1440/1600/1920. |
 | 133 | Aucun overflow horizontal global | **RÉUSSI** | **0 px** sur 8 largeurs × 12 pages. `overflow-x: clip` sur `html, body`. |
 | 134 | Tables et graphiques conservent l'accès aux données sur mobile | **RÉUSSI** pour les tables 2.0 | `vx2.table(cartes_mobile=…)` : sous 760 px la table est masquée au profit de cartes-lignes structurées, **jamais compressée**. Démontré sur `/design-system`. |
@@ -249,8 +249,8 @@ Ce qu'elles n'ont pas reçu, c'est une refonte de leur **hiérarchie d'informati
 
 | État | Nombre |
 |---|---:|
-| **RÉUSSI** (avec preuve) | 130 |
-| **RÉUSSI partiellement** (limite déclarée) | 10 |
+| **RÉUSSI** (avec preuve) | 132 |
+| **RÉUSSI partiellement** (limite déclarée) | 8 |
 | **NON APPLICABLE** (justifié) | 9 |
 | **À CORRIGER** | 0 |
 | **En attente de décision humaine** | 1 |
@@ -259,7 +259,7 @@ Ce qu'elles n'ont pas reçu, c'est une refonte de leur **hiérarchie d'informati
 *Décompte obtenu en LISANT le tableau ligne à ligne — chaque plage groupée est
 dépliée (« 091–098 » couvre huit contrôles, « 102–104 » en couvre trois),
 chaque numéro de 001 à 150 est attribué une fois et une seule ; aucun n'est
-absent. 130 + 10 + 9 + 0 + 1 = 150.*
+absent. 132 + 8 + 9 + 0 + 1 = 150.*
 
 **Plus aucun `À CORRIGER`.** Le dernier (048) a été fermé au lot 26 — et il a
 d'abord fallu admettre que la justification qui le tenait ouvert était fausse :

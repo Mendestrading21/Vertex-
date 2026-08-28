@@ -308,6 +308,13 @@ def render_shell(*, title: str, active: str, space_label: str, sub_label: str = 
 <link rel="stylesheet" href="/static/vertex/css/premium.css">
 <link rel="stylesheet" href="/static/vertex/css/glass.css">
 <link rel="stylesheet" href="/static/vertex/css/vertex-2-0.css">
+<noscript><style>
+  /* Sans JavaScript, aucun de ces squelettes ne sera jamais rempli : ils
+     promettent une donnee qui n'arrivera pas. Mesure au navigateur, moteur JS
+     coupe : 53 squelettes sur dix pages, dont 22 sur la page d'accueil. Un
+     ecran qui fait semblant de charger ment plus qu'un ecran qui dit non. */
+  .vx-skeleton,.vx2-skeleton{{display:none !important}}
+</style></noscript>
 </head>
 <body data-shell="{SHELL_VERSION}">
 <a class="vx-skip-link" href="#vx-content">Aller au contenu principal</a>
@@ -316,6 +323,14 @@ def render_shell(*, title: str, active: str, space_label: str, sub_label: str = 
 <div class="vx-main">
 {_topbar(space_label, sub_label, _space_href(active))}
 <main class="vx-content" id="vx-content" data-space="{active}" data-page-label="{page_label or space_label}">
+<noscript>
+  <div class="vx2-noscript" role="alert">
+    <b>JavaScript est désactivé.</b> La coque, la navigation et les liens
+    fonctionnent, mais <b>aucune donnée ne se charge</b> : chiffres, graphiques,
+    verdicts et fraîcheur viennent tous du navigateur. Rien de ce qui est
+    affiché ci-dessous n’est à jour. Active JavaScript pour lire Vertex.
+  </div>
+</noscript>
 {content}
 </main>
 </div>
