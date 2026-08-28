@@ -1435,3 +1435,12 @@ html,body{max-width:100%;overflow-x:clip}
 @media (max-width:1024px){
   #vx-content[data-space="analysis"] .an-rail-stack{position:static;top:auto}
 }
+
+/* === 28. Cible tactile des sections repliables ===============================
+   Lighthouse target-size (page Performance) : les <summary> repliables
+   n'atteignaient pas 24 px de cible. Taille et respiration minimales,
+   partout — un doigt n'est pas un curseur. */
+#vx-content details > summary{
+  min-height:24px;display:flex;align-items:center;
+  padding:var(--vx2-s2) 0;cursor:pointer;
+}

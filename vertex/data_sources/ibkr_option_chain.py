@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from .models import SOURCE_IBKR, MODE_DELAYED, GREEKS_BROKER, ProvenancedValue
 from .provenance import stamp
+from vertex.data_sources import ibkr_gateway
 
 
 #: Annulations d'abonnement qui ont echoue. Une ligne de marche laissee
@@ -45,7 +46,7 @@ def chain_to_provenanced(rows: list[dict], timestamp: str = '') -> ProvenancedVa
 
 def fetch_expirations(gateway, symbol: str) -> list[str]:
     """Étape 1 de l'entonnoir : seulement les expirations (pas les chaînes)."""
-    from ib_async import Stock
+    Stock = ibkr_gateway.classe('Stock')
     ib = gateway.connect()
     stock = Stock(symbol, 'SMART', 'USD')
     ib.qualifyContracts(stock)
@@ -106,7 +107,7 @@ def fetch_contract_details(gateway, symbol: str, expiry: str,
     et partagée avec le reste du produit. L'annulation est dans un `finally` :
     une exception au milieu de la lecture ne doit pas laisser N lignes ouvertes.
     """
-    from ib_async import Option
+    Option = ibkr_gateway.classe('Option')
     ib = gateway.connect()
     contracts = [Option(symbol, expiry, k, right, 'SMART', currency='USD')
                  for k in strikes]

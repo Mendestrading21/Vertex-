@@ -204,7 +204,9 @@ def surface(corps: str, *, titre: str = '', question: str = '', pied: str = '',
     head = ''
     if titre or question or actions:
         head = ('<div class="vx2-card-head"><div>'
-                + (f'<h3 class="vx2-card-title">{_e(titre)}</h3>' if titre else '')
+                #  h2, pas h3 : le titre de carte suit directement le h1 de
+                #  page — un h3 sautait un niveau (heading-order, Lighthouse).
+                + (f'<h2 class="vx2-card-title">{_e(titre)}</h2>' if titre else '')
                 + (f'<p class="vx2-card-question">{_e(question)}</p>' if question else '')
                 + '</div>' + (actions or '') + '</div>')
     return f'<div class="{cls}">{head}{corps}{pied}</div>'

@@ -29,6 +29,7 @@ from __future__ import annotations
 import datetime as _dt
 import re
 import threading
+from vertex.data_sources import ibkr_gateway
 
 #: Fournisseurs MESURES comme servant des depeches sur ce compte. DJNL rend
 #: systematiquement zero et les trois DJ-RT* ne sont pas abonnes : les
@@ -59,7 +60,7 @@ def depeches_pour(symbole: str, n: int = 4, *, gateway=None, jours: int = 3):
     VIDE, et l'appelant ira au repli. Rendre un article vide le ferait
     passer pour servi.
     """
-    from ib_async import Stock
+    Stock = ibkr_gateway.classe('Stock')
     notre = gateway is None
     if notre:
         from .ibkr_gateway import IbkrGateway

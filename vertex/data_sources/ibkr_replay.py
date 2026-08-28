@@ -34,6 +34,7 @@ import json
 import math
 import re
 from pathlib import Path
+from vertex.data_sources import ibkr_gateway
 
 #: Version du format de fixture. Une fixture sans version, ou d'une version que
 #: ce lecteur ne connaît pas, est REFUSÉE : rejouer un format qu'on ne comprend
@@ -464,7 +465,7 @@ def capturer(gateway, symboles=("AAPL", "MSFT"), *, avec_options=True) -> dict:
     formes non identifiantes. La capture et l'anonymisation restent deux gestes
     séparés : mélangés, on ne saurait plus lequel des deux a échoué.
     """
-    from ib_async import Stock
+    Stock = ibkr_gateway.classe('Stock')
 
     ib = gateway.connect()
     #  readonly=True : la façade a ouvert la session avec ce verrou codé en dur.
@@ -509,7 +510,7 @@ def capturer(gateway, symboles=("AAPL", "MSFT"), *, avec_options=True) -> dict:
     #  lisaient traitent l'absence comme « courtier non lu ».
 
     if avec_options:
-        from ib_async import Option
+        Option = ibkr_gateway.classe('Option')
 
         fixture["contrats_options"] = {}
         for c in qualifies:

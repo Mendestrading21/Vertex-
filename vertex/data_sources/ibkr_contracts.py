@@ -4,6 +4,7 @@ Vérifie qu'un symbole résout vers LE bon contrat (devise, bourse, multiplic.) 
 protège contre CONTRACT_MAPPING_ERROR / CURRENCY_MISMATCH / MULTIPLIER_MISMATCH.
 """
 from __future__ import annotations
+from vertex.data_sources import ibkr_gateway
 
 
 def validate_stock_contract(details: dict, symbol: str) -> list[str]:
@@ -29,7 +30,7 @@ def validate_option_contract(details: dict, symbol: str) -> list[str]:
 
 
 def qualify_stock(gateway, symbol: str) -> dict:
-    from ib_async import Stock
+    Stock = ibkr_gateway.classe('Stock')
     ib = gateway.connect()
     contract = Stock(symbol, 'SMART', 'USD')
     qualified = ib.qualifyContracts(contract)

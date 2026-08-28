@@ -20,7 +20,10 @@ try:
 except ImportError:
     pass
 
-from ib_async import IB, Stock, util
+#  Porte unique d'import ib_async (contrôle 018) — comportement identique :
+#  ce module échoue toujours à l'import sans la dépendance, comme avant.
+from vertex.data_sources import ibkr_gateway as _gw_ib
+IB, Stock, util = _gw_ib.classe('IB'), _gw_ib.classe('Stock'), _gw_ib.classe('util')
 
 PAPER_PORT = 7497  # TWS — compte PAPER (simule)
 LIVE_PORT = 7496   # TWS — compte REEL : ne JAMAIS cibler sans decision explicite

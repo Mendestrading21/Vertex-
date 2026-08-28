@@ -5,6 +5,7 @@ import threading
 
 from .models import SOURCE_IBKR, MODE_EOD, ProvenancedValue
 from .provenance import stamp
+from vertex.data_sources import ibkr_gateway
 
 
 def bars_to_provenanced(bars: list[dict], timestamp: str = '') -> ProvenancedValue:
@@ -25,7 +26,7 @@ def bars_to_provenanced(bars: list[dict], timestamp: str = '') -> ProvenancedVal
 
 
 def fetch_daily_bars(gateway, symbol: str, duration: str = '1 Y') -> ProvenancedValue:
-    from ib_async import Stock
+    Stock = ibkr_gateway.classe('Stock')
     ib = gateway.connect()
     contract = Stock(symbol, 'SMART', 'USD')
     ib.qualifyContracts(contract)
@@ -92,7 +93,7 @@ def _contrat(ib, symbole: str):
     « aucune définition de titre »). Préciser la place primaire lève
     l'ambiguïté sans rien supposer du titre.
     """
-    from ib_async import Stock
+    Stock = ibkr_gateway.classe('Stock')
     nom = _forme_ibkr(symbole)
     for essai in (Stock(nom, 'SMART', 'USD'),
                   Stock(nom, 'SMART', 'USD', primaryExchange='NYSE'),
