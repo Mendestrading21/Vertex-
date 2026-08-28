@@ -236,7 +236,7 @@
     },
     updatePosition(id, fields) {
       const list = this.positions();
-      const t = list.find(x => x.id === id); if (!t) return;
+      const t = list.find(x => String(x.id) === String(id)); if (!t) return;
       Object.assign(t, fields || {}); set('myTrades', list);
       VX.bus.emit('vx:position-changed', { sym: t.sym, action: 'update' });
       VX.toast(`Position ${t.sym} modifiée`, 'success');
@@ -245,7 +245,7 @@
        (localStorage → journal). AUCUN ordre n'est envoyé — analyse seule. */
     recordExit(id, exitAmount, note) {
       const list = this.positions();
-      const i = list.findIndex(x => x.id === id); if (i < 0) return;
+      const i = list.findIndex(x => String(x.id) === String(id)); if (i < 0) return;
       const t = list.splice(i, 1)[0];
       const closed = this.closedPositions();
       closed.push({ sym: t.sym, type: t.type, strike: t.strike, exp: t.exp,
@@ -273,7 +273,7 @@
        Différent de recordExit qui journalise une sortie réelle. */
     deletePosition(id) {
       const list = this.positions();
-      const t = list.find(x => x.id === id); if (!t) return false;
+      const t = list.find(x => String(x.id) === String(id)); if (!t) return false;
       set('myTrades', list.filter(x => x.id !== id));
       this._log(t.sym, 'DELETE', 'position retirée du registre', id);
       VX.bus.emit('vx:position-changed', { sym: t.sym, action: 'delete' });
@@ -298,7 +298,7 @@
       VX.toast(`Alerte créée sur ${sym} (${cond} ${level})`, 'success');
     },
     removeAlert(id) {
-      const list = this.alerts(); const a = list.find(x => x.id === id);
+      const list = this.alerts(); const a = list.find(x => String(x.id) === String(id));
       set('vxAlerts', list.filter(x => x.id !== id));
       VX.bus.emit('vx:alert-changed', { sym: a?.sym, active: false });
     },
@@ -390,6 +390,8 @@
   };
   /* Délégation globale : tout élément [data-entity-menu="SYM"] ouvre le menu. */
   document.addEventListener('click', (e) => {
+    const closeTrigger = e.target.closest('[data-close-pos]');
+    if (closeTrigger) { e.preventDefault(); e.stopPropagation(); E.openClosePosition(Number(closeTrigger.dataset.closePos)); return; }
     const posTrigger = e.target.closest('[data-position-menu]');
     if (posTrigger) { e.preventDefault(); e.stopPropagation(); E.openPositionMenu(Number(posTrigger.dataset.positionMenu), posTrigger); return; }
     const trigger = e.target.closest('[data-entity-menu]');
@@ -539,7 +541,7 @@
       document.getElementById('vx-add-next')?.addEventListener('click', () => {
         const val = document.getElementById('vx-add-sym')?.value?.trim().toUpperCase();
         if (!/^[A-Z.\-]{1,7}$/.test(val || '')) { VX.toast('Ticker invalide', 'error'); return; }
-        sym = val; step = 2; render();
+        sym = val; step = dest ? 3 : 2; render();
       });
       document.getElementById('vx-add-sym')?.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') document.getElementById('vx-add-next')?.click();
@@ -557,7 +559,7 @@
      JAMAIS d'ordre. « Clôturer » journalise une sortie réelle (P&L) ; « Supprimer »
      retire une saisie erronée sans rien journaliser. ── */
   E.openEditPosition = function (id) {
-    const t = E.positions().find(x => x.id === id);
+    const t = E.positions().find(x => String(x.id) === String(id));
     if (!t) { VX.toast('Position introuvable', 'error'); return; }
     const isOpt = t.type !== 'STK';
     const per = t.qty ? (isOpt ? t.cost / (t.qty * 100) : t.cost / t.qty) : 0;   // prix unitaire reconstruit
@@ -589,7 +591,7 @@
     });
   };
   E.openClosePosition = function (id) {
-    const t = E.positions().find(x => x.id === id);
+    const t = E.positions().find(x => String(x.id) === String(id));
     if (!t) { VX.toast('Position introuvable', 'error'); return; }
     const invested = (VX.fmt && VX.fmt.price) ? VX.fmt.price(t.cost) : t.cost;
     const body = `
@@ -612,7 +614,7 @@
     });
   };
   E.confirmDeletePosition = function (id) {
-    const t = E.positions().find(x => x.id === id);
+    const t = E.positions().find(x => String(x.id) === String(id));
     if (!t) { VX.toast('Position introuvable', 'error'); return; }
     const desc = `${t.type}${t.strike ? ' ' + t.strike : ''}${t.exp ? ' ' + t.exp : ''}, qté ${t.qty}`;
     VX.shell.openModal('Supprimer la position — ' + t.sym,
@@ -625,7 +627,7 @@
   /* Menu d'actions d'une POSITION précise (id) — surface modifier/clôturer/supprimer,
      puis les actions utiles du titre. Ouvert par [data-position-menu="<id>"]. */
   E.openPositionMenu = function (id, anchorEl) {
-    const t = E.positions().find(x => x.id === id);
+    const t = E.positions().find(x => String(x.id) === String(id));
     if (!t) { VX.toast('Position introuvable', 'error'); return; }
     E._renderMenu([
       { label: 'Modifier la position', run: () => E.openEditPosition(id) },
