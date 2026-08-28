@@ -224,11 +224,26 @@ def make_blueprint(*, opt_job, ibkr_enabled, cotation_repli=None):
     desk_lock = threading.Lock()
     posq_cache = {}      # cotations des trades perso : {key: (ts, data)} — TTL 45 s
 
+    def _demo_exposee_sans_code():
+        """Vrai seulement pour l'instance publique de demonstration."""
+        from vertex.app.config import AUTH_ON as _auth, DEMO_MODE as _demo
+        from vertex.app.exposition import exposition as _expo
+        return bool(_demo and _expo(_auth)['ouvert_au_reseau'] and not _auth)
+
     @bp.route('/api/desk', methods=['GET', 'POST'])
     def api_desk():
         """Synchronisation du desk perso (trades, journal, favoris, capital, simulateur) entre appareils.
         Stockage local dans desk_data.json — dernier écrivain gagne (blob complet + timestamp)."""
         if request.method == 'POST':
+            #  Lot 4 — demo EXPOSEE non persistante : un desk public en
+            #  ecriture est un tableau blanc mondial. La LECTURE reste servie
+            #  (la demo se visite), la demo LOCALE (loopback) continue
+            #  d'ecrire — c'est le mode de travail quotidien. Le refus est
+            #  honnete : ok:false nomme, jamais un faux succes ni une 500.
+            if _demo_exposee_sans_code():
+                return jsonify({'ok': False, 'demo_exposee': True,
+                                'err': 'Demo publique : rien n\'est '
+                                       'enregistre sur ce serveur.'}), 200
             body = request.get_json(force=True, silent=True) or {}
             if not isinstance(body.get('data'), dict) or not body.get('ts'):
                 return jsonify({'ok': False, 'err': 'payload invalide'}), 400
@@ -297,6 +312,11 @@ def make_blueprint(*, opt_job, ibkr_enabled, cotation_repli=None):
     def api_desk_restore():
         """Restaure un snapshot quotidien → desk_data.json (ts=maintenant, donc
         tous les appareils re-tireront cette version). Nom STRICTEMENT validé."""
+        #  Lot 4 — meme garde que l'ecriture : restaurer EST ecrire.
+        if _demo_exposee_sans_code():
+            return jsonify({'ok': False, 'demo_exposee': True,
+                            'err': 'Demo publique : rien n\'est enregistre '
+                                   'sur ce serveur.'}), 200
         name = str((request.get_json(force=True, silent=True) or {}).get('name') or '')
         import re
         #  Deux familles, une seule grammaire de chaque — le nom reste

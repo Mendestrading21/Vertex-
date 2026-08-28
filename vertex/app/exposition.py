@@ -71,6 +71,10 @@ def exposition(auth_on: bool, env=None) -> dict:
     env = os.environ if env is None else env
     lan_demande = env.get('VERTEX_LAN') == '1'
     port_impose = 'PORT' in env
+    #  Le mode demo se lit de l'ENV, pas de la config importee : ce module est
+    #  le proprietaire de la decision de demarrage et doit rester importable
+    #  sans tirer la configuration entiere. La regle est celle de config.py.
+    demo = env.get('DEMO', '1' if env.get('NO_IBKR') == '1' else '0') == '1'
     ouvert = bool(auth_on or lan_demande or port_impose)
     if auth_on:
         motif = MOTIF_VERROU
@@ -89,6 +93,19 @@ def exposition(auth_on: bool, env=None) -> dict:
         #  rien ne demande d'identifiant. Le nommer permet a l'ecran de le dire
         #  au lieu de promettre une protection absente.
         'expose_sans_code': bool(ouvert and not auth_on),
+        #  Lot 4 — le cas dangereux ne DEMARRE plus : un desk PRIVE (non demo)
+        #  joignable du reseau sans code refusait d'etre protege mais pas de
+        #  servir. L'avertissement devient un refus. La demo reste la voie
+        #  publique legitime (et elle n'ecrit pas quand elle est exposee) ;
+        #  le verrou reste la voie protegee ; loopback reste la voie locale.
+        'demarrage_refuse': bool(ouvert and not auth_on and not demo),
+        'raison': (
+            'DEMARRAGE REFUSE : le desk serait joignable du reseau '
+            '(%s) sans authentification, avec un portefeuille prive. '
+            'Trois issues : definir VERTEX_CODE ; lancer en demo (DEMO=1) ; '
+            'ou rester en loopback (retirer VERTEX_LAN/PORT).' % (
+                MOTIF_LAN if lan_demande and not auth_on else MOTIF_PORT)
+        ) if (ouvert and not auth_on and not demo) else '',
     }
 
 

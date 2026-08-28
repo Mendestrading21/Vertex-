@@ -7351,6 +7351,12 @@ def _start_app():
     #  variable non definie. Le comportement d'ecoute est INCHANGE.
     from vertex.app.exposition import exposition as _exposition, phrase as _phrase
     _etat = _exposition(AUTH_ON)
+    #  Lot 4 — un desk PRIVE joignable du reseau sans code ne demarre pas.
+    #  L'avertissement d'hier devient un refus : la phrase nomme les trois
+    #  issues (VERTEX_CODE, DEMO=1, loopback) et le processus sort en erreur.
+    if _etat.get('demarrage_refuse'):
+        print(_etat['raison'])
+        raise SystemExit(2)
     host = _etat['hote']
     print(f'VERTEX -> http://localhost:{port}  ·  IBKR live: {IBKR_ENABLED}  (Ctrl+C pour arreter)')
     print('   ' + _phrase(_etat))
