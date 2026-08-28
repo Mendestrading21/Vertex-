@@ -517,7 +517,6 @@ _CONTENT = """
     <section class="vx-card">
       <div class="vx-card-header"><span class="vx-card-title">Ce qui a changé</span></div>
       <div id="vx-diff">%%LOADING%%</div>
-      <div id="vx-mkt-diff" class="vx-mt2"></div>
     </section>
   </aside>
 </div>
@@ -1109,6 +1108,24 @@ function loadMainChart(scan){
   host.querySelectorAll('[data-mktf]').forEach(b=>b.addEventListener('click',()=>{
     MK_TF=b.dataset.mktf;try{localStorage.setItem('vxDashMkTf',MK_TF)}catch(e){}
     loadMainChart(scan);}));
+}
+
+/* ── « Ce qui a changé » : changes_since_prev du contexte marché (§ jamais
+   inventé — produit par market_context sur DEUX sessions réelles). Mesuré au
+   navigateur : cette carte restait un squelette perpétuel, personne ne la
+   remplissait. Trois états honnêtes : pas de base · rien de notable · liste. ── */
+function loadDiff(scan){
+  const host=$('vx-diff');if(!host)return;
+  const m=((scan||{}).market_ctx)||{};
+  const ch=m.changes_since_prev;
+  if(!Array.isArray(ch)){
+    host.innerHTML=VX.states.empty('Pas de base de comparaison — il faut deux sessions de contexte marché.');
+    return;}
+  if(!ch.length){
+    host.innerHTML=VX.states.empty('Aucun changement notable depuis la dernière session.');
+    return;}
+  host.innerHTML='<ul class="vx-mt1" style="margin:0;padding-left:18px;line-height:1.9">'
+    +ch.slice(0,8).map(c=>'<li>'+VX.esc(String(c))+'</li>').join('')+'</ul>';
 }
 
 /* ── MARCHÉS : indices comparés, rebasés à 0 % (héros 320, col-4) ── */
@@ -1967,7 +1984,7 @@ async function boot(){
   buildAnchors();
   loadBrief();loadRegime();loadRegimeDrivers();loadOpportunities();loadAlerts();loadPortfolio();loadSession();loadNews();loadRoro();
   const scan=await loadStrip();
-  loadMarketGrid(scan);
+  loadMarketGrid(scan);loadDiff(scan);
   loadEssential(scan);loadMainChart(scan);loadCompare(scan);loadYield(scan);
   loadSectorsBlock(scan);loadPulse(scan);loadPulseExtra(scan);loadTopFlop(scan);loadFunnel(scan);
   hashScroll();
