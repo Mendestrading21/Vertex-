@@ -313,12 +313,15 @@
       + '<th>État</th><th>Lecture</th></tr></thead><tbody>' + rows + '</tbody></table></div></div>';
   }
 
-  function afficher(res, sym) {
+  function afficher(res, sym, note) {
     var zone = $('#vx-sim-resultats');
     if (!zone) return;
+    /* h2 (pas h3) : meme regle que vx2.surface — le titre suit le h1 de page
+       (heading-order, lot 28). `note` : la provenance du prix, DITE. */
     zone.innerHTML = '<div class="vx2-surface">'
-      + '<div class="vx2-card-head"><div><h3 class="vx2-card-title">Résultats théoriques — ' + esc(sym) + '</h3>'
-      + '<p class="vx2-card-question">Scénarios, pas prévisions.</p></div></div>'
+      + '<div class="vx2-card-head"><div><h2 class="vx2-card-title">Résultats théoriques — ' + esc(sym) + '</h2>'
+      + '<p class="vx2-card-question">Scénarios, pas prévisions.'
+      + (note ? ' ' + esc(note) : '') + '</p></div></div>'
       + res.bande + res.corps + res.limites + res.provenance + '</div>';
     var av = $('#vx-sim-avance');
     if (av) av.innerHTML = res.avance || '';
@@ -351,13 +354,28 @@
         if (!r.ok) { erreur(d && d.error ? d.error : 'Le moteur a refusé la simulation.'); return; }
         res = rendreOption(d);
       } else {
-        // Action / ETF : une jambe `stock`. La quantité et le prix de référence
-        // sont saisis ; tout le reste est calculé par le moteur multi-jambes.
+        // Action / ETF : une jambe `stock`. La quantité est saisie ; le prix
+        // de référence suit la promesse des Hypothèses de la page : le prix
+        // RÉEL du scan courant. La saisie manuelle PRIME (déclaration
+        // utilisateur) ; sans scan NI saisie, refus — jamais un prix supposé.
         var qte = Number(String(p.quantite).replace(',', '.'));
         var ref = Number(String(p.mid || '').replace(',', '.'));
+        var refSource = ref ? 'saisi' : null;
+        if (!ref) {
+          var prixDuScan = null;
+          try {
+            var scan = await VX.fetch('/scan', { ttl: 120000 });
+            var ligne = ((scan && scan.rows) || []).find(function (r) {
+              return String(r.symbol || '').toUpperCase() === p.sym; });
+            if (ligne && ligne.price != null && isFinite(ligne.price)) prixDuScan = Number(ligne.price);
+          } catch (e) { /* scan indisponible → refus honnête ci-dessous */ }
+          if (prixDuScan) { ref = prixDuScan; refSource = 'scan'; }
+        }
         if (!qte || !ref) {
-          erreur('Une simulation d’action demande une quantité et un prix de référence. '
-            + 'Vertex ne suppose ni l’une ni l’autre.');
+          erreur(!qte
+            ? 'Une simulation d’action demande une quantité de titres.'
+            : 'Prix de référence absent du scan courant pour ' + p.sym
+              + ' — saisis-le, Vertex ne suppose aucun prix.');
           return;
         }
         var r2 = await fetch('/api/options/analyze', {
@@ -366,14 +384,19 @@
           body: JSON.stringify({
             legs: [{ type: 'stock', strike: 0, premium: ref, qty: qte }],
             spot: ref, days: Number(p.dte) || 90, iv: 0.25,
-            sym: p.sym, name: p.sym + ' — position en actions'
+            sym: p.sym, name: p.sym + ' — position en actions ('
+              + (refSource === 'scan' ? 'prix du scan courant' : 'prix saisi')
+              + ' : ' + ref + ' $)'
           })
         });
         var d2 = await r2.json();
         if (!r2.ok) { erreur(d2 && d2.error ? d2.error : 'Le moteur a refusé la simulation.'); return; }
         res = rendreStructure(d2);
       }
-      afficher(res, p.sym);
+      afficher(res, p.sym, (classeActive !== 'option' && typeof refSource !== 'undefined' && refSource)
+        ? (refSource === 'scan' ? 'Prix de référence : prix du scan courant (' + ref + ' $).'
+                                : 'Prix de référence saisi (' + ref + ' $).')
+        : '');
       window.__vxSimDernier = { sym: p.sym, classe: classeActive, res: res };
 
       // Impact portefeuille — seulement si un MONTANT est saisi. Sans montant,
