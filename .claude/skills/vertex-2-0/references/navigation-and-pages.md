@@ -88,7 +88,9 @@ Sous-vues : Radar, Actions, ETF, Options, Anomalies, Catalyseurs. Premier écran
 
 Index : recherche, récents, favoris et comparateur. Dossier : Orientation,
 Graphique, Thèse, Scénarios, Fondamentaux, Technique, Sentiment/News, Options,
-Portefeuille déclaré, Historique. Premier écran : identité/quote,
+Portefeuille déclaré, Stratégies, Historique. `Stratégies` est un laboratoire
+de recherche reproductible défini dans `strategy-research-lab.md`, pas une
+nouvelle page primaire ni une autorité de conseil. Premier écran : identité/quote,
 `AdviceResult`/gates, `DecisionTrace`, graphique dominant et rail
 thèse/risque/invalidation. Aucun second moteur n'est affiché comme autorité.
 
@@ -126,7 +128,11 @@ Sous-vues : À revoir, Watchlist, Opportunités suivies, Positions, Options, Ale
 
 **Question :** la méthode fonctionne-t-elle et est-elle bien appliquée ?
 
-Sous-vues : Synthèse, Journal, Trades réels, Signaux théoriques, Tracking hypothétique, Apprentissages. Premier écran adapté à la population sélectionnée : échantillon, période, benchmark, equity/drawdown et limites. Aucun KPI mélangeant les populations.
+Sous-vues : Synthèse, Journal, Trades réels, Signaux théoriques, Tracking
+hypothétique, Stratégies validées, Apprentissages. Premier écran adapté à la
+population sélectionnée : échantillon, période, benchmark, equity/drawdown et
+limites. `Stratégies validées` ne contient que les résultats issus du contrat
+`StrategyEvidence` avec statut et manifeste. Aucun KPI mélangeant les populations.
 
 ## 11. Vertex IA
 

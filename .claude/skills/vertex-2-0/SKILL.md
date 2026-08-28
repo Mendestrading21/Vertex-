@@ -110,8 +110,12 @@ jobs, données persistées et chemins de rollback. Lire
   [data-and-integrations.md](references/data-and-integrations.md).
 - Décision, IA, outils, mémoire et limites :
   [ai-decision-contract.md](references/ai-decision-contract.md).
+- Recherche, stratégies et robustesse hors échantillon :
+  [strategy-research-lab.md](references/strategy-research-lab.md).
 - Jobs, caches, rapidité et observabilité :
   [automation-performance-observability.md](references/automation-performance-observability.md).
+- Connexions, enveloppes de données et résilience :
+  [connection-and-resilience-matrix.md](references/connection-and-resilience-matrix.md).
 - Sécurité, dépendances et méthodes externes :
   [security-and-supply-chain.md](references/security-and-supply-chain.md).
 - Simulateur : [position-simulator.md](references/position-simulator.md).
@@ -124,6 +128,8 @@ jobs, données persistées et chemins de rollback. Lire
   [components-tables-and-states.md](references/components-tables-and-states.md).
 - Graphiques : [chart-system-final.md](references/chart-system-final.md).
 - Widgets trading : [trading-widget-catalog.md](references/trading-widget-catalog.md).
+- Composition exacte des douze pages :
+  [page-widget-intelligence-blueprint.md](references/page-widget-intelligence-blueprint.md).
 - Opportunités, analyse, options, portefeuille, performance, calendrier et IA :
   lire la référence de domaine correspondante.
 - Français, accessibilité et responsive :

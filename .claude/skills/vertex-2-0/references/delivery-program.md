@@ -63,6 +63,10 @@ redémarrage, arrêt propre et tests de panne.
 
 Logs structurés sans données privées, métriques/traces bornées, health/ready,
 latence p50/p95/p99, budgets payload/cache/JS/CSS et charge reproductible.
+Produire aussi la matrice
+source→capacité→snapshot→consommateurs→fallback et justifier explicitement
+l'absence d'infrastructure distribuée nouvelle, ou documenter le seuil et
+l'ADR qui la rendent nécessaire.
 
 ### Lot 9 — Convergence du runtime
 
@@ -91,11 +95,23 @@ Un entonnoir point-in-time, budgets à chaque étage, preuves comparables,
 déduplication, calendrier et statut explicable. Aucun candidat ne contourne les
 gates canoniques.
 
+### Lot 12A — Laboratoire de stratégies reproductible
+
+Créer les contrats `StrategySpec` et `StrategyEvidence`, le manifeste
+point-in-time, les benchmarks et le registre des essais. Prouver absence de
+look-ahead/survivorship, coûts/slippage/liquidité, walk-forward,
+purge/embargo, stabilité des paramètres/régimes, replay déterministe et
+séparation stricte d'avec le conseil canonique. Le laboratoire reste une
+sous-vue d'Analyse/Simulateur ; aucune connexion d'exécution et aucun
+classement sur un ratio unique.
+
 ### Lot 13 — Options et simulateur multi-actifs
 
 Unifier chaîne, identité contrat, unités, filtres, Greeks, volatilité, GEX,
 scénarios et recommandations. Consolider les trois simulateurs en un moteur
 Actions/ETF/Options/Forex, séparer prévision, estimation et stress, sans ordre.
+Valider pricing, Greeks, multiplicateurs, devises et tolérances sur golden cases
+et propriétés ; une bibliothèque externe n'entre que dans une PR moteur dédiée.
 
 ## Phase D — Produit Black Glass page par page
 
@@ -107,6 +123,8 @@ responsive, états et Design System interne. Résoudre la collision
 `/options/<sym>`, rendre Journal accessible à 390 px et arbitrer le routeur
 persistant avant la cosmétique. Fusionner les deux Design Systems seulement
 après migration de leurs consommateurs. Aucune logique financière dans l'UI.
+Figer aussi le registre canonique de widgets, drawers, périodes, sources,
+états et préférences avant de composer les pages.
 
 ### Lot 15 — Aujourd'hui et Calendrier
 

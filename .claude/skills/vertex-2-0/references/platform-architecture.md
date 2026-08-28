@@ -27,6 +27,11 @@ Sources réelles
 → performance + apprentissages confirmés humainement
 ```
 
+Le laboratoire de stratégies est un consommateur isolé de snapshots
+point-in-time. Ses résultats ne modifient ni `AdviceResult`, ni portefeuille,
+ni alerte active sans une décision de produit et une validation humaine
+explicites. Lire `strategy-research-lab.md`.
+
 ## Objets transversaux
 
 - `Instrument` : action, ETF, indice, option, devise ou autre actif reconnu.
@@ -65,3 +70,6 @@ ne persiste de logique financière.
 - Un provider ne devient jamais silencieusement la vérité unique.
 - Les données utilisateur et signaux théoriques ne partagent pas un KPI sans séparation explicite.
 - Les pages composent des vues ; elles ne possèdent pas les stores ni la logique métier.
+- Une dépendance de recherche/backtest ne possède jamais une connexion broker.
+- La complexité distribuée n'entre qu'après mesure ; le runtime Flask reste
+  la cible jusqu'à ce qu'un seuil et un ADR prouvent le besoin de migration.

@@ -92,7 +92,7 @@ preuve du contrat ne suffit pas.
 072. Aucune règle financière, seuil, score ou verdict n'est recalculé en JavaScript.
 073. GET est sans effet de bord ; gel, journalisation et écriture utilisent une action explicite.
 074. Les conseils sont rejouables de façon déterministe depuis leur snapshot.
-075. Toute probabilité affiche calibration hors échantillon, taille, version et incertitude ou reste une estimation.
+075. Toute probabilité affiche calibration hors échantillon, taille, version, incertitude et test temporel ou reste une estimation.
 
 ## F. Options et Simulateur — 076 à 090
 
@@ -102,8 +102,8 @@ preuve du contrat ne suffit pas.
 079. Données absentes ne sont jamais remplacées par zéro ou une Greek inventée.
 080. Fraction/percent IV et prime par action/par contrat ne reposent sur aucune heuristique ambiguë.
 081. Term structure, skew, surface et GEX exposent méthode, source et couverture.
-082. Les mandats DTE, stratégie, risque et revue ne se contredisent plus.
-083. Une stratégie non supportée ou interdite n'est jamais proposée par un moteur legacy.
+082. Les mandats DTE, stratégie, risque et revue ne se contredisent plus ; leurs populations et horizons sont explicites.
+083. Toute stratégie possède point-in-time, benchmark, coûts, slippage, walk-forward, stabilité et statut ; une stratégie non supportée n'est jamais proposée.
 084. Les trois surfaces de simulation sont consolidées ou clairement non concurrentes.
 085. Actions, ETF, Options et Forex conservent leurs paramètres et unités propres.
 086. Montant, quantité, effet de levier, multiplicateur et devise sont explicitement distingués.
@@ -125,7 +125,7 @@ preuve du contrat ne suffit pas.
 099. Chaque affirmation externe critique conserve une citation consultable et datée.
 100. Les publications officielles priment sur éditorial, alerte et interprétation IA.
 101. Les alertes TradingView déclenchent une réévaluation, jamais un ordre.
-102. News et recherches sont dédupliquées, bornées, sourcées et mises en cache.
+102. News, recherches et données externes sont dédupliquées, bornées, validées par schéma, sourcées et mises en cache.
 103. Aucune collecte IA automatique ne révèle implicitement les holdings.
 104. Mémoire et journal ont rétention, consentement et suppression explicites.
 105. L'IA reste utilisable en fallback déterministe quand le fournisseur est absent.
@@ -144,7 +144,7 @@ preuve du contrat ne suffit pas.
 115. Aucune bordure néon permanente, arc-en-ciel, esthétique casino ou template SaaS générique.
 116. Geist et Geist Mono ont fallbacks, chiffres tabulaires et rendu net HiDPI.
 117. Boutons, filtres, champs, badges, tables, drawers et états ont un propriétaire visuel unique.
-118. Chaque graphique expose question, source, unité, période, tooltip et fallback tabulaire.
+118. Chaque graphique expose question, source, unité, période, population, tooltip et fallback tabulaire.
 119. Loading, empty, partial, stale, delayed, offline, demo et error sont conçus.
 120. Aucun widget décoratif ou KPI redondant ne subsiste sans décision utile.
 

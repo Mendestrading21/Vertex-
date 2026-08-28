@@ -22,6 +22,10 @@ Avant toute dépendance : vérifier version, licence, attribution, maintenance, 
 | [Lab49 Value Flash](https://github.com/lab49/react-value-flash) | MIT | motif de flash temporaire à la variation | reprendre le motif en JS/CSS natif ; pas React dans Vertex |
 | [lightweight-charts-python](https://github.com/louisnw01/lightweight-charts-python) | MIT + obligations du moteur TradingView | multi-pane, toolbox, événements et intégration Python | référence d'intégration ; ne pas ajouter un wrapper sans besoin prouvé |
 | [QuantStats](https://github.com/ranaroussi/quantstats) | Apache-2.0 | tear sheet, equity, drawdown, heatmap mensuelle, distributions | formes seulement ; ne pas importer ses calculs dans l'UI |
+| [skfolio](https://github.com/skfolio/skfolio) | BSD-3-Clause | optimisation portefeuille, stress, walk-forward et validation purgée | candidat moteur de recherche séparé ; aucun calcul côté UI |
+| [PyBroker](https://github.com/edtechre/pybroker) | Apache-2.0 constaté dans le dépôt | walk-forward, slippage, bootstrap et diagnostics de stratégie | inspiration moteur et tests ; aucune exécution broker |
+| [QuantLib](https://github.com/lballabio/QuantLib) | licence QuantLib permissive à auditer précisément | pricing, Greeks et cas de validation numériques | référence/golden oracle possible dans un lot moteur isolé |
+| [options_portfolio_backtester](https://github.com/lambdaclass/options_portfolio_backtester) | MIT | sweeps options, scénarios et couvertures historiques | inspiration analytique ; vérifier point-in-time et couverture |
 | [VolVisualizer](https://github.com/GBERESEARCH/volvisualizer) | MIT | surfaces IV, term structure et skew | formes seulement avec sorties Vertex existantes |
 | [Ghostfolio](https://github.com/ghostfolio/ghostfolio) | AGPL-3.0 | allocation, portefeuille, holdings, performance | inspiration visuelle uniquement sans revue juridique dédiée |
 | [FreqUI](https://github.com/freqtrade/frequi) | GPL-3.0 | tables de trades, états live, P&L et monitoring | inspiration uniquement ; aucun code copié |
@@ -92,6 +96,15 @@ Avant toute dépendance : vérifier version, licence, attribution, maintenance, 
 - `SetupBreakdown` : table/barres par setup, régime, secteur ou erreur déclarée.
 - `JournalTimeline` : décision, exécution déclarée, résultat, notes et pièces liées.
 
+### Stratégies et robustesse
+
+- `StrategyMatrix` : variantes, benchmark, statut, coût, risque et robustesse.
+- `WalkForwardTimeline` : fenêtres train/validation/test, purge et embargo.
+- `ParameterStabilityMap` : sensibilité, zones stables et échantillon.
+- `RegimeBreakdown` : contribution par régime avec population.
+- `FailureLedger` : essais rejetés, biais, changements et limites.
+- `TradeDiagnostics` : MFE/MAE, durée, turnover et coûts si canoniques.
+
 ### Calendrier, alertes et système
 
 - `SessionTimeline` : maintenant, prochain, fuseau et importance.
@@ -127,6 +140,7 @@ Avant toute dépendance : vérifier version, licence, attribution, maintenance, 
 | Marchés | MarketHeatmap ou BreadthBoard | PriceWorkbench, RankedBars, DataLedger |
 | Opportunités | OpportunityRankTable | funnel, MiniSpark, EvidenceMatrix |
 | Analyse | PriceWorkbench + ThesisRail | DecisionTrace, ScenarioFan, EvidenceMatrix |
+| Analyse — Stratégies | StrategyMatrix | WalkForwardTimeline, ParameterStabilityMap, FailureLedger |
 | Options | OptionChainGrid | TermStructure, SmileSkew, GexMap, ContractDrawer |
 | Simulateur | ScenarioComposer + ScenarioCompare | Payoff, SpotTimeHeatmap, PortfolioImpact, AssumptionLedger |
 | Portefeuille | PortfolioSnapshot + PositionTable | AllocationTreemap, CorrelationHeatmap, ContributionBars |

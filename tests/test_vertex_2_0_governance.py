@@ -94,3 +94,45 @@ def test_autopilot_requires_runtime_truth_before_page_cutover():
     assert "scripts/audit_runtime.py" in prompt
     assert "une redirection ou une 404" in prompt
     assert "Ne supprime Journal" in prompt
+
+
+def test_autopilot_requires_page_strategy_and_connection_contracts():
+    prompt = (SKILL / "templates/claude-autopilot-prompt.md").read_text(
+        encoding="utf-8"
+    )
+    for contract in (
+        "WORK_MANIFEST",
+        "PAGE_CONTRACT",
+        "point-in-time",
+        "walk-forward",
+        "N'ajoute ni Redis",
+        "Chaque dépendance ou méthode GitHub est une candidature",
+    ):
+        assert contract in prompt
+
+
+def test_page_blueprint_covers_the_twelve_target_pages():
+    blueprint = (
+        SKILL / "references/page-widget-intelligence-blueprint.md"
+    ).read_text(encoding="utf-8")
+    for page in (
+        "Aujourd'hui", "Calendrier", "Marchés", "Opportunités", "Analyse",
+        "Options", "Simulateur", "Portefeuille", "Suivi", "Performance",
+        "Vertex IA", "Système",
+    ):
+        assert f"| {page} |" in blueprint
+
+
+def test_strategy_lab_is_research_only_and_anti_leakage():
+    lab = (SKILL / "references/strategy-research-lab.md").read_text(
+        encoding="utf-8"
+    )
+    for invariant in (
+        "point-in-time",
+        "look-ahead",
+        "survivorship",
+        "walk-forward",
+        "purger/embargo",
+        "transforme aucun backtest en ordre",
+    ):
+        assert invariant in lab

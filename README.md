@@ -99,6 +99,11 @@ python -m pytest tests/test_no_orders.py -q
 Claude Code doit utiliser exclusivement `/vertex-2-0`. Le skill maître est
 `.claude/skills/vertex-2-0/SKILL.md`; il fait converger progressivement le
 runtime 1.0 vers la plateforme 2.0 sans présenter la cible comme déjà livrée.
+Il contient désormais la composition des douze pages et de leurs widgets, le
+laboratoire de stratégies reproductible, la matrice de connexions/résilience
+et le protocole Autopilot lot par lot. Ces références définissent des contrats
+et des portes d'adoption ; elles n'installent aucune dépendance ni ne déclarent
+une capacité absente comme disponible.
 
 ## Documentation active
 

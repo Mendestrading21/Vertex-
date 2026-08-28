@@ -83,6 +83,18 @@ de contexte possède un manifeste des éléments omis. Les prompts et réponses 
 contiennent ni secret ni donnée de compte ; le portefeuille est exclu par
 défaut et minimisé seulement après action explicite.
 
+La gateway ne reçoit jamais une page HTML ou un cache provider brut lorsqu'un
+packet normalisé existe. Elle utilise une allowlist d'outils en lecture seule,
+valide chaque retour avant composition et journalise versions de prompt,
+schéma, modèle, outils, validations et statut de grounding. Aucun « comité
+d'agents » ne transforme plusieurs formulations du même modèle en consensus.
+
+Maintenir un jeu d'évaluation versionné couvrant : fidélité numérique,
+citations, contradictions, données manquantes/stale, unités incompatibles,
+prompt injection dans un document, source indisponible, packet tronqué,
+question hors périmètre et refus d'action financière. Une amélioration IA est
+acceptée sur résultats comparés, latence et coût, pas sur impression visuelle.
+
 ## Pureté et temps de réponse
 
 Une lecture GET ne journalise, ne mémorise et ne modifie rien. Geler une

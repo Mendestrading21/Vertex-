@@ -91,6 +91,30 @@ https://github.com/github/codeql,
 https://github.com/pypa/pip-audit et
 https://github.com/ossf/scorecard.
 
+## Recherche quantitative et contrats de données
+
+Sources qualifiées :
+
+- [skfolio](https://github.com/skfolio/skfolio) : API inspirée de scikit-learn,
+  optimisation, risque, stress et méthodes de validation chronologique/purgée ;
+- [PyBroker](https://github.com/edtechre/pybroker) : walk-forward, slippage,
+  bootstrap et diagnostics de stratégies ;
+- [vectorbt](https://github.com/polakowo/vectorbt) : exploration vectorisée à
+  grande échelle, à confiner au sandbox pour limiter l'overfit ;
+- [QuantLib](https://github.com/lballabio/QuantLib) : moteurs de pricing et jeux
+  de tests numériques servant de référence possible ;
+- [QuantStats](https://github.com/ranaroussi/quantstats) et
+  [QuantInvestStrats](https://github.com/ArturSepp/QuantInvestStrats) :
+  performance, risque et formes de factsheets ;
+- [Pandera](https://github.com/unionai-oss/pandera) : validation de DataFrames,
+  à comparer à des validateurs locaux car son coût peut être significatif ;
+- [Hypothesis](https://github.com/HypothesisWorks/hypothesis) : tests par
+  propriétés et réduction automatique des cas financiers hostiles.
+
+Lire `strategy-research-lab.md` pour les règles anti-look-ahead, coûts,
+walk-forward, biais, stabilité et acceptation. Ces projets ne forment pas une
+stack à installer ensemble.
+
 ## Frontend Design Principles
 
 Source : https://github.com/joshuadavidthomas/agent-skills/tree/main/frontend-design-principles
@@ -119,6 +143,9 @@ Retenu : explorer le monde réel du produit, nommer les défauts à rejeter, tok
 | Unités financières | dimensional analysis + golden/property tests | unité, conversion, tolérance et source documentées |
 | Supply chain | pip-audit + Scorecard + revue des skills | version/SHA, licence, permissions, hooks et plan de retrait |
 | Performance | Lighthouse CI + Locust + traces | baseline p50/p95/p99, budgets et scénario reproductible |
+| Stratégies | skfolio/PyBroker comme méthodes + moteur local | point-in-time, walk-forward, coûts, benchmark, stabilité et replay |
+| Calculs options | QuantLib comme référence potentielle | golden cases, unités, Greeks, tolérances et modèle nommé |
+| Contrats tabulaires | validation locale puis Pandera si justifié | schéma hostile, coût p95 et plan de retrait |
 
 La quantité de skills installés n'est jamais un objectif. Une méthode entre
 dans le skill maître seulement si elle améliore un contrôle Vertex précis sans
