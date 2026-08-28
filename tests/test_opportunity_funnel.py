@@ -3,8 +3,11 @@ from vertex.opportunities import funnel as F
 
 
 def _row(score, verdict='ACHETER', rr_ok=True, **kw):
+    #  Lot 12 : régime CONNU par défaut — le gate canonique « régime inconnu →
+    #  pas de nouveau risque » est entré dans l'entonnoir (couvert par
+    #  test_entonnoir_lot12) ; ce banc teste les AUTRES conditions.
     r = {'symbol': kw.get('symbol', 'TST'), 'score': score, 'verdict': verdict,
-         'rr_ok': rr_ok}
+         'rr_ok': rr_ok, 'regime': kw.pop('regime', 'TREND')}
     r.update(kw)
     return r
 
