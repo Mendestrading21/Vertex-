@@ -54,9 +54,11 @@ fonds, deux filets, deux rayons, et un pixel de rembourrage d'écart entre
   132 RÉUSSI · 8 partiels · 9 non applicables · 0 à corriger · 1 décision
   humaine = 150
 
-Le seul point restant est un **jugement humain** (045, test de distance) : les
-captures sont fournies pour qu'il puisse être porté ; il ne l'est pas à la
-place de l'humain.
+Le seul `EN ATTENTE` est le **contrôle 150** — la validation humaine du commit
+candidat, qui ne peut pas être portée ici : rien n'a été fusionné. Deux autres
+(045, test de distance ; 119, test de permutation) sont `NON APPLICABLE —
+jugement humain` : ils se vérifient à l'œil, sur les captures, qui sont
+fournies.
 
 ## La seconde passe n'a pas décoré — elle a retiré des mensonges
 

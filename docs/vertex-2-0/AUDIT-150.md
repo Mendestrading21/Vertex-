@@ -271,9 +271,11 @@ s'aligner. Ce qui a été unifié, c'est l'**implémentation**, pas les 138 noms
 d'appel : les trois familles rendent la même tuile, mesurée, et seule la taille
 du chiffre varie.
 
-Le seul point restant est une **décision humaine** (test de distance, 045) : les
-captures sont fournies pour qu'elle puisse être portée ; elle ne l'est pas à la
-place de l'humain.
+Le seul `EN ATTENTE` est le **contrôle 150** : la validation humaine du commit
+candidat, qui ne peut par définition pas être portée ici — rien n'a été fusionné.
+Deux autres contrôles (045, test de distance ; 119, test de permutation) sont
+`NON APPLICABLE — jugement humain` : ils se vérifient à l'œil, sur les captures,
+qui sont fournies. Je ne porte pas ce jugement à la place de l'humain.
 
 ### Ce que la seconde passe a réellement corrigé
 
