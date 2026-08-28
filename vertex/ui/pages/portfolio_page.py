@@ -496,7 +496,7 @@ async function renderTeam(){
           <div class="vx-flex" style="justify-content:flex-end;gap:.3rem;margin-top:6px">
             <button class="vx-btn vx-btn-sm vx-btn-ghost" data-inspect="${t.sym}" title="Aperçu rapide">Aperçu</button>
             <button class="vx-btn vx-btn-sm vx-btn-ghost" data-open-analysis="${t.sym}">Analyser</button>
-            <button class="vx-btn vx-btn-icon vx-btn-ghost" data-entity-menu="${t.sym}" aria-label="Actions ${t.sym}">⋯</button></div>
+            <button class="vx-btn vx-btn-icon vx-btn-ghost" data-position-menu="${t.id}" aria-label="Actions position ${t.sym}">⋯</button></div>
         </div>`;}).join('')+'</div>':'<div class="vx-meta" style="padding:6px 0">— aucune position dans ce rôle —</div>'}
     </section>`).join('');
   /* Treemap d'allocation (§20 — remplace le donut seul) : taille = poids, couleur = P&L */
@@ -648,7 +648,7 @@ async function renderPositions(){
         <td><div class="vx-row-actions">
           <button class="vx-btn vx-btn-sm vx-btn-ghost" data-open-analysis="${t.sym}">Analyse</button>
           <button class="vx-btn vx-btn-sm" data-close-pos="${t.id}">Clôturer</button>
-          <button class="vx-btn vx-btn-icon vx-btn-ghost" data-entity-menu="${t.sym}" aria-label="Plus">⋯</button>
+          <button class="vx-btn vx-btn-icon vx-btn-ghost" data-position-menu="${t.id}" aria-label="Actions position ${t.sym}">⋯</button>
         </div></td></tr>`;}).join('')}</tbody></table></div>`
       :VX.states.empty('Aucune position '+g.toLowerCase()+'.')}
     </section>`).join('')
@@ -811,7 +811,7 @@ async function renderOptions(){
       <td data-label="Stop">${VX.fmt.nd(t.entrySnap&&t.entrySnap.stop)}</td>
       <td><div class="vx-row-actions">
         <button class="vx-btn vx-btn-sm vx-btn-primary" data-opt-analyze="${t.id}">Analyser</button>
-        <button class="vx-btn vx-btn-icon vx-btn-ghost" data-entity-menu="${t.sym}" aria-label="Plus">⋯</button>
+        <button class="vx-btn vx-btn-icon vx-btn-ghost" data-position-menu="${t.id}" aria-label="Actions position ${t.sym}">⋯</button>
       </div></td></tr>`;}).join('')}</tbody></table></div>
     <div class="vx-card-footer">${VX.updateIndicator(window.__pfTs||null,window.__pfLive?'IBKR/desk':'desk (repli)',window.__pfLive?'live':'fallback')}
       · Greeks agrégés affichés uniquement avec IBKR (jamais estimés en agrégat)</div></section>`;
