@@ -1011,7 +1011,8 @@ def _ibkr_opt_worker():
     try:
         import asyncio
         asyncio.set_event_loop(asyncio.new_event_loop())
-        from ib_async import IB, Stock, Option, ScannerSubscription
+        from vertex.data_sources import ibkr_gateway as _gw_ib
+        IB, Stock, Option, ScannerSubscription = (_gw_ib.classe(n) for n in ('IB', 'Stock', 'Option', 'ScannerSubscription'))
         ib = IB()
         # ⛑️ ANTI-BLOCAGE : borne TOUTES les requêtes synchrones ib_async
         # (qualifyContracts/reqTickers/reqSecDefOptParams/…). Sans elle, un TWS
@@ -2287,7 +2288,8 @@ def _quotes_worker():
     while True:
         try:
             asyncio.set_event_loop(asyncio.new_event_loop())
-            from ib_async import IB, Stock
+            from vertex.data_sources import ibkr_gateway as _gw_ib
+            IB, Stock = _gw_ib.classe('IB'), _gw_ib.classe('Stock')
             ib = IB()
             ok = False
             for port in _ibkr_link.ordre_des_ports():
@@ -2435,7 +2437,8 @@ def _indices_loop():
     while True:
         try:
             asyncio.set_event_loop(asyncio.new_event_loop())
-            from ib_async import IB, Index, CFD
+            from vertex.data_sources import ibkr_gateway as _gw_ib
+            IB, Index, CFD = _gw_ib.classe('IB'), _gw_ib.classe('Index'), _gw_ib.classe('CFD')
             ib = IB()
             ok = False
             for port in _ibkr_link.ordre_des_ports():

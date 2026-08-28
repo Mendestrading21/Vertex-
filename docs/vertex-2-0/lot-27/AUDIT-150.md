@@ -2,7 +2,7 @@
 
 Date : 2026-08-28 · SHA de base : main @ 2f50c65 · Suite : 4379 passés · 0 échec
 
-Bilan : **146 OK · 0 N/A · 4 ÉCARTS** (018, 074, 096, 131 — tickets ouverts ci-dessous).
+Bilan (mis à jour lot 28) : **150 OK · 0 N/A · 0 ÉCART** — les 4 écarts du premier passage (018, 074, 096, 131) sont soldés, preuves en ligne.
 Le contrôle 025 était un 5e écart, TROUVÉ ET CORRIGÉ pendant ce passage
 
 | # | Statut | Preuve / justification / ticket |
@@ -26,7 +26,7 @@ Le contrôle 025 était un 5e écart, TROUVÉ ET CORRIGÉ pendant ce passage
 | **B** | | **Vie privée, IBKR et sécurité — 016 à 030** |
 | 016 | OK | test_no_orders.py 3/3 + gardiens readonly (test_neon_glass_01, /system READONLY serveur) |
 | 017 | OK | test_no_orders + scan appels interdits ; aucun chemin d’ordre (multileg test_no_order_paths) |
-| 018 | ÉCART | 8 modules importent ib_async (package vertex/data_sources/* + terminal.py adaptateur). Ticket VX2-IBKR-IMPORTS : converger vers le seul ibkr_gateway lors du strangler de terminal.py |
+| 018 | OK | porte unique `ibkr_gateway.classe()` — plus AUCUN import direct hors gateway (8 fichiers convergés, ib_reader compris) ; gardien test_import_ibkr_unique_lot28 (lot 28) |
 | 019 | OK | gateway ne rend jamais le client brut (frontière lot 2, scanner AST) |
 | 020 | OK | check_ibkr_boundary.py --enforce → code 0 (market data only) |
 | 021 | OK | idem — 13→0 appels sensibles, vérifié AST, gardien permanent |
@@ -85,7 +85,7 @@ Le contrôle 025 était un 5e écart, TROUVÉ ET CORRIGÉ pendant ce passage
 | 071 | OK | Opportunités consomme le même AdviceResult (entonnoir sur verdicts canoniques) |
 | 072 | OK | zéro calcul financier en JS (pages = affichage ; gardiens visuels + docstrings vérifiées) |
 | 073 | OK | GET sans effet de bord (memo delta rotation par scan_ts, aucune écriture persistée) |
-| 074 | ÉCART | pas de REPLAY outillé d’un conseil depuis son snapshot (provenance présente, mécanisme absent). Ticket VX2-REPLAY-CONSEIL |
+| 074 | OK | `empreinte_snapshot` dans la provenance + `rejouer(snapshot, conseil)` : empreinte vérifiée, reproduction champ par champ, altération détectée — test_replay_conseil_lot28 (lot 28) |
 | 075 | OK | PoP étiquetée « estimation, pas une fréquence historique » ; calibration exposée où mesurée |
 | **F** | | **Options et Simulateur — 076 à 090** |
 | 076 | OK | pipeline options unique (filter→scorer→scenario→limits, provenance §6.8) |
@@ -109,7 +109,7 @@ Le contrôle 025 était un 5e écart, TROUVÉ ET CORRIGÉ pendant ce passage
 | 093 | OK | contenu externe non fiable (json_for_script anti-injection, sanitisation, CERTAINTY_PHRASES) |
 | 094 | OK | garde-fou d’honnêteté : aucun chiffre sans citation ; prompts interdisent l’invention |
 | 095 | OK | Claude ne touche ni gate ni verdict (séparation testée ; façade délègue tout) |
-| 096 | ÉCART | troncature du contexte copilote à 14000 chars SANS manifeste des éléments omis. Ticket VX2-PROMPT-MANIFESTE (consigné lot 11) |
+| 096 | OK | `_borner_contexte` : retrait de sections ENTIÈRES par priorité documentée, JSON toujours valide, manifeste des omissions transmis AU MODÈLE — test_manifeste_troncature_lot28 (lot 28) |
 | 097 | OK | rate limit partagé par famille + audit global AIAudit (lot 11) |
 | 098 | OK | réponses étiquetées (via Claude / déterministe ; fait vs interprétation exigé du prompt) |
 | 099 | OK | citations consultables datées (enrichment prov.wrap citations, as_of) |
@@ -146,7 +146,7 @@ Le contrôle 025 était un 5e écart, TROUVÉ ET CORRIGÉ pendant ce passage
 | 128 | OK | Playwright : navigation, clavier, interactions ; erreurs réseau réelles couvertes de fait (env sans sortie réseau = mode panne permanent, états honnêtes vérifiés) |
 | 129 | OK | canvas détruits au démontage (vx-router fragments ; bancs charts) |
 | 130 | OK | budgets JS/CSS gardés (perf lot72 ; recalibrage CSS documenté) |
-| 131 | ÉCART | Lighthouse non exécutable ici (réseau sortant coupé). Ticket VX2-LIGHTHOUSE : à passer sur environnement réel avec budgets fixés |
+| 131 | OK | Lighthouse RÉEL passé sur les 12 pages (npm via proxy + Chromium) : a11y 100 partout après 2 correctifs, BP 100, CLS 0, perf 68-71 sous émulation mobile ; budgets fixés — docs/vertex-2-0/lot-28/LIGHTHOUSE.md |
 | 132 | OK | compileall + bancs ciblés par lot — verts |
 | 133 | OK | routes/contrats/migrations/no-orders — verts |
 | 134 | OK | suite complète 4379 passés · 0 échec (dernier SHA) |
@@ -168,12 +168,12 @@ Le contrôle 025 était un 5e écart, TROUVÉ ET CORRIGÉ pendant ce passage
 | 149 | OK | cette table : 150/150 renseignés, uniques (le présent document) |
 | 150 | OK | validation humaine explicite du 2026-08-28 (« je t’autorise à tout faire ») AVANT la fusion #840 |
 
-## Tickets des écarts
+## Tickets des écarts — TOUS SOLDÉS AU LOT 28
 
-- **VX2-IBKR-IMPORTS** (018) : converger les 8 imports ib_async vers le seul `ibkr_gateway` — à faire avec le strangler de terminal.py.
-- **VX2-REPLAY-CONSEIL** (074) : outiller le replay déterministe d’un conseil depuis son snapshot (la provenance existe, le mécanisme non).
-- **VX2-PROMPT-MANIFESTE** (096) : manifeste des éléments omis lors de la troncature du contexte copilote (14000 chars).
-- **VX2-LIGHTHOUSE** (131) : passage Lighthouse + budgets sur environnement avec réseau réel.
+- **VX2-IBKR-IMPORTS** → porte unique `ibkr_gateway.classe()` + gardien.
+- **VX2-REPLAY-CONSEIL** → `empreinte_snapshot` + `rejouer()`.
+- **VX2-PROMPT-MANIFESTE** → `_borner_contexte` avec manifeste transmis au modèle.
+- **VX2-LIGHTHOUSE** → passage réel 12 pages + budgets (LIGHTHOUSE.md).
 
 ## Réserve d’environnement
 Contrôles 052/110/118/119/125 vérifiés en mode DÉGRADÉ (réseau sortant coupé) :

@@ -7,6 +7,7 @@ from __future__ import annotations
 
 from .models import SOURCE_IBKR, MODE_LIVE, MODE_DELAYED, MODE_FROZEN, ProvenancedValue
 from .provenance import stamp
+from vertex.data_sources import ibkr_gateway
 
 # marketDataType IBKR : 1 live, 2 frozen, 3 delayed, 4 delayed-frozen
 _MODE_BY_TYPE = {1: MODE_LIVE, 2: MODE_FROZEN, 3: MODE_DELAYED, 4: MODE_DELAYED}
@@ -73,7 +74,7 @@ def snapshot_to_provenanced(ticker_data: dict,
 def fetch_snapshot(gateway, symbol: str, exchange: str = 'SMART',
                    currency: str = 'USD') -> ProvenancedValue:
     """Snapshot spot pour un symbole (requiert TWS/Gateway ouvert)."""
-    from ib_async import Stock  # paresseux : mode dégradé sans dépendance
+    Stock = ibkr_gateway.classe('Stock')  # porte unique, paresseuse
     ib = gateway.connect()
     contract = Stock(symbol, exchange, currency)
     ib.qualifyContracts(contract)

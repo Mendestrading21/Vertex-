@@ -12,6 +12,18 @@ import threading
 
 from vertex.data_sources import ibkr_link
 
+
+def classe(nom: str):
+    """L'UNIQUE porte d'import de ib_async (contrôle 018 de l'audit-150).
+
+    Toute classe ib_async (Stock, Option, Index, CFD, IB,
+    ScannerSubscription…) s'obtient ICI, jamais par un import direct —
+    gardien : tests/test_import_ibkr_unique_lot28.py. Import paresseux :
+    l'application démarre et fonctionne sans la dépendance (mode dégradé).
+    """
+    import ib_async
+    return getattr(ib_async, nom)
+
 # Timeout anti-blocage : ne pas retirer (un worker IBKR bloqué gèle l'app).
 REQUEST_TIMEOUT_S = 45
 
@@ -46,7 +58,7 @@ class IbkrGateway:
         Le port est CHERCHÉ quand il n'est pas imposé : lancer TWS doit suffire,
         sans variable d'environnement ni redémarrage.
         """
-        from ib_async import IB  # import ici pour le mode dégradé sans dépendance
+        IB = classe('IB')     # porte unique, paresseuse (mode dégradé sans dépendance)
         with self._lock:
             if self._ib is not None and self._ib.isConnected():
                 return self._ib

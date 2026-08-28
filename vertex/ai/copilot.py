@@ -108,6 +108,50 @@ def build_context(scan_state, symbol=None, avec_positions=False):
     return ctx
 
 
+#  Ordre de SACRIFICE du contexte quand le budget de prompt est dépassé :
+#  du moins essentiel au plus essentiel. `detail` et `positioning` (les
+#  chiffres du titre questionné) partent en dernier recours seulement.
+_ORDRE_SACRIFICE = ('postmortem', 'positions', 'flow', 'synthesis',
+                    'digest', 'positioning', 'detail')
+
+
+def _borner_contexte(ctx, max_chars=14000):
+    """Borne le contexte par RETRAIT DE SECTIONS ENTIÈRES, jamais au couteau.
+
+    Contrôle 096 de l'audit-150 : l'ancienne troncature `json.dumps(...)[:N]`
+    coupait le JSON en plein milieu (payload invalide) sans dire ce qui
+    manquait. Ici le JSON reste VALIDE et le manifeste des éléments omis est
+    transmis AU MODÈLE — il peut répondre « donnée non transmise » au lieu
+    d'inventer. Retourne (payload, elements_omis)."""
+    def _dump(d):
+        return json.dumps(d, ensure_ascii=False, default=str)
+
+    ctx = dict(ctx or {})
+    omis = []
+    payload = _dump(ctx)
+    for cle in _ORDRE_SACRIFICE:
+        if len(payload) <= max_chars:
+            break
+        if cle in ctx:
+            ctx.pop(cle)
+            omis.append(cle)
+            ctx['manifeste_troncature'] = {
+                'elements_omis': list(omis),
+                'raison': 'budget de taille du prompt dépassé — sections '
+                          'entières retirées, jamais un JSON coupé',
+            }
+            payload = _dump(ctx)
+    if len(payload) > max_chars:
+        #  dernier recours : contexte minimal, l'omission reste avouée.
+        ctx = {'manifeste_troncature': {
+            'elements_omis': list(omis) + ['contexte_residuel'],
+            'raison': 'budget de taille du prompt dépassé — contexte réduit '
+                      'au manifeste seul'}}
+        omis = ctx['manifeste_troncature']['elements_omis']
+        payload = _dump(ctx)
+    return payload, omis
+
+
 def _fallback(ctx, symbol, conseil_cle=True):
     """Repli déterministe honnête : récits moteurs existants. `conseil_cle`
     est faux quand la clé EXISTE mais que le budget d'appels est atteint —
@@ -166,7 +210,7 @@ def answer(question, scan_state, symbol=None, avec_positions=False):
             try:
                 from anthropic import Anthropic
                 client = Anthropic()
-                payload = json.dumps(ctx, ensure_ascii=False, default=str)[:14000]
+                payload, _omis = _borner_contexte(ctx, max_chars=14000)
                 msg = client.messages.create(
                     model=MODEL, max_tokens=600, system=_SYSTEM,
                     messages=[{'role': 'user', 'content':
