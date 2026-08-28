@@ -235,10 +235,18 @@ def api_skyler(sym):
     except Exception:
         calib = None
         option_calibration = None
-    decision = _sk.decide(sym, detail, market=market, events=ev, anomaly=ano,
-                          as_of=as_of, demo=_demo, options_ctx=octx, portfolio_ctx=pctx,
-                          red_team=rt_input, calibration=calib, data_quality_ctx=dqctx,
-                          reconciliation_ctx=recctx, fundamental_ctx=fundamentals_ctx)
+    #  Lot 10 — la fiche passe par l'AUTORITE NOMMEE. Delegation stricte vers
+    #  le decideur du packet : meme entree, meme sortie, plus la provenance
+    #  (moteur + version) sans laquelle un conseil n'est pas auditable.
+    from vertex.engines.advice import AdviceEngine as _advice
+    decision = _advice.evaluate({'symbol': sym, 'detail': detail,
+                                 'market': market, 'events': ev, 'anomaly': ano,
+                                 'as_of': as_of, 'demo': _demo,
+                                 'options_ctx': octx, 'portfolio_ctx': pctx,
+                                 'red_team': rt_input, 'calibration': calib,
+                                 'data_quality_ctx': dqctx,
+                                 'reconciliation_ctx': recctx,
+                                 'fundamental_ctx': fundamentals_ctx})
     decision['option_calibration'] = option_calibration or {
         'available': False,
         'reason': 'mémoire de calibration indisponible',
