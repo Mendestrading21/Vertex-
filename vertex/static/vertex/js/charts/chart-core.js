@@ -514,6 +514,12 @@
     const o = opts || {};
     let items = (o.items || []).filter(d => d && d.value > 0).sort((a, b) => b.value - a.value);
     if (!items.length) { el.innerHTML = o.emptyHtml || ''; return null; }
+    /* L'hote est souvent dimensionne pour le SVG seul (height:260px inline) ;
+       la tete et le pied vivent DEDANS — un height fige ferait saigner le
+       pied sur le bloc suivant (mesure : Composition du capital sous la
+       legende du treemap). On libere la hauteur : le conteneur suit son
+       contenu, le SVG garde sa hauteur de conception en pixels. */
+    if (el.style.height) { el.style.height = ''; }
     const W = o.width || 640, H = o.height || 300;
     const total = items.reduce((s, d) => s + d.value, 0);
     const nodes = items.map(d => ({ d, area: d.value / total * W * H }));
@@ -558,7 +564,7 @@
       </g>`;
     }).join('');
     el.innerHTML = tetePrimitive(o)
-      + `<svg viewBox="0 0 ${W} ${H}" width="100%" height="100%" preserveAspectRatio="none" style="display:block">${svg}</svg>`
+      + `<svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" preserveAspectRatio="none" style="display:block">${svg}</svg>`
       + piedPrimitive(o);
     return el;
   };
@@ -573,6 +579,7 @@
     const o = opts || {};
     const items = (o.items || []).filter(it => it && it.value != null && !isNaN(it.value));
     if (!items.length) { el.innerHTML = o.emptyHtml || ''; return null; }
+    if (el.style.height) { el.style.height = ''; }   /* meme regle que treemap */
     const W = o.width || 620, H = o.height || 240, PAD_B = 30, PAD_T = 16;
     let cum = 0; const bars = [];
     items.forEach(it => {
@@ -601,7 +608,7 @@
     });
     const aria = (o.ariaLabel || 'décomposition') + ' : ' + bars.map(b => b.label + ' ' + fmt(b.val)).join(', ');
     el.innerHTML = tetePrimitive(o)
-      + `<svg viewBox="0 0 ${W} ${H}" width="100%" height="100%" role="img" aria-label="${aria.replace(/"/g, '&quot;')}">${svg}</svg>`
+      + `<svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" role="img" aria-label="${aria.replace(/"/g, '&quot;')}">${svg}</svg>`
       + piedPrimitive(o);
     return el;
   };

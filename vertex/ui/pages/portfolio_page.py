@@ -371,7 +371,7 @@ function renderSummary(rich){
     <div class="vx-stat-k">${label}</div><div class="vx-stat-v" style="font-size:19px">${val}</div>
     ${sub?`<div class="vx-stat-sub">${sub}</div>`:''}</div>`;
   host.innerHTML=`<div class="vx-card vx-col-12 vx-card--premium">
-    <div class="vx-scorecard" style="grid-template-columns:auto minmax(0,1fr)">
+    <div class="vx-scorecard" style="grid-template-columns:${gauge?'auto minmax(0,1fr)':'minmax(0,1fr)'}">
       ${gauge?`<div class="vx-gaugecluster" style="flex-direction:column">${gauge}</div>`:''}
       <div class="vx-scorecard-side">
         <div class="vx-statrow">

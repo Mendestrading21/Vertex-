@@ -1498,3 +1498,31 @@ html,body{max-width:100%;overflow-x:clip}
 #vx-content .vx-chart-question,#vx-content .vx-card-question{
   opacity:1;color:var(--vx-smoke);
 }
+
+/* === 31. Le motif « scénario » n'a jamais eu de base ========================
+   La carte SCÉNARIOS du dossier Analyse rendait « Pessimiste-4.2 %cible
+   189,63 » — libellé, valeur et note fusionnés : les règles .vx-scenario*
+   n'existaient QUE dans la variante .an-decision-grid (même la feuille
+   morte ne portait que celle-là). Base scopée à l'espace analysis, même
+   design que la variante : libellé | valeur à droite, note en pleine
+   largeur dessous. */
+#vx-content[data-space="analysis"] .vx-scenario-grid{
+  display:grid;grid-template-columns:minmax(0,1fr);gap:var(--vx2-s2);
+}
+#vx-content[data-space="analysis"] .vx-scenario{
+  display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:baseline;
+  column-gap:var(--vx2-s3);row-gap:var(--vx2-s1);padding:var(--vx2-s2) var(--vx2-s3);
+  border:1px solid var(--vx2-line-faint);border-radius:10px;
+}
+#vx-content[data-space="analysis"] .vx-scenario-k{
+  font-size:13px;font-weight:650;color:var(--vx-text-primary);
+}
+#vx-content[data-space="analysis"] .vx-scenario-v{
+  grid-column:2;grid-row:1;text-align:right;
+  font-variant-numeric:tabular-nums;font-weight:700;
+}
+#vx-content[data-space="analysis"] .vx-scenario[data-kind="down"] .vx-scenario-v{color:var(--vx-negative)}
+#vx-content[data-space="analysis"] .vx-scenario[data-kind="up"] .vx-scenario-v{color:var(--vx-positive)}
+#vx-content[data-space="analysis"] .vx-scenario-note{
+  grid-column:1 / -1;color:var(--vx-smoke);font-size:12px;
+}
