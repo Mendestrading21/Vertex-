@@ -321,6 +321,11 @@ def analyze_strategy(legs, spot, iv, days_to_exp, r=R_DEFAULT, name=None, q=Q_DE
         'model': {                             # provenance du modèle — traçable, datée par l'appelant
             'type': 'lognormal_risk_neutral', 'r': r, 'q': q,
             'iv_unit': 'DECIMAL', 'premium_basis': 'declared',
+            #  Lot 13 : l'hypothèse de devise est DITE, plus implicite. Aucune
+            #  conversion n'existe dans Vertex — options US uniquement.
+            'currency': 'USD',
+            'currency_note': 'montants en USD — aucune conversion de devise '
+                             'n\'existe ni n\'est estimée',
             'note': 'PoP risque-neutre — estimation, pas une fréquence historique.',
         },
         'model_note': 'Payoff à l’échéance ; PoP = modèle lognormal risque-neutre — estimation, pas une promesse.',
