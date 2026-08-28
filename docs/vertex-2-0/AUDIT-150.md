@@ -106,7 +106,7 @@ Ce qu'elles n'ont pas reçu, c'est une refonte de leur **hiérarchie d'informati
 |---|---|---|---|
 | 046 | Chaque primitive a un propriétaire visuel unique | **RÉUSSI** pour les primitives 2.0 | Une classe `.vx2-*` n'est écrite que dans `vertex/ui/vx2.py`. Les familles historiques coexistent encore → **lot 14**. |
 | 047 | Tokens, pas de valeurs répétées en dur | **RÉUSSI** pour `vertex-2-0.css` | Aucun hex en dur dans les pages ajoutées ; tout passe par `var(--vx-*)`. Les pages historiques gardent des littéraux → lot 14. |
-| 048 | Une famille unique de cartes et MetricCard est utilisée | **À CORRIGER — dette chiffrée** | Mesuré : 146 occurrences à migrer (`vx-kpi` 63, `vx-stat` 50, `vx-metric` 25, `vx-stat-xl` 8) et `.vx-card` redéfini dans 6 feuilles servies (46 règles). Elles sont **déjà visuellement unifiées** par le remappage des jetons : migrer ne changerait rien pour l'utilisateur, pour un risque réel. Dette datée dans `LOT-14-NETTOYAGE.md`, pas un oubli. |
+| 048 | Une famille unique de cartes et MetricCard est utilisée | **RÉUSSI — mesuré au navigateur** | La mention « déjà visuellement unifiées » était **fausse**, et le lot 26 l'a établi en injectant le balisage réel dans une page servie : `.vx-card.vx-kpi` rendait un fond transparent, un filet `rgba(255,255,255,.07)`, un rayon de 16 px et 16 px de rembourrage ; `.vx-stat` un fond `rgba(255,255,255,.024)`, un filet `rgba(222,228,238,.075)`, 12 px de rayon, 12/14 de rembourrage ; `.vx-metric` la même chose à **un pixel près** (11/13). Trois familles rendent désormais une **surface identique** — fond, filet, rayon, ombre, rembourrage, disposition — et un libellé identique ; seule la **taille du chiffre** varie (19 / 22 / 26 px), et cette échelle est déclarée. Les 138 appels ne sont pas migrés : c'est l'**implémentation** qui est unique, pas le nom. `.vx-stat-xl` est exclue et dit pourquoi : ce n'est pas une tuile mais un grand nombre (`-value` + `-label`), sans fond ni filet. Preuve rejouable : `tools/vertex_2_0_tuiles.py` (0 écart non voulu, sortie non nulle au moindre écart — contre-épreuve exécutée) ; gardien `test_tuiles_famille_unique_lot26.py`. |
 | 049 | Boutons, tabs, filtres, champs, badges et drawers cohérents | **RÉUSSI** pour les pages 2.0 | Galerie complète sur `/design-system`. |
 | 050 | Les tables utilisent chiffres tabulaires et alignement numérique | **RÉUSSI** | `font-variant-numeric: tabular-nums` sur toute cellule et toute valeur dynamique ; `.vx2-num` aligne à droite. Capture `simulator-action-resultat.png`. |
 | 051 | Unités et devises visibles dans colonnes ou valeurs | **RÉUSSI** | L'unité vit dans l'**en-tête** (`vx2-th-unit`), pas répétée par cellule. Vu sur la table du design system (`DERNIER (USD)`, `VARIATION (%)`). |
@@ -249,23 +249,31 @@ Ce qu'elles n'ont pas reçu, c'est une refonte de leur **hiérarchie d'informati
 
 | État | Nombre |
 |---|---:|
-| **RÉUSSI** (avec preuve) | 129 |
+| **RÉUSSI** (avec preuve) | 130 |
 | **RÉUSSI partiellement** (limite déclarée) | 10 |
 | **NON APPLICABLE** (justifié) | 9 |
-| **À CORRIGER** (dette chiffrée) | 1 |
+| **À CORRIGER** | 0 |
 | **En attente de décision humaine** | 1 |
 | **Total** | **150** |
 
 *Décompte obtenu en LISANT le tableau ligne à ligne — chaque plage groupée est
 dépliée (« 091–098 » couvre huit contrôles, « 102–104 » en couvre trois),
 chaque numéro de 001 à 150 est attribué une fois et une seule ; aucun n'est
-absent. 129 + 10 + 9 + 1 + 1 = 150.*
+absent. 130 + 10 + 9 + 0 + 1 = 150.*
 
-Il reste **un seul** `À CORRIGER` : la **dette de composants chiffrée** au lot 14
-(048 — 146 occurrences de tuiles, **déjà visuellement unifiées** par le remappage
-des jetons ; migrer ne changerait rien pour l'utilisateur, pour un risque réel
-dans sept pages dont trois font plus de 90 ko). Ce n'est pas un oubli : c'est une
-dette datée, chiffrée, et dont le coût dépasse le gain.
+**Plus aucun `À CORRIGER`.** Le dernier (048) a été fermé au lot 26 — et il a
+d'abord fallu admettre que la justification qui le tenait ouvert était fausse :
+les quatre familles de tuiles n'étaient **pas** « déjà visuellement unifiées ».
+La mesure au navigateur a montré deux fonds, deux filets, deux rayons, et un
+pixel de rembourrage d'écart entre `vx-stat` et `vx-metric` — l'écart
+accidentel, celui qu'on ne voit pas mais qui empêche deux tuiles voisines de
+s'aligner. Ce qui a été unifié, c'est l'**implémentation**, pas les 138 noms
+d'appel : les trois familles rendent la même tuile, mesurée, et seule la taille
+du chiffre varie.
+
+Le seul point restant est une **décision humaine** (test de distance, 045) : les
+captures sont fournies pour qu'elle puisse être portée ; elle ne l'est pas à la
+place de l'humain.
 
 ### Ce que la seconde passe a réellement corrigé
 

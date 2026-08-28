@@ -159,7 +159,13 @@
         if (hEl) { hEl.innerHTML = heroHtml(d && d.environment, d && d.option_pulse, d && d.volatility_pulse, d && d.demo); mountEnvGauge(d && d.environment); }
         if (cEl) cEl.innerHTML = msg;
         if (vEl) vEl.innerHTML = verdictCard(d && d.interpretation);
-        if (rEl) rEl.innerHTML = '';
+        // Vider en silence laissait une carte titree « Meilleurs contrats
+        // (radar) » sans une ligne dessous : un titre qui promet et ne rend
+        // rien. L'absence est nommee, avec sa cause.
+        if (rEl) rEl.innerHTML = (window.VX && VX.states)
+          ? VX.states.empty('Aucun contrat à classer : le radar lit le même '
+            + 'tableau d’options, vide lui aussi.')
+          : 'Aucun contrat à classer.';
         return;
       }
       var c = d.counters || {};

@@ -1,4 +1,4 @@
-/* ══════════════════════════════════════════════════════════════════════════
+/* ==========================================================================
    Vertex 2.0 — « Black Glass, Signal Light »
    COUCHE DE VÉRITÉ FINALE. Chargée EN DERNIER, après glass.css.
 
@@ -19,11 +19,11 @@
 
    DISTRIBUTION VISÉE : 82 % obsidienne/graphite · 13 % blanc/argent/gris ·
    5 % sémantique + lumière analytique.
-   ══════════════════════════════════════════════════════════════════════════ */
+   ========================================================================== */
 
-/* ─────────────────────────────────────────────────────────────────────────
+/* -------------------------------------------------------------------------
    1) JETONS DE RÔLE 2.0
-   ───────────────────────────────────────────────────────────────────────── */
+   ------------------------------------------------------------------------- */
 :root{
   /* Profondeurs — du plus profond au plus élevé */
   --vx-night:#050607;
@@ -63,7 +63,7 @@
   --vx2-line:rgba(222,228,238,.075);
   --vx2-line-strong:rgba(222,228,238,.14);
 
-  /* ── Remappage des jetons réellement consommés par les pages ───────────
+  /* -- Remappage des jetons réellement consommés par les pages -----------
      Les pages continuent d'écrire var(--vx-surface-2), var(--vx-text-muted)…
      Elles héritent de l'identité 2.0 sans un seul changement de balisage. */
   --vx-obsidian-950:#050607;
@@ -172,9 +172,9 @@
   --vx-t-fast:140ms;--vx-t:200ms;--vx-t-slow:260ms;
 }
 
-/* ─────────────────────────────────────────────────────────────────────────
+/* -------------------------------------------------------------------------
    2) BASE — typographie et chiffres tabulaires
-   ───────────────────────────────────────────────────────────────────────── */
+   ------------------------------------------------------------------------- */
 body{
   font-family:var(--vx-font);
   background:var(--vx-night);
@@ -196,7 +196,7 @@ table td,table th{
 }
 .vx-mono,.vx-num,[data-numeric],.vx2-mono{font-family:var(--vx-font-mono)}
 
-/* ─────────────────────────────────────────────────────────────────────────
+/* -------------------------------------------------------------------------
    3) DECISION TRACE — la signature unique
    Une ligne argentée fine relie quatre nœuds :
    Donnée → Moteur → Décision → Portefeuille.
@@ -204,7 +204,7 @@ table td,table th{
    Emplacements canoniques autorisés (et eux seuls) — contrôle 117 :
      hero Aujourd'hui · drawer Opportunité · hero Analyse ·
      audit de décision IA · simulation d'impact Portefeuille.
-   ───────────────────────────────────────────────────────────────────────── */
+   ------------------------------------------------------------------------- */
 .vx2-trace{
   display:grid;
   grid-template-columns:repeat(4,minmax(0,1fr));
@@ -278,10 +278,10 @@ table td,table th{
   .vx2-trace-body{align-items:flex-start}
 }
 
-/* ─────────────────────────────────────────────────────────────────────────
+/* -------------------------------------------------------------------------
    4) STRUCTURE DE PAGE — le contrat commun des 12 pages
    PageHeader · ContextBar · DecisionZone · EvidenceZone · WorkZone · DepthZone
-   ───────────────────────────────────────────────────────────────────────── */
+   ------------------------------------------------------------------------- */
 .vx2-page{
   display:flex;flex-direction:column;gap:var(--vx2-s6);
   max-width:var(--vx2-content-max);
@@ -347,9 +347,9 @@ table td,table th{
   .vx2-col-7,.vx2-col-8,.vx2-col-9{grid-column:span 12}
 }
 
-/* ─────────────────────────────────────────────────────────────────────────
+/* -------------------------------------------------------------------------
    5) SURFACES — une seule famille de cartes
-   ───────────────────────────────────────────────────────────────────────── */
+   ------------------------------------------------------------------------- */
 .vx2-surface{
   background:var(--vx-glass-1);
   border:1px solid var(--vx2-line);
@@ -394,11 +394,11 @@ table td,table th{
 }
 .vx2-card-question{font-size:12px;color:var(--vx-smoke);font-style:italic}
 
-/* ─────────────────────────────────────────────────────────────────────────
+/* -------------------------------------------------------------------------
    6) MÉTRIQUES — UNE famille, MetricCard, et une bande compacte
    Remplace visuellement les quatre familles historiques
    (vx-kpi / vx-metric / vx-stat / vx-stat-xl) sans renommer leurs classes.
-   ───────────────────────────────────────────────────────────────────────── */
+   ------------------------------------------------------------------------- */
 .vx2-strip{
   display:grid;gap:var(--vx2-s3);
   grid-template-columns:repeat(auto-fit,minmax(168px,1fr));
@@ -431,10 +431,10 @@ table td,table th{
 .vx2-metric-value.vx2-absent{color:var(--vx-text-faint);font-weight:500}
 .vx2-metric-meta{font-size:11px;color:var(--vx-text-faint);line-height:1.4}
 
-/* ─────────────────────────────────────────────────────────────────────────
+/* -------------------------------------------------------------------------
    7) BADGES — le sens porte TOUJOURS un mot, jamais une couleur seule
    (contrôles 127, 008, 009)
-   ───────────────────────────────────────────────────────────────────────── */
+   ------------------------------------------------------------------------- */
 .vx2-badge{
   display:inline-flex;align-items:center;gap:6px;
   padding:3px 9px;border-radius:var(--vx2-r-pill);
@@ -471,10 +471,10 @@ table td,table th{
 .vx2-stamp b{font-weight:600;color:var(--vx-smoke)}
 .vx2-stamp time{font-family:var(--vx-font-mono)}
 
-/* ─────────────────────────────────────────────────────────────────────────
+/* -------------------------------------------------------------------------
    8) ÉTATS — jamais un rectangle vide
    loading · empty · missing · partial · stale · offline · demo · error
-   ───────────────────────────────────────────────────────────────────────── */
+   ------------------------------------------------------------------------- */
 .vx2-state{
   display:flex;flex-direction:column;align-items:center;justify-content:center;
   gap:var(--vx2-s2);text-align:center;
@@ -528,9 +528,9 @@ table td,table th{
 }
 @keyframes vx2-shimmer{from{background-position:100% 0}to{background-position:0 0}}
 
-/* ─────────────────────────────────────────────────────────────────────────
+/* -------------------------------------------------------------------------
    9) TABLES FINANCIÈRES — denses, tabulaires, sticky
-   ───────────────────────────────────────────────────────────────────────── */
+   ------------------------------------------------------------------------- */
 .vx2-table-wrap{
   overflow-x:auto;overflow-y:visible;
   border:1px solid var(--vx2-line);border-radius:var(--vx2-r-card);
@@ -611,9 +611,9 @@ table td,table th{
   .vx2-rowcards{display:flex}
 }
 
-/* ─────────────────────────────────────────────────────────────────────────
+/* -------------------------------------------------------------------------
    10) CONTRÔLES
-   ───────────────────────────────────────────────────────────────────────── */
+   ------------------------------------------------------------------------- */
 .vx2-btn{
   display:inline-flex;align-items:center;justify-content:center;gap:7px;
   height:34px;padding:0 14px;border-radius:var(--vx2-r-control);
@@ -685,9 +685,9 @@ table td,table th{
 .vx2-field[data-invalid="true"] .vx2-input{border-color:var(--vx-negative)}
 .vx2-field-error{font-size:11.5px;color:var(--vx-negative)}
 
-/* ─────────────────────────────────────────────────────────────────────────
+/* -------------------------------------------------------------------------
    11) GRAPHIQUES — le conteneur, pas la donnée
-   ───────────────────────────────────────────────────────────────────────── */
+   ------------------------------------------------------------------------- */
 .vx2-chart{
   position:relative;width:100%;min-width:0;
   /* La hauteur est RÉSERVÉE avant le rendu : pas de saut de mise en page
@@ -723,9 +723,9 @@ table td,table th{
 .vx2-chart-table summary:hover{color:var(--vx-ink)}
 .vx2-chart-table summary:focus-visible{outline:2px solid var(--vx-silver);outline-offset:2px;border-radius:4px}
 
-/* ─────────────────────────────────────────────────────────────────────────
+/* -------------------------------------------------------------------------
    12) ACCESSIBILITÉ ET MOTION
-   ───────────────────────────────────────────────────────────────────────── */
+   ------------------------------------------------------------------------- */
 .vx2-sr-only{
   position:absolute;width:1px;height:1px;padding:0;margin:-1px;
   overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;
@@ -749,11 +749,11 @@ table td,table th{
 /* Aucun débordement horizontal global — contrôle 133. */
 html,body{max-width:100%;overflow-x:clip}
 
-/* ─────────────────────────────────────────────────────────────────────────
+/* -------------------------------------------------------------------------
    13) COQUE 2.0 — sidebar groupée par travail
    La navigation active est ARGENT, jamais une couleur sémantique : colorer
    « la page où je suis » en vert la ferait lire comme un signal financier.
-   ───────────────────────────────────────────────────────────────────────── */
+   ------------------------------------------------------------------------- */
 .vx-sidebar{
   background:linear-gradient(180deg,rgba(14,17,22,.72),rgba(9,11,14,.86));
   border-right:1px solid var(--vx2-line-faint);
@@ -801,12 +801,12 @@ html,body{max-width:100%;overflow-x:clip}
   -webkit-backdrop-filter:blur(var(--vx-blur-md));
 }
 
-/* ─────────────────────────────────────────────────────────────────────────
+/* -------------------------------------------------------------------------
    14) SURTITRE DE PAGE — le groupe de travail, annoncé
    Deux classes existent : `.vx2-eyebrow` (2.0) et `.vx-page-lead__eyebrow`
    (historique, encore servie par Options). Elles doivent se lire à
    l'identique — un même rôle ne peut pas avoir deux apparences.
-   ───────────────────────────────────────────────────────────────────────── */
+   ------------------------------------------------------------------------- */
 #vx-content .vx-page-lead__eyebrow,
 #vx-content .vx2-eyebrow{
   margin:0 0 2px;
@@ -818,7 +818,7 @@ html,body{max-width:100%;overflow-x:clip}
   letter-spacing:-.022em;font-weight:650;
 }
 
-/* ─────────────────────────────────────────────────────────────────────────
+/* -------------------------------------------------------------------------
    15) CARTE DE VERDICT DU DOSSIER
    Elle n'avait AUCUN style : son conteneur `#an-verdict` n'existait dans
    aucune section, la garde `if(V)` avalait le rendu, et personne n'a donc
@@ -828,7 +828,7 @@ html,body{max-width:100%;overflow-x:clip}
    L'accent est porté par un liseré gauche piloté par `data-tone`, que le
    moteur renseigne. C'est le SEUL endroit coloré de la carte : le verdict est
    la conclusion, il n'a pas besoin d'être crié deux fois.
-   ───────────────────────────────────────────────────────────────────────── */
+   ------------------------------------------------------------------------- */
 #vx-content .vx-verdict-card{
   position:relative;
   display:flex;flex-direction:column;gap:var(--vx2-s3);
@@ -901,7 +901,7 @@ html,body{max-width:100%;overflow-x:clip}
   margin-top:4px;font-size:13px;color:var(--vx-mist);line-height:1.5;
 }
 
-/* ─────────────────────────────────────────────────────────────────────────
+/* -------------------------------------------------------------------------
    16) MATRICE DES CONNEXIONS — Système
    Seule la surcharge MOBILE de `.vx-connection-row` existait, dans une media
    query, et elle supposait une règle de base qui n'a jamais été écrite. Sur
@@ -911,7 +911,7 @@ html,body{max-width:100%;overflow-x:clip}
    Trois colonnes : le nom et le badge à leur largeur naturelle, la description
    prend le reste. Le badge garde `max-content` — c'est ce que le lot 126 avait
    cherché à obtenir pour que « À configurer » cesse de déborder sur le voisin.
-   ───────────────────────────────────────────────────────────────────────── */
+   ------------------------------------------------------------------------- */
 #vx-content .vx-connection-row{
   display:grid;
   grid-template-columns:max-content max-content minmax(0,1fr);
@@ -940,12 +940,12 @@ html,body{max-width:100%;overflow-x:clip}
   #vx-content .vx-connection-detail{grid-column:1/-1}
 }
 
-/* ─────────────────────────────────────────────────────────────────────────
+/* -------------------------------------------------------------------------
    19) THÈSES DE POSITION — Portefeuille → Thèses
    Une carte par thèse ouverte. Le liseré de gauche porte l'état, mais il ne
    le porte JAMAIS seul : la pastille écrit le mot. Le risque ne dépend jamais
    uniquement d'une couleur (règle de design n°8).
-   ───────────────────────────────────────────────────────────────────────── */
+   ------------------------------------------------------------------------- */
 #vx-content .vx2-theses{
   display:grid;gap:var(--vx2-s3);
   grid-template-columns:repeat(auto-fill,minmax(320px,1fr));
@@ -991,12 +991,12 @@ html,body{max-width:100%;overflow-x:clip}
    se cassait après « 0,1 », et le pourcentage tombait seul sous le nombre. */
 #vx-content .vx-wbar .wb-val{white-space:nowrap}
 
-/* ─────────────────────────────────────────────────────────────────────────
+/* -------------------------------------------------------------------------
    20) POPULATIONS MESURÉES — Performance
    Le contrat interdit de fusionner cinq populations dans un même indicateur.
    Les nommer côte à côte, avec leur nature de résultat et leur propriétaire,
    rend la séparation lisible au lieu de l'espérer.
-   ───────────────────────────────────────────────────────────────────────── */
+   ------------------------------------------------------------------------- */
 #vx-content .vx2-populations{
   display:grid;gap:var(--vx2-s3);
   grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
@@ -1026,7 +1026,7 @@ html,body{max-width:100%;overflow-x:clip}
 }
 #vx-content .vx2-population .vx2-btn{align-self:flex-start;margin-top:auto}
 
-/* ─────────────────────────────────────────────────────────────────────────
+/* -------------------------------------------------------------------------
    21) BANDE D'INDICATEURS — `.vx-kpi-strip`
    Cette classe n'avait AUCUNE règle de disposition en desktop : seule une
    surcharge mobile existait, dans `responsive.css`. Au-dessus de la largeur
@@ -1034,7 +1034,7 @@ html,body{max-width:100%;overflow-x:clip}
    s'empilaient en une colonne pleine largeur. Même défaut, et même cause, que
    la matrice des connexions du lot 12 : l'exception a été écrite, la règle
    jamais. Les tuiles portent `grid-column:span 2` — la grille fait donc 12.
-   ───────────────────────────────────────────────────────────────────────── */
+   ------------------------------------------------------------------------- */
 #vx-content .vx-kpi-strip{
   display:grid;gap:var(--vx2-s3);
   grid-template-columns:repeat(12,minmax(0,1fr));
@@ -1047,14 +1047,14 @@ html,body{max-width:100%;overflow-x:clip}
   #vx-content .vx-kpi-strip{grid-template-columns:repeat(4,minmax(0,1fr))}
 }
 
-/* ─────────────────────────────────────────────────────────────────────────
+/* -------------------------------------------------------------------------
    22) RÉGIME DE MARCHÉ — la pastille d'état de la Synthèse
    Ses règles vivaient dans `neon-glass.css`, qui n'est JAMAIS servie (dette
    étiquetée au lot 14). La pastille n'avait donc aucun style : « Régime non
    qualifié » et la phrase qui suit se lisaient d'un seul tenant, comme une
    seule phrase incohérente. C'est le premier dommage mesuré de cette feuille
    morte — jusqu'ici elle n'avait qu'induit en erreur pendant la refonte.
-   ───────────────────────────────────────────────────────────────────────── */
+   ------------------------------------------------------------------------- */
 #vx-content .vx-mk-regime-lead{
   display:flex;align-items:baseline;gap:var(--vx2-s3);flex-wrap:wrap;
 }
@@ -1074,13 +1074,13 @@ html,body{max-width:100%;overflow-x:clip}
   grid-template-columns:repeat(auto-fit,minmax(130px,1fr));
 }
 
-/* ─────────────────────────────────────────────────────────────────────────
+/* -------------------------------------------------------------------------
    23) TABLE ÉQUIVALENTE — le même chiffre, lisible autrement
    Le contrat exige qu'un graphique critique porte « une table équivalente ».
    Un graphique seul exclut le lecteur d'écran, le zoom fort, l'impression et
    la copie d'une valeur. Repliée par défaut : elle complète la courbe, elle
    ne la concurrence pas.
-   ───────────────────────────────────────────────────────────────────────── */
+   ------------------------------------------------------------------------- */
 #vx-content .vx2-table-equivalente{
   margin-top:var(--vx2-s3);
   border-top:1px solid var(--vx-border-soft);
@@ -1134,4 +1134,200 @@ html,body{max-width:100%;overflow-x:clip}
 #vx-content .vx2-jamais li::before{
   content:"";position:absolute;left:0;top:.55em;
   width:6px;height:6px;border-radius:50%;background:var(--vx-positive);
+}
+
+/* === 24. La barre de contexte des Options n'avait aucune disposition =========
+   Les seules règles de `.vx-options-context` vivent dans `neon-glass.css`, une
+   feuille qu'aucune page ne demande — vérifié au navigateur. Sans elles, la
+   grille à trois colonnes n'existait pas : le titre, sa phrase, le libellé
+   « Symbole », le champ et deux boutons retombaient les uns sous les autres en
+   flux normal, le libellé collé à 2 px de son titre. Le défaut était le même
+   sur les **neuf** vues Options.
+   C'est la deuxième fois que cette feuille non servie cause un dégât visible
+   (la pastille de régime de Marchés fut la première) ; on rapatrie ici plutôt
+   que de la servir, parce que la servir ramènerait aussi ses effets abandonnés. */
+#vx-content[data-space="options"] .vx-options-context{
+  display:grid;grid-template-columns:minmax(220px,1fr) minmax(180px,260px) auto auto;
+  align-items:end;gap:var(--vx2-s4);padding:var(--vx2-s3) var(--vx2-s4);
+}
+#vx-content[data-space="options"] .vx-options-context__copy{
+  display:flex;flex-direction:column;gap:var(--vx2-s1);align-self:center;min-width:0;
+}
+#vx-content[data-space="options"] .vx-options-context__field{max-width:none;margin:0}
+#vx-content[data-space="options"] .vx-options-shortcuts{
+  display:flex;align-items:center;gap:var(--vx2-s2);min-height:34px;
+  overflow-x:auto;scrollbar-width:thin;
+  scrollbar-color:var(--vx-border-strong) transparent;
+}
+@media (max-width:900px){
+  #vx-content[data-space="options"] .vx-options-context{
+    grid-template-columns:minmax(0,1fr) minmax(180px,240px);
+  }
+  #vx-content[data-space="options"] .vx-options-context__copy{grid-column:1/-1}
+}
+@media (max-width:640px){
+  #vx-content[data-space="options"] .vx-options-context{
+    grid-template-columns:minmax(0,1fr);
+  }
+  #vx-content[data-space="options"] .vx-options-context .vx-btn{width:100%}
+}
+
+/* === 25. Un en-tête de carte écrase son titre plutôt que de passer à la ligne ==
+   `.vx-card-header` est un flex sans retour à la ligne : quand une question
+   accompagne le titre, c'est le TITRE qui rétrécit — « Payoff à l'échéance »
+   se casse en deux lignes alors que la moitié droite de la carte est vide.
+   Le titre garde sa largeur naturelle ; c'est la question qui descend d'une
+   ligne quand la place manque. Le comportement mobile de `responsive.css`
+   devient ainsi le comportement de toutes les largeurs, au lieu d'une
+   exception. */
+#vx-content .vx-card-header{flex-wrap:wrap;row-gap:var(--vx2-s1)}
+#vx-content .vx-card-header > .vx-card-title{flex:0 0 auto}
+
+/* === 26. Six autres classes rendues sans aucune règle servie =================
+   Relevé au navigateur : on collecte les classes dont les SEULES règles vivent
+   dans `neon-glass.css`, puis on ne garde que celles réellement présentes dans
+   le DOM des 65 routes. Sept en sortent. Chacune est traitée pour ce qu'elle
+   vaut, pas rapatriée en bloc :
+
+   · `.vx-options-local-bridge` porte déjà l'attribut `hidden` — le navigateur
+     la masque sans nous. Sa règle orpheline n'ajoutait rien : non rapatriée.
+   · `.vx-freshness` : le glow et l'animation `ng-pulse` du point « live » sont
+     REFUSÉS — la direction Black Glass interdit l'animation continue et le
+     halo permanent. Seule la forme de la pastille est reprise.
+   Les cinq autres suivent. */
+
+/* Approfondissement de la fiche Analyse : sans ces règles, `<details>` rendait
+   un triangle natif, sans carte, sans marge, avec une cible de 20 px. */
+#vx-content[data-space="analysis"] .an-disclosure{
+  margin-top:var(--vx2-s4);overflow:hidden;background:var(--vx-surface);
+  border:1px solid var(--vx-border-soft);border-radius:var(--vx2-r-card);
+}
+#vx-content[data-space="analysis"] .an-disclosure > summary{
+  display:flex;align-items:center;gap:var(--vx2-s3);min-height:48px;
+  padding:var(--vx2-s3) var(--vx2-s4);cursor:pointer;list-style:none;
+  color:var(--vx-text-secondary);font-weight:650;
+}
+#vx-content[data-space="analysis"] .an-disclosure > summary::-webkit-details-marker{
+  display:none;
+}
+#vx-content[data-space="analysis"] .an-disclosure > summary::after{
+  content:"+";display:grid;place-items:center;width:28px;height:28px;
+  margin-left:auto;color:var(--vx-brand);background:var(--vx-surface-elevated);
+  border:1px solid var(--vx-border-default);border-radius:var(--vx-r-sm);
+}
+#vx-content[data-space="analysis"] .an-disclosure[open] > summary::after{content:"\2212"}
+#vx-content[data-space="analysis"] .an-disclosure[open] > summary{
+  color:var(--vx-text-primary);border-bottom:1px solid var(--vx-border-soft);
+}
+#vx-content[data-space="analysis"] .an-disclosure > .an-proof-grid,
+#vx-content[data-space="analysis"] .an-disclosure > .an-tools-grid{padding:var(--vx2-s4)}
+#vx-content[data-space="analysis"] .an-disclosure--nested{
+  margin-top:var(--vx2-s3);background:var(--vx-surface);box-shadow:none;
+}
+#vx-content[data-space="analysis"] .an-disclosure--nested > summary{
+  min-height:44px;padding:var(--vx2-s2) var(--vx2-s3);font-size:var(--vx-fs-meta);
+}
+#vx-content[data-space="analysis"] .an-disclosure--nested > :not(summary){
+  margin-left:var(--vx2-s3);margin-right:var(--vx2-s3);
+}
+#vx-content[data-space="analysis"] .an-disclosure--nested > :last-child{
+  margin-bottom:var(--vx2-s3);
+}
+
+/* Pastille de fraîcheur : la forme, sans le halo ni la pulsation. */
+#vx-content .vx-freshness{
+  border:1px solid var(--vx-border-soft);border-radius:var(--vx2-r-pill);
+  background:rgba(0,0,0,.25);
+}
+#vx-content .vx-freshness .vx-live-dot{box-shadow:none;animation:none}
+
+/* Régime de Marchés, forme compacte : sans grille, ses lignes se collaient. */
+#vx-content[data-space="markets"] .vx-mk-regime-compact{
+  display:grid;grid-template-columns:minmax(0,1fr);gap:var(--vx2-s3);
+}
+
+/* Trois niveaux de texte des Options : surtitre, phrase de tête, verdict. */
+#vx-content[data-space="options"] .vx-eyebrow{
+  font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;
+  color:var(--vx-text-muted);
+}
+#vx-content[data-space="options"] .vx-lead{
+  font-size:15px;line-height:1.5;margin:var(--vx2-s2) 0;color:var(--vx-text-primary);
+}
+#vx-content[data-space="options"] .vx-verdict{padding:2px 0}
+#vx-content[data-space="options"] .vx-verdict .vx-sub{
+  color:var(--vx-text-muted);font-size:13px;
+}
+
+/* === 27. Une seule tuile de métrique (contrôle 048) =========================
+   Le dépôt porte quatre familles historiques — `vx-kpi`, `vx-stat`,
+   `vx-metric`, `vx-stat-xl` — réparties sur cinq feuilles servies, et l'audit
+   les déclarait « déjà visuellement unifiées ». Mesure au navigateur, sur du
+   balisage réel :
+
+     .vx-card.vx-kpi   fond transparent · filet rgba(255,255,255,.07) · r16 · p16
+     .vx-stat          fond rgba(255,255,255,.024) · filet rgba(222,228,238,.075) · r12 · p12/14
+     .vx-metric        même fond, même filet · r12 · p11/13
+     .vx-stat-xl       ni fond ni filet — ce n'est pas une tuile, c'est un GRAND
+                       NOMBRE (`-value` + `-label`) ; on ne le fusionne pas.
+
+   Deux fonds, deux filets, deux rayons, et surtout `vx-stat` et `vx-metric`
+   séparées par UN pixel de rembourrage — l'écart accidentel, celui qu'on ne
+   voit pas mais qui empêche deux tuiles voisines de s'aligner.
+
+   On ne migre pas les 146 appels : on unifie l'IMPLÉMENTATION. Les trois noms
+   historiques désignent désormais une seule tuile, dont seule la TAILLE DU
+   CHIFFRE varie — et cette variation est un choix, pas un reste.
+
+   La surface canonique existe déjà : `glass.css` déclare « sous-surfaces
+   imbriquées : verre creusé » pour onze classes, en `!important`. On ne la
+   redéfinit pas et on ne surenchérit pas en `!important` — on ALIGNE
+   `.vx-card.vx-kpi`, seule tuile que cette liste avait oubliée, sur ses
+   valeurs. Après quoi les trois familles rendent le même verre, mesuré. */
+#vx-content .vx-card.vx-kpi{
+  background:rgba(255,255,255,.022);
+  border:1px solid var(--vx-glass-border);
+  border-radius:var(--vx-r);
+  box-shadow:var(--vx-glass-sheen);
+  background-image:none;
+}
+#vx-content .vx-card.vx-kpi,
+#vx-content .vx-stat:not(.vx-stat-xl),
+#vx-content .vx-metric{
+  display:flex;flex-direction:column;gap:var(--vx2-s1);
+  padding:var(--vx2-s3) var(--vx2-s4);
+}
+
+/* Libellé : une seule voix pour les trois. */
+#vx-content .vx-kpi-label,
+#vx-content .vx-stat:not(.vx-stat-xl) .vx-stat-k,
+#vx-content .vx-metric-k{
+  font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--vx-text-secondary);line-height:1.3;
+}
+
+/* Chiffre : une seule voix, trois tailles assumées — compacte, courante, forte. */
+#vx-content .vx-kpi-value,
+#vx-content .vx-stat:not(.vx-stat-xl) .vx-stat-v,
+#vx-content .vx-metric-v{
+  font-weight:650;line-height:1.1;color:var(--vx-text-primary);
+  font-variant-numeric:tabular-nums;letter-spacing:-.01em;
+}
+#vx-content .vx-metric-v{font-size:19px}
+#vx-content .vx-stat:not(.vx-stat-xl) .vx-stat-v{font-size:22px}
+#vx-content .vx-kpi-value{font-size:26px}
+
+/* === 28. Le halo permanent des chiffres, refusé par la direction ============
+   `cockpit.css` est servie et pose `text-shadow:0 0 15px rgba(54,200,137,.30)`
+   sur tout chiffre positif, et son symétrique rouge sur le négatif. La
+   direction Black Glass — Signal Light interdit le halo permanent : la couleur
+   porte le sens, l'auréole n'ajoute rien et salit le noir.
+   On neutralise les jetons plutôt que les règles : le halo disparaît partout
+   où ces jetons servaient, y compris là où l'on n'a pas regardé.
+   NON VÉRIFIÉ ICI : l'egress marché est bloqué, aucun chiffre n'est ni positif
+   ni négatif en mode démo — la règle ne s'exerce pas sur ce poste. */
+:root{
+  --vx-glow-pos:none;
+  --vx-glow-neg:none;
+  --vx-glow-copper-soft:none;
 }

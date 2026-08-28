@@ -937,7 +937,7 @@ async function renderOptions(){
       <label class="rng">échéance ≤ <input type="range" data-fk="maxDte" min="0" max="400" step="20" value="0"><b>∞</b></label>
       <label class="rng">prime ≤ <input type="range" data-fk="maxCost" min="0" max="6000" step="250" value="0"><b>∞</b></label>
       <button class="vx-chip" data-ft="exclStale" aria-pressed="false">⏸ exclure hors séance</button>
-      <input class="vx-input" data-fk="sym" style="width:110px;text-transform:uppercase" placeholder="Ticker" value="${esc(state.sym)}">
+      <input class="vx-input" data-fk="sym" style="width:110px;text-transform:uppercase" placeholder="Ticker" value="${esc(state.sym)}" aria-label="Filtrer par ticker">
       <button class="vx-btn vx-btn-sm vx-btn-soft" onclick="window.__opCompare&&window.__opCompare(document.querySelector('[data-fk=sym]').value.toUpperCase())">Comparer 3 contrats</button>
       <a class="vx-btn vx-btn-sm vx-btn-ghost" href="/options">Desk options →</a>
       <span class="vx-meta vx-right" id="op-opt-count"></span>
@@ -1326,7 +1326,7 @@ async function renderAnomalies(){
     <div class="vx-screenbar">
       ${['ALERTE','ACTIF','CALME'].map(l=>`<button class="vx-chip" data-lvl="${l}" aria-pressed="false"
         style="${l==='ALERTE'?'color:var(--vx-negative)':l==='ACTIF'?'color:var(--vx-warning)':''}">${l==='ALERTE'?'🔴':l==='ACTIF'?'🟠':'⚪'} ${l}</button>`).join('')}
-      <input class="vx-input" id="op-anom-q" style="width:110px;text-transform:uppercase" placeholder="Ticker">
+      <input class="vx-input" id="op-anom-q" style="width:110px;text-transform:uppercase" placeholder="Ticker" aria-label="Filtrer les anomalies par ticker">
       <button class="vx-chip" data-ag="Données">Qualité des données</button>
       <span class="vx-meta vx-right" id="op-anom-count"></span>
     </div>
