@@ -44,8 +44,9 @@ aucune route modifiée, le worker reste UNIQUE.
   échouaient en rouge sur une machine sans node : ils SKIPPENT désormais en
   le disant (« node absent — parse JS impossible ici »). Les environnements
   outillés continuent de mesurer.
-- Résidu de workspace `elio/__pycache__` (bytecode d'anciennes branches)
-  supprimé — il faisait mentir le gardien du namespace.
+- Résidu de workspace du package personnel legacy (`__pycache__` de
+  bytecode laissé par d'anciennes branches) supprimé — il faisait mentir
+  le gardien du namespace.
 
 ## Preuves
 
