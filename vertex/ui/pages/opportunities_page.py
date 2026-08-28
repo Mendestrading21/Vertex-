@@ -109,7 +109,9 @@ _CONTENT = """
   #vx-content .vx-card-title{font-size:12.5px !important;font-weight:640;letter-spacing:.09em;
     text-transform:uppercase;color:var(--vx-text-secondary,#c2c7cf)}
   #vx-content .vx-card-header{padding-bottom:9px;margin-bottom:12px;border-bottom:1px solid rgba(255,255,255,.05)}
-  #vx-content .vx-chart-question{opacity:.66;font-size:11px;font-style:italic}
+  /* opacité RETIRÉE (lot 30) : elle abaissait le jeton AA à ~3,8:1 — mesuré
+     Lighthouse. La hiérarchie vient du jeton, de la taille et de l'italique. */
+  #vx-content .vx-chart-question{font-size:11px;font-style:italic}
   #vx-content .vx-meta{font-size:10.5px;color:var(--vx-text-muted,#7c828c)}
   #vx-content .vx-card-footer,#vx-content .vx-card-foot{opacity:.72}
   #vx-content .vx-num,#vx-content .vx-kpi-value,#vx-content .vx-mono{font-variant-numeric:tabular-nums}

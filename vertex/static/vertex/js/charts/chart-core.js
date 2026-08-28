@@ -277,7 +277,7 @@
         ${opts.limits ? `<span class="vx-meta">${opts.limits}</span>` : ''}
         <span class="vx-chart-tools">
           <button class="vx-btn vx-btn-sm vx-btn-ghost vx-chart-tbl" title="Voir les données en tableau" aria-label="Voir les données">Données</button>
-          <button class="vx-btn vx-btn-sm vx-btn-ghost vx-chart-fs" title="Agrandir en plein écran" aria-label="Plein écran">⤢ Agrandir</button>
+          <button class="vx-btn vx-btn-sm vx-btn-ghost vx-chart-fs" title="Agrandir en plein écran" aria-label="Agrandir en plein écran">⤢ Agrandir</button>
           <button class="vx-btn vx-btn-sm vx-btn-ghost vx-explain-btn" data-explain="${id}">Comprendre</button>
         </span>
       </div>`;
