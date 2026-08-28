@@ -136,7 +136,10 @@ def test_la_route_appelle_le_repli_apres_le_passage_broker():
     """L'ordre compte : appelé avant, le repli servirait de préférence à une
     cotation broker disponible."""
     src = DESK.read_text(encoding='utf-8')
-    i_ibkr = src.index("opt_job('posq'")
+    #  Lot 6 : la route passe par l'instance (`_INSTANCE['opt_job']`) pour
+    #  rester testable sans socket — l'intention du banc (broker AVANT repli)
+    #  ne change pas.
+    i_ibkr = src.index("hooks['opt_job']('posq'")
     i_repli = src.index('completer_par_repli(todo, out, cotation_repli)')
     assert i_ibkr < i_repli, (
         'le repli est consulté AVANT le broker : il servirait un cours de scan '

@@ -223,6 +223,13 @@ def make_blueprint(*, opt_job, ibkr_enabled, cotation_repli=None):
     bp = Blueprint('desk', __name__)
     desk_lock = threading.Lock()
     posq_cache = {}      # cotations des trades perso : {key: (ts, data)} — TTL 45 s
+    #  Lot 6 — les crochets vivent SUR le blueprint (bp._vx_hooks), pas dans
+    #  un global de module : chaque application construite porte les siens, et
+    #  un banc les atteint par app.blueprints['desk']._vx_hooks sans polluer
+    #  les autres. Un global s'etait fait ecraser par le premier banc venu.
+    hooks = {'posq_cache': posq_cache, 'opt_job': opt_job,
+             'ibkr_enabled': ibkr_enabled}
+    bp._vx_hooks = hooks
 
     def _demo_exposee_sans_code():
         """Vrai seulement pour l'instance publique de demonstration."""
@@ -378,7 +385,10 @@ def make_blueprint(*, opt_job, ibkr_enabled, cotation_repli=None):
         # au fil des contrats cotés sur des semaines d'usage)
         for k in [k for k, (ts, _) in posq_cache.items() if now - ts > 20 * POSQ_TTL_S]:
             posq_cache.pop(k, None)
-        todo, out = [], {}
+        #  L'etat broker se lit de l'instance : un banc doit pouvoir simuler
+        #  « IBKR actif » sans ouvrir de socket.
+        broker_actif = bool(hooks['ibkr_enabled'])
+        todo, out, perimees = [], {}, []
         for p in poss:
             if not isinstance(p, dict):
                 continue
@@ -389,10 +399,28 @@ def make_blueprint(*, opt_job, ibkr_enabled, cotation_repli=None):
             c = posq_cache.get(key)
             if c and now - c[0] < POSQ_TTL_S:
                 out[key] = c[1]
+            elif c:
+                #  Lot 6 — servir le PERIME immediatement, etiquete, plutot que
+                #  payer jusqu'a 45 s de file worker (20/33/56 s mesurees) pour
+                #  une cle deja en memoire. Le rafraichissement part derriere.
+                out[key] = c[1]
+                perimees.append((key, p))
             else:
                 todo.append(p)
-        if todo and ibkr_enabled:
-            res = opt_job('posq', (todo,), timeout=45) or {}
+        if perimees and broker_actif:
+            def _rafraichir(lots=list(perimees)):
+                res = hooks['opt_job']('posq', ([p for _, p in lots],),
+                                           timeout=45) or {}
+                t2 = time.time()
+                for k, v in res.items():
+                    if v is not None:
+                        posq_cache[k] = (t2, v)
+            threading.Thread(target=_rafraichir, daemon=True).start()
+        if todo and broker_actif:
+            #  Seule attente restante : une cle JAMAIS cotee. Bornee a 12 s —
+            #  au-dela, le repli honnete ci-dessous prend la main et le
+            #  prochain passage lira le cache que le worker aura rempli.
+            res = hooks['opt_job']('posq', (todo,), timeout=12) or {}
             for k, v in res.items():
                 if v is not None:
                     posq_cache[k] = (now, v)
@@ -455,7 +483,11 @@ def make_blueprint(*, opt_job, ibkr_enabled, cotation_repli=None):
             _q['spread_pct'] = (round((_a - _b) / _mid * 100, 2)
                                 if (_mid and _b and _a) else None)
         return jsonify({'results': out, 'live': bool(ibkr_enabled),
-                        'fallback_used': bool(combles), 'ts': int(now)})
+                        'fallback_used': bool(combles), 'ts': int(now),
+                        #  Lot 6 — les cles servies depuis un cache au-dela du
+                        #  TTL : l'UI peut etiqueter « cote conservee » au lieu
+                        #  de laisser un age faux passer pour frais.
+                        'stale': [k for k, _ in perimees]})
 
     return bp
 
