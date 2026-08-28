@@ -433,7 +433,7 @@ async function renderTeam(){
         <span class="vx-chart-question">Où est concentré le capital, et qui gagne/perd ?</span></div>
       <div id="pf-alloc-tree" style="height:260px"></div>
       ${compositionBar(rich)}
-      <div class="vx-card-foot"><span class="vx-meta">Taille = poids (valeur au marché ou au coût) · couleur = P&amp;L latent (vert gagnant / rouge perdant / gris sans marque). Positions déclarées, aucune valeur inventée.</span></div>
+      <div class="vx-card-foot"><span class="vx-meta">Taille = poids (valeur au marché ou au coût) · couleur = P&amp;L latent quand il est connu (vert gagnant / rouge perdant), sinon concentration (rouge &gt; 25 % · ambre ≥ 15 % · vert en dessous). Positions déclarées, aucune valeur inventée.</span></div>
     </section>
     <div class="vx-grid">
     <div class="vx-col-8" id="pf-team-cols"></div>
@@ -521,7 +521,7 @@ async function renderTeam(){
          et qui gagne/perd ? ») : la redire ici la doublerait. */
       source:window.__pfLive?'IBKR/desk':'desk (repli)',timestamp:window.__pfTs||null,
       mode:window.__pfLive?'live':'fallback',
-      limits:'aire = capital engagé · couleur = P&L quand il est connu',
+      limits:'aire = capital engagé · couleur = P&L quand il est connu, sinon concentration (rouge > 25 %)',
       items:rich.map(t=>({label:t.sym,value:Math.max(1,t.value??t.invested??0),
         sub:(t.pl!=null?((t.pl>=0?'+':'')+VX.fmt.num(t.pl,1)+'%')
              :(plConnu?(t.type!=='STK'?t.type:'')

@@ -1457,13 +1457,17 @@ async function loadAlerts(){
 async function peindreSante(){
   const el=$('vx-sys-ctx-sante');if(!el)return;
   const dire=(t,e)=>{el.innerHTML='<span class="vx2-badge" data-state="'+e+'">'+t+'</span>';};
-  let hz=null;try{hz=await VX.fetch('/healthz',{ttl:30000});}catch(e){}
-  if(!hz){dire('Santé non lue','missing');return;}
-  const mot={ok:['Opérationnel','live'],degraded:['Partiellement dégradé','delayed'],
-             error:['En erreur','error']}[String(hz.status||'').toLowerCase()];
-  if(!mot){dire('État non rapporté','missing');return;}
-  const n=(hz.engines||[]).length;
-  dire(mot[0]+(n?' · '+n+' moteur'+(n>1?'s':''):''),mot[1]);
+  /* /healthz est une sonde de VIE : status='ok' = le process repond, rien de
+     plus. Le badge la traduisait en « Operationnel · 8 moteurs » pendant que
+     la jauge de la meme page disait 0/8 (mesure au navigateur). L'etat global
+     vient desormais de /readyz — les verifications REELLES — et le compte
+     affiche est celui des verifications passees, pas des moteurs declares. */
+  let rz=null;try{rz=await VX.fetch('/readyz',{ttl:30000});}catch(e){}
+  if(!rz||!Array.isArray(rz.checks)){dire('Santé non lue','missing');return;}
+  const ok=rz.checks.filter(c=>c.ok).length,n=rz.checks.length;
+  if(rz.ready===true&&ok===n){dire('Prêt · '+ok+'/'+n+' vérifications','live');return;}
+  if(rz.ready===true){dire('Prêt · '+ok+'/'+n+' vérifications','delayed');return;}
+  dire('Non prêt · '+ok+'/'+n+' vérifications','error');
 }
 
 async function loadSecurity(){

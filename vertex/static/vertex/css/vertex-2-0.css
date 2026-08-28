@@ -1383,3 +1383,12 @@ html,body{max-width:100%;overflow-x:clip}
    section. La frontiere est reelle, elle n'est pas une rupture. */
 #vx-content > .vx2-tabs{margin-bottom:var(--vx2-s5)}
 #vx-content > .vx2-tabs + *{margin-top:0}
+
+/* -------------------------------------------------------------------------
+   Ton « ai » : ARGENT structurel, pas violet.
+   Palette stricte : le violet appartient aux OPTIONS uniquement. glass.css
+   posait `--vx-option` sur l'encart IA (`.vx-insight[data-tone="ai"]`) —
+   mesuré sur la page Vertex IA pendant la vérification du lot 20. Cette
+   couche est chargée en dernier : elle rétablit la signification unique.
+   ------------------------------------------------------------------------- */
+.vx-insight[data-tone="ai"]{border-left-color:var(--vx-silver)}

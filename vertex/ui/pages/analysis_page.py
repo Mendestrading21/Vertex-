@@ -1101,7 +1101,10 @@ async function loadDossier(){
     +kv('ROE',me.roe!==undefined&&me.roe!==null?VX.fmt.pct(me.roe*100,0):null)
     +_kvif('Dette / EBITDA',cf.debt_to_ebitda!=null?(+cf.debt_to_ebitda).toFixed(2)+'×':null)
     +_kvif('Cash-flow libre',fmtBig(cf.fcf))
-    +kv('Médiane sectorielle P/E',t&&t.sector_median&&(t.sector_median.median_pe??t.sector_median))
+    /* mediane : SEULEMENT la valeur numerique — le repli sur l'objet entier
+       rendait « [object Object] » quand sector_median etait un dict vide
+       (mesure au navigateur, dossier sans fondamentaux). */
+    +kv('Médiane sectorielle P/E',(t&&t.sector_median&&t.sector_median.median_pe!=null)?(+t.sector_median.median_pe).toFixed(1):null)
     +_kvif('Prochains résultats',cf.earnings_date)
     +(peers.length>1?`<div class="vx-meta vx-mt2">Pairs : ${peers.filter(p=>p.symbol!==SYM).slice(0,4).map(p=>
       `<button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" data-open-analysis="${p.symbol}">${p.symbol}</button>`).join('')}</div>`:''));
