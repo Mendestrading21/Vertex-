@@ -115,8 +115,11 @@ def test_header_badge_never_claims_live_ibkr_from_config_flag():
     src = open(os.path.join(ROOT, 'terminal.py'), encoding='utf-8').read()
     assert "ibkr_enabled){s='🟢 LIVE IBKR'" not in src, \
         'le badge LIVE IBKR est dérivé du flag de config au lieu de la donnée réelle'
-    # la version honnête consulte data_source==='ibkr'
-    assert "data_source==='ibkr'){s='🟢 LIVE IBKR'" in src
+    #  Le badge inline a disparu avec la couche pages de terminal.py (lot 36) :
+    #  plus AUCUN « LIVE IBKR » côté terminal. La règle « jamais LIVE sans
+    #  preuve » reste gardée côté API par test_ibkr_not_claimed_live_without_proof
+    #  et, côté pages servies, par l'indicateur de fraîcheur (VX.updateIndicator).
+    assert 'LIVE IBKR' not in src
 
 
 def test_morning_brief_uses_live_news_endpoint():

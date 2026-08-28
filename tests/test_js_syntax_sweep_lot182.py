@@ -99,7 +99,9 @@ def test_sync_center_js_parse():
 
 
 def test_heatmap_du_vault_parse():
-    assert _check(terminal._HEATMAP_JS) is None
+    #  _HEATMAP_JS est parti avec la couche pages morte de terminal.py
+    #  (lot 36) ; le balayage des pages servies couvre le reste.
+    assert not hasattr(terminal, '_HEATMAP_JS')
 
 
 # ── L'extracteur lui-même (le gardien du gardien) ────────────────────────────

@@ -92,10 +92,8 @@ def test_api_routes_and_global_injection():
     assert r['ok'] and r['report']['requested'] == ['prices']
     rp = c.get('/api/live/report').get_json()
     assert rp['lines']
-    # Sync Center présent sur les pages _vpage ET sur la home standalone
-    assert 'vxSyncOpen' in terminal._NAVJS_BLOCK
-    assert 'vxSyncOpen' in terminal.PAGE_DAILY
-    assert 'Mettre à jour' in terminal.PAGE_DAILY
+    # La couche pages de terminal.py est retirée (lot 36) : le Sync Center
+    # ne vit plus que dans son module (vérifié par test_sync_center_features).
 
 
 def test_sync_center_features():

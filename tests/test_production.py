@@ -95,5 +95,8 @@ def test_desk_sync_keys_single_source_of_truth():
 
 
 def test_shell_has_accessibility_rules():
-    assert ':focus-visible' in terminal._VPAGE_CSS
-    assert 'prefers-reduced-motion' in terminal._VPAGE_CSS
+    #  La couche pages de terminal.py est retirée (lot 36) : les règles
+    #  d'accessibilité vivent dans les feuilles réellement servies.
+    base = open('vertex/static/vertex/css/base.css', encoding='utf-8').read()
+    assert ':focus-visible' in base
+    assert 'prefers-reduced-motion' in base
