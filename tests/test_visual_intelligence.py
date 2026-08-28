@@ -48,7 +48,7 @@ def test_js_theme_matches_python_palette():
     entière doit correspondre, pas seulement quelques couleurs (garde-fou C-02).
     """
     root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    js = os.path.join(root, 'vertex/static/vertex/js/charts/chart-theme-obsidian-copper.js')
+    js = os.path.join(root, 'vertex/static/vertex/js/charts/chart-theme-black-glass.js')
     with open(js, encoding='utf-8') as fh:
         src = fh.read().lower()
     # les couleurs clés du registre doivent apparaître dans le thème JS

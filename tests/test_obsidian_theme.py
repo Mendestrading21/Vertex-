@@ -62,7 +62,7 @@ def test_no_blue_in_ui_pages():
 
 def test_no_blue_main_series():
     """La série principale est le bleu de MARQUE ; aucun autre bleu dans la série."""
-    theme = _read(VXJS, 'charts', 'chart-theme-obsidian-copper.js')
+    theme = _read(VXJS, 'charts', 'chart-theme-black-glass.js')
     series = re.search(r'series:\s*\[(.*?)\]', theme, re.S).group(1)
     for m in re.finditer(r'#[0-9a-fA-F]{6}', series):
         assert not _is_forbidden_blue(m.group(0)), f'bleu non-marque dans la série : {m.group(0)}'

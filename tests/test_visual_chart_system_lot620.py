@@ -18,7 +18,7 @@ ROOT = Path(__file__).resolve().parents[1]
 CSS = ROOT / 'vertex/static/vertex/css/charts.css'
 CORE = ROOT / 'vertex/static/vertex/js/charts/chart-core.js'
 HEATMAP = ROOT / 'vertex/static/vertex/js/charts/heatmap.js'
-THEME = ROOT / 'vertex/static/vertex/js/charts/chart-theme-obsidian-copper.js'
+THEME = ROOT / 'vertex/static/vertex/js/charts/chart-theme-black-glass.js'
 
 
 def _read(path: Path) -> str:
@@ -65,7 +65,7 @@ window.VX = {
   },
   shell: {openDrawer() {}},
 };
-vm.runInThisContext(fs.readFileSync('vertex/static/vertex/js/charts/chart-theme-obsidian-copper.js', 'utf8'), {filename:'theme.js'});
+vm.runInThisContext(fs.readFileSync('vertex/static/vertex/js/charts/chart-theme-black-glass.js', 'utf8'), {filename:'theme.js'});
 vm.runInThisContext(fs.readFileSync('vertex/static/vertex/js/charts/chart-core.js', 'utf8'), {filename:'chart-core.js'});
 """ % ('true' if mobile else 'false', 'true' if reduced else 'false')
     if heatmap:

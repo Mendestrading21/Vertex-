@@ -16,7 +16,12 @@ BUDGET_JS_KB = 64      # plus gros actuel (recalibré lot 226) : chart-core 57 k
                        # (89 % du budget — la tournée TV lots 189-213 a coûté
                        # +18 kB de builders ; prochain palier = discuter le
                        # budget AVANT de le crever, pas le monter en douce)
-BUDGET_CSS_KB = 64     # plus gros actuel : neon-glass.css 47 kB
+BUDGET_CSS_KB = 96     # plus gros actuel : vertex-2-0.css (~65 kB) — la COUCHE
+                       # DE VÉRITÉ FINALE, qui absorbe les rapatriements des
+                       # feuilles mortes (neon-glass.css 47 kB SUPPRIMÉE au
+                       # lot 24 : le total CSS du dépôt baisse). Palier discuté
+                       # et autorisé avec le lot 24, pas monté en douce ;
+                       # prochain palier = même règle.
 
 
 def _walk(ext, base='vertex/static'):

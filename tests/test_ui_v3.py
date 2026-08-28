@@ -136,7 +136,7 @@ def test_every_chart_has_timestamp():
 
 
 def test_chart_theme_is_single():
-    theme = _read(VXJS, 'charts', 'chart-theme-obsidian-copper.js')
+    theme = _read(VXJS, 'charts', 'chart-theme-black-glass.js')
     assert 'VXChartTheme' in theme
     core = _read(VXJS, 'charts', 'chart-core.js')
     assert 'VXChartTheme' in core
@@ -229,7 +229,7 @@ def test_no_console_errors():
 
 def test_service_worker_version_bumped(client):
     body = client.get('/sw.js').get_data(as_text=True)
-    assert 'td-shell-v267' in body
+    assert 'td-shell-v268' in body
     assert 'td-shell-v49' not in body
 
 

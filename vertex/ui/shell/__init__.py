@@ -345,7 +345,7 @@ def render_shell(*, title: str, active: str, space_label: str, sub_label: str = 
 <script src="/static/vertex/js/vx-router.js" defer></script>
 <script src="/static/vertex/js/ui/inspector-drawer.js" defer></script>
 <script src="/static/vertex/js/live-updates.js" defer></script>
-<script src="/static/vertex/js/charts/chart-theme-obsidian-copper.js" defer></script>
+<script src="/static/vertex/js/charts/chart-theme-black-glass.js" defer></script>
 <script src="/static/vertex/js/charts/chart-core.js" defer></script>
 <script src="/static/vertex/js/charts/radar-chart.js" defer></script>
 {page_js}

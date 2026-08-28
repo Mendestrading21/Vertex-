@@ -1049,7 +1049,7 @@ html,body{max-width:100%;overflow-x:clip}
 
 /* -------------------------------------------------------------------------
    22) RÉGIME DE MARCHÉ — la pastille d'état de la Synthèse
-   Ses règles vivaient dans `neon-glass.css`, qui n'est JAMAIS servie (dette
+   Ses règles vivaient dans `neon-glass.css`, jamais servie (SUPPRIMÉE au lot 24 ; dette
    étiquetée au lot 14). La pastille n'avait donc aucun style : « Régime non
    qualifié » et la phrase qui suit se lisaient d'un seul tenant, comme une
    seule phrase incohérente. C'est le premier dommage mesuré de cette feuille
@@ -1137,7 +1137,7 @@ html,body{max-width:100%;overflow-x:clip}
 }
 
 /* === 24. La barre de contexte des Options n'avait aucune disposition =========
-   Les seules règles de `.vx-options-context` vivent dans `neon-glass.css`, une
+   Les seules règles de `.vx-options-context` vivaient dans `neon-glass.css` (supprimée au lot 24), une
    feuille qu'aucune page ne demande — vérifié au navigateur. Sans elles, la
    grille à trois colonnes n'existait pas : le titre, sa phrase, le libellé
    « Symbole », le champ et deux boutons retombaient les uns sous les autres en
@@ -1185,7 +1185,7 @@ html,body{max-width:100%;overflow-x:clip}
 
 /* === 26. Six autres classes rendues sans aucune règle servie =================
    Relevé au navigateur : on collecte les classes dont les SEULES règles vivent
-   dans `neon-glass.css`, puis on ne garde que celles réellement présentes dans
+   dans `neon-glass.css` (supprimée au lot 24), puis on ne garde que celles réellement présentes dans
    le DOM des 65 routes. Sept en sortent. Chacune est traitée pour ce qu'elle
    vaut, pas rapatriée en bloc :
 
@@ -1392,3 +1392,46 @@ html,body{max-width:100%;overflow-x:clip}
    couche est chargée en dernier : elle rétablit la signification unique.
    ------------------------------------------------------------------------- */
 .vx-insight[data-tone="ai"]{border-left-color:var(--vx-silver)}
+
+/* === 27. Rapatriement lot 24 — règles contractuelles de la feuille supprimée ==
+   `neon-glass.css` (jamais servie) est supprimée sur décision humaine. Trois
+   groupes de règles y étaient CONTRACTUELS (gardés par des bancs) et visaient
+   des classes encore rendues par des pages servies : ils sont rapatriés ici,
+   au mérite — jetons neon (`--ng-*`) remplacés par les jetons canoniques,
+   aucun glow, aucune identité abandonnée.
+
+   27a. Cartes d'indices de Marchés à 390 px : sans `flex-wrap`, la rangée
+   d'en-tête porte 198 px de contenu dans 143 px et la carte COUPE en silence ;
+   sans `min-width:0` + ellipse, le nom ne rétrécit pas et déborde sans
+   l'avouer ; `margin-left:auto` garde la pastille à droite après le retour à
+   la ligne. */
+#vx-content[data-space="markets"] .vx-mk-idx-top{
+  display:flex;align-items:center;gap:9px;flex-wrap:wrap;
+}
+#vx-content[data-space="markets"] .vx-mk-idx-name{
+  font-size:13px;font-weight:650;color:var(--vx-text-primary);line-height:1.15;
+  min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+#vx-content[data-space="markets"] .vx-mk-idx-rel{
+  margin-left:auto;font-size:10.5px;font-weight:650;letter-spacing:.02em;
+  padding:3px 8px;border-radius:999px;color:var(--vx-text-secondary);
+  background:rgba(0,0,0,.3);border:1px solid var(--vx2-line);white-space:nowrap;
+}
+
+/* 27b. Rail du dossier Analyse : colonne calme, sticky SEULEMENT au-dessus de
+   1024 px — en dessous, il redevient statique et suit le flux. */
+#vx-content[data-space="analysis"] .an-rail-stack{
+  position:static;display:flex;flex-direction:column;gap:var(--vx2-s3);
+  min-width:0;align-self:start;
+}
+#vx-content[data-space="analysis"] .an-rail-stack > .vx-card{
+  box-shadow:var(--vx-shadow-1);
+}
+@media (min-width:1025px){
+  #vx-content[data-space="analysis"] .an-rail-stack{
+    position:sticky;top:calc(var(--vx-topbar-h) + var(--vx2-s3));
+  }
+}
+@media (max-width:1024px){
+  #vx-content[data-space="analysis"] .an-rail-stack{position:static;top:auto}
+}

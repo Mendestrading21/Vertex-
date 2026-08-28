@@ -1,7 +1,7 @@
 /* Vertex Charts — thème graphique unique.
-   (Nom de fichier HISTORIQUE : « obsidian-copper » ne décrit plus rien. Il est
-   conservé parce que la coque et plusieurs bancs l'épinglent ; le renommer
-   appartient au lot de nettoyage, pas à un lot de contenu.)
+   (Renommé au lot 24 : « chart-theme-black-glass » — l'ancien nom
+   « obsidian-copper » décrivait une palette abandonnée. La coque et les
+   bancs suivent le même commit.)
 
    Aligné sur « Vertex Black Glass — Signal Light ». UNE COULEUR = UNE
    SIGNIFICATION, y compris dans un graphique :

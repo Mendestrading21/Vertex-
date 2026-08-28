@@ -15,7 +15,9 @@ CONTEXT = ROOT / 'vertex/static/vertex/js/pages/options-context.js'
 INTEL = ROOT / 'vertex/static/vertex/js/pages/options-intel.js'
 SCANNER = ROOT / 'vertex/static/vertex/js/pages/options-scanner.js'
 STRUCTURE = ROOT / 'vertex/static/vertex/js/pages/options-structure.js'
-THEME = ROOT / 'vertex/static/vertex/css/neon-glass.css'
+#  Lot 24 : la barre de contexte Options est régie par la couche SERVIE
+#  (rapatriée au §24 de vertex-2-0.css) — neon-glass.css est supprimée.
+THEME = ROOT / 'vertex/static/vertex/css/vertex-2-0.css'
 
 
 class _Ids(HTMLParser):
@@ -135,9 +137,13 @@ def test_options_context_propagates_symbol_and_never_executes():
 
 
 def test_options_css_uses_shared_tokens_and_mobile_single_column():
+    #  Lot 24 : le contrat suit la feuille SERVIE. La grille est celle du §24
+    #  (4 colonnes desktop), plus l'ancienne 3-colonnes de la feuille morte —
+    #  qui n'a jamais été rendue à l'écran.
     css = THEME.read_text(encoding='utf-8')
-    assert '.vx-content[data-space="options"] .vx-options-context' in css
-    assert 'grid-template-columns:minmax(220px,1fr) minmax(180px,260px) auto' in css
+    assert '#vx-content[data-space="options"] .vx-options-context' in css
+    assert 'grid-template-columns:minmax(220px,1fr) minmax(180px,260px) auto auto' in css
     assert '@media (max-width:640px)' in css
     assert 'grid-template-columns:minmax(0,1fr)' in css
-    assert 'box-shadow:0 0' not in css[css.rfind('/* ══ OPTIONS'):]
+    bloc = css[css.find('24. La barre de contexte des Options'):]
+    assert 'box-shadow:0 0' not in bloc, 'aucun glow dans le bloc options'

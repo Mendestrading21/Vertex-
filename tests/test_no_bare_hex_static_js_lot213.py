@@ -7,7 +7,7 @@ toléré que :
   - comme repli d'un lookup de token : var(--…, #hex) ·
     fn('name', '#hex') · fn(obj, 'name', '#hex') · lookup || '#hex' ;
   - dans les DÉFINITIONS de palette (la source des tokens doit bien
-    porter les hex quelque part) : chart-theme-obsidian-copper.js
+    porter les hex quelque part) : chart-theme-black-glass.js
     (le thème entier) et le bloc `C.colors = Object.assign({...})`
     de chart-core.js — exemptions DOCUMENTÉES et bornées.
 Calibré contre l'état réel au lot 213 : 49 occurrences → 1 littéral
@@ -23,7 +23,7 @@ JS_GLOBS = [
     str(ROOT / 'vertex' / 'static' / 'vertex' / 'js' / 'charts' / '*.js'),
     str(ROOT / 'vertex' / 'static' / 'vertex' / 'js' / 'pages' / '*.js'),
 ]
-EXEMPT_FILES = {'chart-theme-obsidian-copper.js'}   # définition du thème
+EXEMPT_FILES = {'chart-theme-black-glass.js'}   # définition du thème
 
 HEX = re.compile(r"['\"]#[0-9a-fA-F]{3,6}['\"]")
 LEGIT_PREFIX = re.compile(
@@ -77,7 +77,7 @@ def test_le_treemap_utilise_le_token_texte():
 def test_les_exemptions_restent_bornees():
     # le thème existe (source des tokens) et le bloc palette de chart-core
     # est présent avec ses bornes exactes (sinon _strip_palette_block casse)
-    theme = ROOT / 'vertex' / 'static' / 'vertex' / 'js' / 'charts' / 'chart-theme-obsidian-copper.js'
+    theme = ROOT / 'vertex' / 'static' / 'vertex' / 'js' / 'charts' / 'chart-theme-black-glass.js'
     core = (ROOT / 'vertex' / 'static' / 'vertex' / 'js' / 'charts' / 'chart-core.js').read_text(encoding='utf-8')
     assert theme.exists()
     assert 'C.colors = Object.assign(' in core
