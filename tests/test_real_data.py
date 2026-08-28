@@ -113,27 +113,19 @@ def test_quarters_survives_bad_ticker():
     assert q[-1]['rev'] == 1000 and q[-1]['ni'] == 100
 
 
-# ─── Import positions IBKR ───
+# ─── Import positions IBKR — capacité RETIRÉE au lot 2 ───
+#
+#  Deux bancs gardaient ici la route `/api/ibkr/positions` et son cablage
+#  (worker `positions`, bouton d'import du Portefeuille). La frontiere
+#  market-data-only a retire la capacite : lire le portefeuille du COMPTE
+#  reste lire le compte, meme en lecture seule. La non-reapparition — route,
+#  worker, consommation UI — est gardee par
+#  `tests/test_vertex_1_0_reconciliation_pnl.py` et l'AST par
+#  `tests/test_frontiere_ibkr_lot02.py`.
 
-def test_ibkr_positions_offline_is_honest():
-    # 200 + ok:false : broker hors ligne = état applicatif déclaré, pas une
-    # panne serveur (un 503 générerait une erreur console à chaque visite).
+def test_la_route_d_import_est_bien_retiree_du_service():
     import terminal
     r = terminal.app.test_client().get('/api/ibkr/positions')
-    assert r.status_code == 200
-    j = r.get_json()
-    assert j['ok'] is False and 'IBKR' in j['err'] and j['positions'] == []
-
-
-def test_worker_and_desk_button_wired():
-    src = open('terminal.py', encoding='utf-8').read()
-    assert "elif kind == 'positions':" in src                 # worker lecture seule
-    # Le bouton d'import vivait sur la page Desk (retirée en purge É1) : la
-    # surface servie aujourd'hui est Portefeuille → /api/ibkr/positions.
-    from vertex.app.routes import desk as desk_routes
-    route_src = open(desk_routes.__file__, encoding='utf-8').read()
-    assert "@bp.route('/api/ibkr/positions')" in route_src
-    assert 'LECTURE SEULE' in route_src                       # invariant readonly
-    pf = open('vertex/ui/pages/portfolio_page.py', encoding='utf-8').read()
-    assert '/api/ibkr/positions' in pf                        # consommée par Portefeuille
-    assert 'importe depuis IBKR (lecture seule)' in pf        # libellé honnête
+    assert r.status_code == 404, (
+        'la route d\'import des positions du compte repond a nouveau.'
+    )

@@ -415,7 +415,7 @@ async function renderTeam(){
   if(!pos.length){
     ($('pf-body')||{}).innerHTML=VX.states.emptyDesk(
       'Aucune position déclarée — le portefeuille répond « où suis-je exposé ? » '
-      +'dès la première position. Déclare une position ou importe depuis IBKR (lecture seule).',
+      +'dès la première position. Les positions se déclarent dans Vertex — le compte courtier n\'est jamais lu.',
       '<button class="vx-btn vx-btn-sm vx-btn-primary" onclick="VXEntities.openAddModal(\'\',\'position\')">Déclarer une position</button>'
       +' <a class="vx-btn vx-btn-sm vx-btn-ghost" href="/opportunities">Chercher des candidats →</a>');
     return;
@@ -620,15 +620,16 @@ async function renderPositions(){
       '<button class="vx-btn vx-btn-sm vx-btn-primary" onclick="VXEntities.openAddModal(\'\',\'position\')">Déclarer une position</button>');
     return;
   }
-  let ibkr=null,posState=null,alerts=null;
-  try{ibkr=await VX.fetch('/api/ibkr/positions',{ttl:120000});}catch(e){}
+  /* Lot 2 — frontiere IBKR market-data-only : Vertex ne lit plus les
+     positions du COMPTE courtier. Le portefeuille est celui que l'utilisateur
+     declare ; IBKR ne sert plus qu'a coter. */
+  let posState=null,alerts=null;
   try{posState=await VX.fetch('/api/positions/state',{ttl:30000});}catch(e){}
   const posById={};((posState&&posState.positions)||[]).forEach(p=>{posById[String(p.position_id)]=p;});
   const srcLabel=(s)=>({IBKR:'IBKR',MANUAL:'Manuelle',PAPER:'Paper',SIMULATED:'Simulation',IMPORTED:'Importée'}[s]||'Manuelle');
   const groups={Actions:rich.filter(t=>t.type==='STK'),Options:rich.filter(t=>t.type!=='STK')};
   ($('pf-body')||{}).innerHTML=
-    (posState?actionListHtml(posState):'')+
-    (ibkr&&ibkr.ok===false?'<div class="vx-stale-banner">IBKR hors ligne — marques desk/EOD utilisées (aucune valeur inventée).</div>':'')
+    (posState?actionListHtml(posState):'')
     +Object.entries(groups).map(([g,list])=>`
     <section class="vx-card vx-mb3"><div class="vx-card-header"><span class="vx-card-title">${g}</span>
       <span class="vx-meta vx-right">${list.length}</span></div>
@@ -652,7 +653,7 @@ async function renderPositions(){
       :VX.states.empty('Aucune position '+g.toLowerCase()+'.')}
     </section>`).join('')
     +`<div class="vx-card-footer">${VX.updateIndicator(window.__pfTs||null,window.__pfLive?'IBKR/desk':'desk (repli)',window.__pfLive?'live':'fallback')}
-      · IBKR: ${ibkr&&ibkr.count!==undefined?ibkr.count+' position(s) broker (lecture seule)':'hors ligne'} · lecture seule — aucun ordre</div>`;
+      · portefeuille déclaré dans Vertex — IBKR ne sert qu'à coter · lecture seule — aucun ordre</div>`;
 }
 
 /* ═══ PERFORMANCE (LOT G — migrée depuis Journal, domicile unique) ═══ */
@@ -915,54 +916,13 @@ async function renderCombinedOptions(rich){
   }).join('');
 }
 
-/* ═══ RAPPROCHEMENT P&L — quatre sources, aucune ne gagne en silence ═══
-   Mesure du 24 août 2026 sur compte réel : accountSummary 1 024,03 ·
-   reqPnL 928,57 · portefeuille 1 024,03 · Vertex 753,90. L'écart de 270 USD
-   venait d'UNE ligne (URA, valorisée 7 760,00 contre 8 032,84) et de deux
-   lignes suivies mais non détenues.
-   Afficher un seul de ces chiffres rendrait le P&L vrai ou faux selon un
-   arbitrage que personne n'a pris. La carte les montre tous, nomme l'écart et
-   ne tranche pas. */
-async function renderPnlRecon(){
-  const host=$('pf-pnl-recon'); if(!host) return;
-  let d=null;
-  try{ d=await VX.fetch('/api/positions/pnl-reconciliation',{ttl:15000}); }
-  catch(e){ (host||{}).innerHTML='<section class="vx-card vx-mb3">'
-      +VX.states.error('Rapprochement P&L indisponible')+'</section>'; return; }
-  if(!d) return;
-  const NOMS={resume:'Résumé de compte',temps_reel:'Temps réel (reqPnL)',
-              portefeuille:'Somme des lignes',vertex:'Calcul Vertex'};
-  const src=d.sources||{}, lignes=Object.keys(NOMS).map(k=>{
-    const v=src[k];
-    return '<div class="vx-kpi vx-card vx-card--compact" style="grid-column:span 3">'
-      +'<span class="vx-kpi-label">'+NOMS[k]+'</span>'
-      +'<span class="vx-kpi-value" style="font-size:20px">'
-      +(v==null?'n/d':VX.fmt.num(v))+'</span>'
-      +'<span class="vx-meta">'+(v==null?'source absente':'P&L non réalisé')+'</span></div>';
-  }).join('');
-  const pl=d.par_ligne||{}, div=pl.lignes_divergentes||[];
-  const detail=div.length? '<ul class="vx-list">'+div.map(x=>
-      '<li><b>'+esc(x.symbole)+'</b> — Vertex '+VX.fmt.num(x.pnl_vertex)
-      +' contre '+VX.fmt.num(x.pnl_courtier)+' chez le courtier · écart '
-      +VX.fmt.num(x.ecart)+'</li>').join('')+'</ul>' : '';
-  const orphelines=(pl.absentes_chez_le_courtier||[]);
-  const orphBloc=orphelines.length?'<div class="vx-meta">Suivies par Vertex mais '
-      +'NON détenues par le compte : '+orphelines.map(esc).join(' · ')+'</div>':'';
-  const concordant=d.concordant;
-  const ton=concordant===true?'neutral':concordant===null?'warning':'warning';
-  const titre=concordant===true?'Les sources de P&L concordent'
-      :concordant===null?'Aucune source de P&L n\'a répondu'
-      :'Les sources de P&L divergent';
-  (host||{}).innerHTML='<section class="vx-card vx-mb3" aria-label="Rapprochement du P&L">'
-    +'<div class="vx-card-header"><span class="vx-card-title">Rapprochement du P&amp;L</span>'
-    +'<span class="vx-meta vx-right">lecture seule · Vertex ne tranche pas</span></div>'
-    +'<div class="vx-insight" data-tone="'+ton+'"><b>'+esc(titre)+'</b>'
-    +'<div class="vx-meta">'+esc(d.note||'')+'</div></div>'
-    +'<div class="vx-grid vx-kpi-strip vx-mb3">'+lignes+'</div>'
-    +detail+orphBloc
-    +(d.erreur_courtier?'<div class="vx-meta">Courtier : '+esc(d.erreur_courtier)+'</div>':'')
-    +'</section>';
-}
+/* Lot 2 — le rapprochement du P&L contre le courtier est RETIRÉ, avec sa
+   route. Il lisait accountSummary, reqPnL et le portefeuille du compte —
+   exactement ce que la frontière market-data-only interdit, readonly ou pas.
+   Constat au passage : son hôte `pf-pnl-recon` n'existait dans AUCUNE vue ;
+   la carte ne se peignait jamais. On retire donc une capacité déjà morte à
+   l'écran, pas un affichage vivant. Le P&L affiché reste celui que Vertex
+   calcule sur les positions déclarées, cotées par symbole. */
 
 /* ═══ RISQUE PRIORISÉ (LOT F — moteur risk_engine, positions réelles §26) ═══ */
 async function renderRisk(){
@@ -1083,9 +1043,7 @@ async function renderRisk(){
         } else {_sh.innerHTML=_se.map(function(e){return kv(e[0],e[1]+' %');}).join('');}
       }
     }catch(e){}
-    /* Le rapprochement se peint APRES le reste : il interroge le courtier et
-       ne doit pas retarder l'affichage du risque. Son hote existe deja. */
-    renderPnlRecon();
+
   }catch(e){($('pf-body')||{}).innerHTML=VX.states.error('Moteur de risque injoignable : '+e.message);}
 }
 

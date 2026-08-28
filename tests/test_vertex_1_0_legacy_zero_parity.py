@@ -76,9 +76,13 @@ def test_la_surface_servie_est_complete(application):
     sept routes disparues, aucune erreur levée. Un test qui ne regarde que les
     routes qu'on croit toucher ne l'aurait jamais vu."""
     regles = {r.rule for r in application.url_map.iter_rules()}
+    #  Lot 2 : `/api/ibkr/positions` (import du portefeuille du COMPTE) est
+    #  retiree par contrat — market-data-only. Elle ne fait plus partie de la
+    #  surface due, et sa NON-existence est gardee ailleurs
+    #  (test_vertex_1_0_reconciliation_pnl.py).
     for indispensable in ('/api/desk', '/api/desk/backups', '/api/desk/restore',
                           '/api/pos-quotes', '/api/watchlist-tv',
-                          '/api/ibkr/positions', '/api/journal/postmortem'):
+                          '/api/journal/postmortem'):
         assert indispensable in regles, (
             '%s a disparu du service : le blueprint desk n\'est plus enregistre '
             '(Flask ne se plaint JAMAIS d\'un blueprint oublie)' % indispensable)

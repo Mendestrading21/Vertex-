@@ -339,20 +339,12 @@ def make_blueprint(*, opt_job, ibkr_enabled, cotation_repli=None):
         syms = list(UNIVERSE)
         return jsonify({'count': len(syms), 'symbols': syms, 'tv': ','.join(syms)})
 
-    @bp.route('/api/ibkr/positions')
-    def api_ibkr_positions():
-        """Portefeuille TWS en LECTURE SEULE — pour l'import dans le Desk.
-        Hors connexion : erreur claire, jamais de données inventées."""
-        # ok:false en 200 : broker hors ligne = état attendu (pas une panne du
-        # serveur Vertex) — un 503 pollue la console à chaque visite Portefeuille.
-        if not ibkr_enabled:
-            return jsonify({'ok': False, 'positions': [],
-                            'err': 'IBKR non connecté (mode cloud/démo) — ouvre TWS ou Gateway puis réessaie.'}), 200
-        res = opt_job('positions', (), timeout=20)
-        if res is None:
-            return jsonify({'ok': False, 'positions': [],
-                            'err': 'TWS injoignable — vérifie que TWS/Gateway est ouvert et l\'API activée.'}), 200
-        return jsonify({'ok': True, 'positions': res, 'count': len(res)})
+    #  Lot 2 — la route d'import des positions du COMPTE est RETIRÉE.
+    #  « Lecture seule » protegait de l'ordre, pas de la confidentialite : lire
+    #  le portefeuille du courtier reste lire le compte. Le portefeuille de
+    #  Vertex est celui que l'utilisateur declare ; les positions historiques
+    #  deja importees restent lisibles dans le desk — on retire la capacite,
+    #  pas les donnees acceptees.
 
     @bp.route('/api/pos-quotes', methods=['POST'])
     def api_pos_quotes():

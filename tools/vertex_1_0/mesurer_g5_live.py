@@ -332,10 +332,11 @@ def sonder(gw, ib, symboles=SYMBOLES_DEFAUT, *, trades_declares=None) -> dict:
     r['valeurs_fabriquees'] = _essayer(
         'calculateur', lambda: _eprouver_calculateur(tickers), []) or []
 
-    reelles = _essayer('positions', lambda: [
-        {'sym': str(getattr(getattr(p, 'contract', None), 'symbol', '')),
-         'qty': getattr(p, 'position', None)} for p in ib.positions()], []) or []
-    r['positions'] = comparer_positions(reelles, trades_declares or [])
+    #  Lot 2 — frontiere market-data-only : l'outil ne lit plus les positions
+    #  du compte. La reconciliation contre le portefeuille reel n'est plus
+    #  mesurable, et le releve le DIT au lieu de rendre un accord vide.
+    r['positions'] = {'mesure': 'RETIREE',
+                      'raison': 'lecture du compte interdite (market-data-only)'}
 
     r['erreurs'] = classer_erreurs(erreurs_broker)
     r['lecture_seule'] = {

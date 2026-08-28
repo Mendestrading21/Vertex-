@@ -41,13 +41,14 @@ def test_simulated_positions_must_be_explicit():
     assert report['provenance'] == 'SIMULATED'
 
 
-def test_from_ibkr_positions_builds_real_snapshot():
-    class PV:
-        value = [{'symbol': 'NVDA', 'quantity': 10, 'avg_cost': 400, 'sec_type': 'STK'}]
-        timestamp = '2026-07-11T15:00:00Z'
-    snap = PM.from_ibkr_positions(PV(), prices={'NVDA': 500.0}, cash=2000)
-    assert snap.provenance == 'REAL'
-    assert snap.equity == 7000.0
+def test_le_constructeur_depuis_le_compte_courtier_n_existe_plus():
+    #  Lot 2 : `from_ibkr_positions` construisait un snapshot REAL depuis les
+    #  positions du COMPTE. Capacite retiree — le snapshot REAL se construit
+    #  depuis les positions declarees du desk.
+    assert not hasattr(PM, 'from_ibkr_positions'), (
+        'from_ibkr_positions est revenu : le portefeuille ne se lit pas chez '
+        'le courtier.'
+    )
 
 
 # ── Équipe 8-10 et remplacements ─────────────────────────────────────

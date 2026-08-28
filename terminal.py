@@ -1335,18 +1335,9 @@ def _ibkr_opt_worker():
                 box['res'] = scan(*args)
             elif kind == 'posq':
                 box['res'] = posq(*args)
-            elif kind == 'positions':
-                # LECTURE SEULE du portefeuille TWS (aucun ordre possible, readonly=True)
-                res = []
-                for p in ib.positions():
-                    ct = p.contract
-                    res.append({'sym': ct.symbol, 'secType': ct.secType,
-                                'right': getattr(ct, 'right', '') or '',
-                                'strike': getattr(ct, 'strike', None) or None,
-                                'exp': getattr(ct, 'lastTradeDateOrContractMonth', '') or '',
-                                'qty': float(p.position), 'avgCost': float(p.avgCost),
-                                'currency': getattr(ct, 'currency', 'USD')})
-                box['res'] = res
+            #  Lot 2 — le job `positions` est RETIRÉ : il lisait le portefeuille
+            #  du COMPTE via ib.positions(). readonly protegeait de l'ordre,
+            #  pas de la confidentialite. Le worker ne sert plus que du marche.
         except Exception:
             box['res'] = None
             # Échec de job (timeout/déconnexion) : on repart d'une connexion PROPRE.
@@ -2195,35 +2186,14 @@ def _ibkr_worker(res):
     if not r.ib.isConnected():
         res['error'] = "TWS/Gateway non lancé ou API désactivée (ports 7497/7496). Lance TWS en lecture seule + active l'API."
         return
+    #  Lot 2 — frontiere market-data-only. Ce worker lisait accountSummary,
+    #  managedAccounts et les positions pour la carte « COMPTE IBKR » du
+    #  legacy. Tout cela est du COMPTE, pas du marche : retire. Il ne reste
+    #  que la preuve de socket — connecte, sur quel port, en quel mode — qui
+    #  est l'etat de connexion autorise.
     try:
-        # lecture devise-consciente : on préfère la vraie devise (USD/CHF…), jamais la ligne 'BASE'
-        summ, ccy = {}, 'USD'
-        for row in r.ib.accountSummary():
-            if row.tag not in summ or (row.currency and row.currency != 'BASE'):
-                summ[row.tag] = row.value
-            if row.tag == 'NetLiquidation' and row.currency and row.currency != 'BASE':
-                ccy = row.currency
         res['connected'] = True
         res['mode'] = _IBKR_MODE.get(r.port, '?')
-        res['account'] = (r.ib.managedAccounts() or ['—'])[0]
-
-        def gf(k):
-            try:
-                return round(float(summ.get(k)))
-            except Exception:
-                return None
-        res['net_liq'] = gf('NetLiquidation')
-        res['cash'] = gf('TotalCashValue')
-        res['buying_power'] = gf('BuyingPower')
-        res['upnl'] = gf('UnrealizedPnL')
-        res['currency'] = ccy
-        df = r.positions()
-        pos = []
-        if df is not None and len(df):
-            for _, p in df.iterrows():
-                pos.append({'symbol': p.get('symbol'), 'qty': p.get('position'),
-                            'avg_cost': round(float(p.get('avgCost') or 0), 2), 'sectype': p.get('secType')})
-        res['positions'] = pos
     except Exception as e:
         res['error'] = f'lecture IBKR : {type(e).__name__}'
     finally:
@@ -2234,15 +2204,15 @@ def _ibkr_worker(res):
 
 
 def _ibkr_snapshot():
+    #  Lot 2 — le snapshot ne porte plus AUCUN champ de compte : ni account,
+    #  ni net_liq/cash/buying_power/upnl, ni positions. `/ibkr` repond
+    #  desormais { connected, mode, error } — la preuve de socket, rien d'autre.
     if not IBKR_ENABLED:
-        return {'connected': False, 'error': 'IBKR désactivé (cloud — pas de TWS)', 'mode': None,
-                'account': None, 'net_liq': None, 'cash': None, 'buying_power': None,
-                'upnl': None, 'currency': None, 'positions': []}
+        return {'connected': False, 'error': 'IBKR désactivé (cloud — pas de TWS)', 'mode': None}
     now = time.time()
     if _ibkr_cache['data'] and now - _ibkr_cache['ts'] < 15:
         return _ibkr_cache['data']
-    res = {'connected': False, 'error': None, 'mode': None, 'account': None, 'net_liq': None, 'cash': None,
-           'buying_power': None, 'upnl': None, 'currency': None, 'positions': []}
+    res = {'connected': False, 'error': None, 'mode': None}
     t = threading.Thread(target=_ibkr_worker, args=(res,), daemon=True)
     t.start()
     t.join(timeout=14)
@@ -3885,19 +3855,19 @@ function renderDreamTeam(d){
   host.innerHTML='<style>.ftp:hover circle:first-child{filter:brightness(1.35)}.ftp:hover circle:last-of-type{opacity:.3}</style><svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto;display:block">'+g+players+'</svg>'
     +'<div style="display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin-top:10px;font-size:12px"><span style="font-weight:800;color:#C9D2E0">Formation 4-3-3</span><span class="muted">·</span><span>Perf moy. mois <b class="'+(avg>=0?'up':'dn')+'">'+(avg>=0?'+':'')+avg.toFixed(1)+'%</b></span><span class="muted">·</span><span>🏅 Capitaine <b style="color:#F5B45B">'+cap.sym+'</b> (score '+cap.score+')</span><span class="muted" style="margin-left:auto;font-size:10px">Recomposée à chaque scan : les meilleurs du mois (perf 21j) montent en attaque, les plus stables (qualité+beta) défendent</span></div>';
 }
+/* Lot 2 — la carte « COMPTE IBKR » (valeur nette, cash, pouvoir d'achat,
+   P&L latent, liste des positions) est RETIRÉE : tout cela est du COMPTE,
+   pas du marché, et Vertex ne le lit plus. La carte dit désormais l'état de
+   la CONNEXION — la preuve de socket — et où vit le portefeuille : dans
+   Vertex, déclaré par l'utilisateur. */
 async function renderIbkrDash(){
   const el=document.getElementById('dIbkrCard');if(!el)return;
-  el.innerHTML=`<div class="scard" style="border-color:#34D39944"><div class="shead" style="color:#34D399"><span class="ico">🔌</span> COMPTE IBKR <span class="muted" style="margin-left:auto;font-size:11px">connexion à TWS…</span></div></div>`;
+  el.innerHTML=`<div class="scard"><div class="shead"><span class="ico">🔌</span> IBKR — DONNÉES DE MARCHÉ <span class="muted" style="margin-left:auto;font-size:11px">connexion à TWS…</span></div></div>`;
   try{
     const d=await(await fetch('/ibkr')).json();window.__ibkr=d;
-    if(!d.connected){el.innerHTML=`<div class="scard" style="border-color:#6B728044"><div class="shead" style="color:#8794ab"><span class="ico">🔌</span> COMPTE IBKR <span style="margin-left:auto;cursor:pointer;color:#7FB3FF;font-size:11px" onclick="renderIbkrDash()">⟳ reconnecter</span></div><div style="padding:14px;font-size:12px" class="muted">Non connecté — ${d.error||'lance TWS + active l API'}.</div></div>`;return}
-    const cur=d.currency||'USD',f=n=>n==null?'—':n.toLocaleString('fr-FR');
-    const kp=(l,v,c)=>`<div style="flex:1;min-width:118px"><div class="muted" style="font-size:10px;letter-spacing:.5px;text-transform:uppercase">${l}</div><div style="font-size:17px;font-weight:800;margin-top:2px;color:${c||'#e6edf7'}">${v}</div></div>`;
-    const pos=d.positions||[];
-    const posHtml=pos.length?pos.map(p=>`<div onclick="go('${p.symbol}')" style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #1a1a1a;cursor:pointer;font-size:13px"><span><b style="color:#F5B45B">${p.symbol}</b> <span class="muted">${p.sectype}</span></span><span>${p.qty} @ $${p.avg_cost}</span></div>`).join(''):'<div class="muted" style="font-size:12px;padding:6px 0">aucune position ouverte — compte en cash</div>';
-    el.innerHTML=`<div class="scard" style="border-color:#34D39944"><div class="shead" style="color:#34D399"><span class="ico">🔌</span> COMPTE IBKR · ${d.account||''} <span style="font-size:10px;color:#34D399;border:1px solid #34D39955;border-radius:4px;padding:2px 6px;margin-left:4px">${d.mode}</span><span style="font-size:10px;color:#EF4444;border:1px solid #EF444455;border-radius:4px;padding:2px 6px;margin-left:4px">LECTURE SEULE</span><span style="margin-left:auto;cursor:pointer;color:#7FB3FF;font-size:12px" onclick="renderIbkrDash()">⟳</span></div>
-      <div style="padding:14px"><div style="display:flex;gap:20px;flex-wrap:wrap;margin-bottom:10px">${kp('Valeur nette',f(d.net_liq)+' '+cur,'#34D399')}${kp('Cash',f(d.cash)+' '+cur)}${kp('Pouvoir d achat',f(d.buying_power)+' '+cur)}${kp('P&L latent',((d.upnl||0)>=0?'+':'')+f(d.upnl)+' '+cur,(d.upnl||0)>=0?'#22C55E':'#EF4444')}</div>
-      <div class="muted" style="font-size:10px;letter-spacing:.5px;text-transform:uppercase;margin:8px 0 2px">Positions réelles (${pos.length})</div>${posHtml}</div></div>`;
+    if(!d.connected){el.innerHTML=`<div class="scard" style="border-color:#6B728044"><div class="shead" style="color:#8794ab"><span class="ico">🔌</span> IBKR — DONNÉES DE MARCHÉ <span style="margin-left:auto;cursor:pointer;color:#c9ced8;font-size:11px" onclick="renderIbkrDash()">⟳ reconnecter</span></div><div style="padding:14px;font-size:12px" class="muted">Non connecté — ${d.error||'lance TWS + active l API'}.</div></div>`;return}
+    el.innerHTML=`<div class="scard" style="border-color:#34D39944"><div class="shead" style="color:#34D399"><span class="ico">🔌</span> IBKR — DONNÉES DE MARCHÉ <span style="font-size:10px;color:#34D399;border:1px solid #34D39955;border-radius:4px;padding:2px 6px;margin-left:4px">${d.mode}</span><span style="font-size:10px;color:#EF4444;border:1px solid #EF444455;border-radius:4px;padding:2px 6px;margin-left:4px">LECTURE SEULE</span><span style="margin-left:auto;cursor:pointer;color:#c9ced8;font-size:12px" onclick="renderIbkrDash()">⟳</span></div>
+      <div style="padding:14px;font-size:12px" class="muted">Connexion de <b>données de marché</b> uniquement — cotations, chaînes, historiques. Vertex ne lit ni compte, ni solde, ni positions du courtier : le portefeuille est celui que tu déclares dans Vertex.</div></div>`;
   }catch(e){el.innerHTML=`<div class="scard" style="padding:14px"><span class="dn">erreur de lecture IBKR</span></div>`;}
 }
 window.renderIbkrDash=renderIbkrDash;

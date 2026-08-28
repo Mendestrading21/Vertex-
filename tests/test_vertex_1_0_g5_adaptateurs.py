@@ -30,7 +30,6 @@ import pytest
 from vertex.data_sources import ibkr_contracts as C
 from vertex.data_sources import ibkr_market_data as MD
 from vertex.data_sources import ibkr_option_chain as OC
-from vertex.data_sources import ibkr_positions as POS
 from vertex.data_sources import ibkr_replay as R
 from vertex.data_sources.models import (
     GREEKS_BROKER, GREEKS_MODEL, MODE_DELAYED, MODE_FROZEN, MODE_LIVE,
@@ -233,39 +232,16 @@ def test_rejeu_fetch_snapshot_porte_le_mode_reellement_capture(passerelle,
     assert pv.source_mode == attendu
 
 
-#  ═══════════════════  3. ibkr_positions — contrat et rejeu  ══════════════════
-
-def test_une_position_soldee_ne_compte_pas_comme_une_ligne():
-    """Une quantité nulle est une position FERMÉE. La garder gonflerait le
-    risque portefeuille d'une ligne qui n'existe plus."""
-    pv = POS.positions_to_provenanced([
-        {"symbol": "aapl", "position": 3, "avgCost": 1.0, "secType": "STK"},
-        {"symbol": "MSFT", "position": 0, "avgCost": 2.0},
-    ])
-    assert [x["symbol"] for x in pv.value] == ["AAPL"]
-    assert pv.source == SOURCE_IBKR and pv.source_mode == MODE_LIVE
-
-
-def test_une_quantite_illisible_est_ignoree_et_non_devinee():
-    pv = POS.positions_to_provenanced([{"symbol": "X", "position": "beaucoup"}])
-    assert pv.value == []
-
-
-def test_les_defauts_de_position_sont_explicites():
-    pv = POS.positions_to_provenanced([{"symbol": "X", "position": -2}])
-    ligne = pv.value[0]
-    assert ligne["quantity"] == -2.0
-    assert ligne["sec_type"] == "STK" and ligne["currency"] == "USD"
-
-
-def test_rejeu_fetch_positions_traverse_le_broker_jusqu_a_la_provenance(
-        passerelle, capture):
-    pv = POS.fetch_positions(passerelle)
-    attendues = [p for p in capture["positions_brutes"] if p["position"]]
-    assert len(pv.value) == len(attendues)
-    assert pv.source == SOURCE_IBKR
-    assert all(x["symbol"].startswith("TITRE_") for x in pv.value)
-
+#  ═══════════  3. positions du compte — capacité RETIRÉE au lot 2  ═══════════
+#
+#  Quatre bancs éprouvaient ici `ibkr_positions` (quantité nulle, quantité
+#  illisible, défauts explicites, rejeu jusqu'à la provenance). Le module a
+#  été SUPPRIMÉ : lire les positions du compte viole la frontière
+#  market-data-only, readonly ou pas. L'intention de ces bancs — ne jamais
+#  deviner une quantité, ne jamais gonfler le risque d'une ligne fermée —
+#  vit désormais dans le dépôt du desk (`vertex/positions/repository.py`),
+#  seule source de portefeuille. La non-réapparition du module est gardée par
+#  `tests/test_frontiere_ibkr_lot02.py`.
 
 #  ═════════════════  4. ibkr_option_chain — contrat et rejeu  ═════════════════
 
@@ -336,8 +312,10 @@ def test_le_broker_rejoue_n_expose_AUCUNE_methode_d_ordre(passerelle):
     assert passerelle.READONLY is True
 
 
-def test_aucun_des_quatre_adaptateurs_ne_nomme_une_methode_d_ordre():
-    for mod in (C, MD, OC, POS):
+def test_aucun_des_adaptateurs_ne_nomme_une_methode_d_ordre():
+    #  POS (positions du compte) a ete SUPPRIME au lot 2 : il reste trois
+    #  adaptateurs de MARCHE, et la garde anti-ordre les couvre tous.
+    for mod in (C, MD, OC):
         src = Path(mod.__file__).read_text(encoding="utf-8")
         for nom in METHODES_D_ORDRE:
             assert nom not in src, "%s cite %s" % (mod.__name__, nom)

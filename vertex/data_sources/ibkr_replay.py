@@ -504,13 +504,9 @@ def capturer(gateway, symboles=("AAPL", "MSFT"), *, avec_options=True) -> dict:
                         "vega": _f(getattr(mg, "vega", None))} if mg else None),
         }
 
-    for p in ib.positions():
-        fixture["positions_brutes"].append({
-            "symbol": getattr(p.contract, "symbol", ""),
-            "position": p.position,
-            "avgCost": p.avgCost,
-            "secType": getattr(p.contract, "secType", "STK"),
-            "currency": getattr(p.contract, "currency", "USD")})
+    #  Lot 2 — les fixtures de rejeu ne capturent plus les positions du
+    #  compte : `positions_brutes` reste une liste vide, et les rejeux qui la
+    #  lisaient traitent l'absence comme « courtier non lu ».
 
     if avec_options:
         from ib_async import Option
