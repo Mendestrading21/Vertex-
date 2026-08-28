@@ -39,6 +39,7 @@ from vertex.scanner import daily, weekly
 from vertex.anomalies import stock_anomalies as anomalies
 from vertex.market import sectors
 from vertex.market import context as market
+from vertex.services.refus_fournisseur import MemoireRefus as _MemoireRefus
 from vertex.research import chart_read as research
 from vertex.data_sources import fundamentals
 from vertex.data_sources import scan_evidence as _scan_evidence
@@ -1805,6 +1806,14 @@ def _cal_loop():
 
 
 # ─── FONDAMENTAUX : P/E par titre + médianes secteur (lent, rafraîchi /6h) ───
+#  Lot 43 — mémoire DATÉE des refus : les titres morts (rachetés, radiés) que
+#  ni IBKR ni yfinance ne servent ne sont plus redemandés à chaque cycle.
+#  Avant : mêmes symboles refusés toutes les 45 s À VIE (« Aucune définition
+#  de titre », 404), et le rythme ne se calmait jamais. TTL 24 h — un refus
+#  est daté, jamais définitif.
+_REFUS_FUND = _MemoireRefus()
+
+
 def _fund_loop():
     # yfinance .info = 1 appel/titre = LENT et throttlé en masse. STRATÉGIE ANTI-THROTTLE :
     # on remplit le cache PAR PETITS LOTS (40 titres manquants / 45 s) → doux pour l'IP,
@@ -1814,7 +1823,8 @@ def _fund_loop():
     while True:
         if scan_state.get('rows'):
             try:
-                missing = [s for s in targets if s not in _FUND_CACHE]
+                candidats = [s for s in targets if s not in _FUND_CACHE]
+                missing, _morts = _REFUS_FUND.filtrer(candidats)
                 batch = missing[:40]
                 if batch:
                     new = {}
@@ -1832,12 +1842,20 @@ def _fund_loop():
                     if new:
                         _FUND_CACHE.update(new)               # fusion (couverture cumulée)
                         _save_json('fund_cache.json', _FUND_CACHE)
+                    #  Refus DATÉS : un symbole tenté que ni IBKR ni yfinance
+                    #  n'a servi ne sera pas redemandé avant le TTL — et
+                    #  l'écart se DIT (fund_refus), il ne se tait pas.
+                    for s in batch:
+                        if s not in _FUND_CACHE:
+                            _REFUS_FUND.noter(s)
+                    scan_state['fund_refus'] = _REFUS_FUND.etat()
                 if _FUND_CACHE:
                     scan_state['fundamentals'] = {'by_sym': _FUND_CACHE,
                                                   'by_sector': _recompute_sectors(_FUND_CACHE)}
             except Exception:
                 pass
-            still_missing = any(s not in _FUND_CACHE for s in targets)
+            still_missing = any(s not in _FUND_CACHE and not _REFUS_FUND.refuse_recemment(s)
+                                for s in targets)
             try:
                 from vertex.scheduler import registry as _sched
                 _sched.beat('TRACK_RECORD_UPDATE', ok=True)
