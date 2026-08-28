@@ -132,9 +132,14 @@ def _trace_aujourdhui(scan_state: dict) -> str:
     # ── Donnée : d'où vient ce qu'on regarde, et de quand ────────────────
     source = st.get('source')
     updated = st.get('scan_ts_h') or st.get('updated')
-    if not source or source == 'aucune':
+    #  `unavailable` est le jeton INTERNE de terminal.py (scan tourné, zéro
+    #  contributeur) : il ne fuit jamais brut à l'écran — mesuré au navigateur
+    #  à 390 px pendant la vérification du lot 14.
+    if not source or source in ('aucune', 'unavailable'):
         n_donnee = {'label': 'Donnée', 'valeur': 'Aucune source',
-                    'meta': 'aucun scan servi', 'tone': 'negative'}
+                    'meta': ('aucune source n\'a répondu au scan'
+                             if source == 'unavailable' else 'aucun scan servi'),
+                    'tone': 'negative'}
     else:
         n_donnee = {'label': 'Donnée', 'valeur': str(source),
                     'meta': f'mise à jour {updated}' if updated else 'horodatage —',
