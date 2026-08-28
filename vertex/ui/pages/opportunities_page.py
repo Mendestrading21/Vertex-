@@ -753,6 +753,15 @@ async function renderScreener(classe){
       +'<div id="op-funnel-viz"></div>'
       +(fn.actionable_symbols&&fn.actionable_symbols.length?'<div class="vx-dim vx-mt2" style="font-size:12px">Actionnables : '
         +fn.actionable_symbols.map(s=>'<button class="vx-btn vx-btn-sm vx-btn-ghost vx-ticker" data-open-analysis="'+esc(s)+'" style="padding:0 4px;color:var(--vx-positive)">'+esc(s)+'</button>').join(' ')+'</div>':'')
+      /* Delta depuis le scan precedent (lot 12/16) : trois etats honnetes —
+         premier scan (pas de base), rien de note, listes bornees serveur. */
+      +(function(){const d=fn.delta||{};
+        if(d.disponible===false)return '';
+        if(d.premier_scan)return '<div class="vx-dim vx-mt1" style="font-size:12px">Premier scan — pas encore de comparaison.</div>';
+        const en=(d.entrants||[]).map(esc).join(', '),so=(d.sortants||[]).map(esc).join(', ');
+        if(!en&&!so)return '<div class="vx-dim vx-mt1" style="font-size:12px">Aucun changement d\'actionnables depuis le scan précédent.</div>';
+        return '<div class="vx-dim vx-mt1" style="font-size:12px">'
+          +(en?'Entrés : '+en:'')+(en&&so?' · ':'')+(so?'Sortis : '+so:'')+'</div>';})()
       +'</div>';
     if(window.VXCharts&&VXCharts.funnel){
       VXCharts.funnel('op-funnel-viz',{stages:fn.stages.map(s=>({label:s.label,value:s.count})),
