@@ -17,24 +17,28 @@ os.environ['VERTEX_CODE'] = ''
 os.environ['ACCESS_CODE'] = ''
 
 
-# ── Import deterministe du monolithe ───────────────────────────────────────
+# ── Etat VIERGE de la constitution, fige AVANT la collecte ─────────────────
 #
-#  `terminal.app` est un singleton construit au premier import, avec la
-#  constitution active A CET INSTANT. Tant que l'import venait du premier banc
-#  collecte, la configuration de l'application dependait de l'ordre
-#  alphabetique des noms de fichiers. On l'importe donc ici, avant toute
-#  collecte, sur la constitution par defaut.
-import terminal as _terminal  # noqa: E402,F401
-
-#  Etat VIERGE de la constitution, fige AVANT la collecte. Un module de test
-#  qui importe `vertex.runtime` active V4 des l'import, donc avant toute
-#  fixture : un instantane pris au premier test capturerait deja la pollution.
-from vertex.strategy import constitution as _c_mod  # noqa: E402
-from vertex.strategy import release as _r_mod  # noqa: E402
-
-_CONSTITUTION_VIERGE = (_c_mod.PROFILES_DIR, _c_mod.load_profile,
-                        _c_mod.list_versions, _c_mod.propose_new_version,
-                        _r_mod._ACTIVATED)
+#  Un module de test qui importe `vertex.runtime` appelle
+#  `activate_release_profile()` DES L'IMPORT, donc avant toute fixture : un
+#  instantane pris au premier test capturerait deja la pollution, et V4
+#  s'imposerait a toute la suite selon le seul ordre de collecte.
+#
+#  L'import est garde : le job `safety` de la CI n'installe QUE
+#  `requirements-dev.txt` et n'exerce que deux bancs qui n'ont besoin ni de
+#  numpy ni de Flask. Un conftest qui exige le paquet complet ferait echouer ce
+#  job au chargement, avant le moindre test — c'est exactement ce qui est
+#  arrive. On ne masque rien : sans le paquet, il n'y a pas d'etat a isoler.
+try:  # noqa: E402
+    from vertex.strategy import constitution as _c_mod
+    from vertex.strategy import release as _r_mod
+except ModuleNotFoundError:            # dependances de calcul absentes
+    _c_mod = _r_mod = None
+    _CONSTITUTION_VIERGE = None
+else:
+    _CONSTITUTION_VIERGE = (_c_mod.PROFILES_DIR, _c_mod.load_profile,
+                            _c_mod.list_versions, _c_mod.propose_new_version,
+                            _r_mod._ACTIVATED)
 
 
 # ── Gardes rendues caduques par la refonte Black Glass ──────────────────────
@@ -79,6 +83,8 @@ import pytest as _pytest
 
 
 def _restaurer_constitution():
+    if _CONSTITUTION_VIERGE is None:
+        return
     (_c_mod.PROFILES_DIR, _c_mod.load_profile, _c_mod.list_versions,
      _c_mod.propose_new_version, _r_mod._ACTIVATED) = _CONSTITUTION_VIERGE
 
