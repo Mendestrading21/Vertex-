@@ -59,6 +59,12 @@ def pytest_collection_modifyitems(config, items):
 
     #  Charge par CHEMIN : `tests/` n'est pas un paquet, et en faire un
     #  changerait la resolution des imports de toute la suite.
+    #  Interrupteur nomme, lu par `test_gardes_superseedees` : ce banc doit
+    #  EXECUTER les gardes ecartees pour verifier qu aucune n est redevenue
+    #  verte. Sans lui, le hook ecarterait justement celles qu on demande.
+    if os.environ.get('VERTEX_SUPERSEDE_OFF'):
+        return
+
     chemin = os.path.join(os.path.dirname(__file__), '_supersede.py')
     spec = importlib.util.spec_from_file_location('_vx_supersede', chemin)
     mod = importlib.util.module_from_spec(spec)

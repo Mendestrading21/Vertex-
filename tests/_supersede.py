@@ -114,15 +114,11 @@ REGISTRE = {
         PROPRIETE_DEPLACEE,
     'tests/test_a11y.py::test_clickable_tickers_are_keyboard_focusable':
         PALETTE,
-    'tests/test_analysis_visual.py::test_analysis_dom_is_decision_first_then_chart_then_advanced_evidence':
-        MARQUAGE,
     'tests/test_analysis_visual.py::test_analysis_freshness_comes_from_the_scan_not_the_http_cache':
         MARQUAGE,
     'tests/test_analysis_visual.py::test_candlestick_locale_is_stable_on_linux_browsers':
         MARQUAGE,
     'tests/test_analysis_visual.py::test_future_catalyst_is_not_backdated_on_last_historical_candle':
-        MARQUAGE,
-    'tests/test_analysis_visual.py::test_only_primary_verdict_is_open':
         MARQUAGE,
     'tests/test_analysis_visual.py::test_radar_keeps_missing_scores_missing':
         MARQUAGE,
@@ -188,8 +184,6 @@ REGISTRE = {
         MARQUAGE,
     'tests/test_continuity_shell.py::test_fragment_carries_navigation_metadata':
         MARQUAGE,
-    'tests/test_continuity_shell.py::test_router_script_included':
-        MARQUAGE,
     'tests/test_contraste_palier_muted.py::test_aucun_repli_de_muted_ne_diverge_du_token':
         PALETTE,
     'tests/test_contraste_palier_muted.py::test_la_marge_du_palier_muted_n_est_pas_symbolique':
@@ -242,13 +236,9 @@ REGISTRE = {
         PALETTE,
     'tests/test_invariants_reellement_imposes.py::test_le_balayage_node_couvre_bien_les_pages_servies':
         MARQUAGE,
-    'tests/test_journal_system_07.py::test_journal_hero_is_honest_no_fabricated_percent':
-        MARQUAGE,
     'tests/test_journal_system_07.py::test_journal_is_discipline_not_portfolio_performance':
         MARQUAGE,
     'tests/test_launch_readiness.py::test_freshness_badges_in_pages':
-        MARQUAGE,
-    'tests/test_launch_readiness.py::test_shell_loads_continuity_scripts':
         MARQUAGE,
     'tests/test_launch_readiness.py::test_swr_paint_from_cache_wired':
         MARQUAGE,
@@ -342,13 +332,7 @@ REGISTRE = {
         MARQUAGE,
     'tests/test_total_rebuild_today_markets.py::test_rebuilt_routes_render[/-vx-today-decision]':
         MARQUAGE,
-    'tests/test_total_rebuild_today_markets.py::test_rebuilt_routes_render[/markets?view=breadth-vx-markets-breadth-details]':
-        MARQUAGE,
-    'tests/test_total_rebuild_today_markets.py::test_rebuilt_routes_render[/markets?view=macro-vx-markets-macro-details]':
-        MARQUAGE,
     'tests/test_total_rebuild_today_markets.py::test_rebuilt_routes_render[/markets?view=overview-vx-markets-overview-details]':
-        MARQUAGE,
-    'tests/test_total_rebuild_today_markets.py::test_rebuilt_routes_render[/markets?view=volatility-vx-markets-volatility-details]':
         MARQUAGE,
     'tests/test_total_rebuild_today_markets.py::test_today_freshness_and_changelog_are_compact_and_sourced':
         MARQUAGE,

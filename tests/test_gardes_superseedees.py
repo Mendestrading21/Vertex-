@@ -31,6 +31,7 @@ from __future__ import annotations
 
 import importlib.util
 import os
+import re
 import subprocess
 import sys
 
@@ -56,6 +57,18 @@ def sup():
 #: Mesure du 27 août 2026, à la fusion. **Ne pas relever ce nombre sans avoir
 #: lu les nouveaux cas** : c'est exactement la discipline que les recensements
 #: `except: pass` imposent depuis le lot 378, et pour la même raison.
+#  PISTE OUVERTE, non exploitee ici : `test_parallel_scan_is_byte_identical_to_serial`
+#  est ecarte sous le motif MARQUAGE, qui est INEXACT — il garde une invariance
+#  FONCTIONNELLE (scan parallele == scan serie), pas du balisage. L invariant
+#  a ete verifie hors pytest et TIENT : 392 326 octets identiques, une fois
+#  l horloge figee pour neutraliser les champs derives du temps (`age_s`). Le
+#  banc echoue parce qu il colle l invariant et son anti-vide dans un seul
+#  `and`, et parce que les deux scans ne tournent pas au meme instant. Le
+#  remettre en service demande de figer l horloge ET de comprendre pourquoi il
+#  reste rouge a froid sous pytest alors qu il passe hors pytest. Non fait.
+#  153 a la fusion, puis 148, puis 140, puis 132 : huit gardes PASSAIENT
+#  aujourd hui et dormaient ecartees — leur couverture etait retablie sans que
+#  personne le sache, parce que le banc cense le voir ne faisait que COLLECTER.
 #  153 a la fusion, puis 148, puis 140 : six entrees designaient des bancs
 #  supprimes avec le code injoignable qu ils gardaient, et deux nommaient
 #  une fonction qui n a jamais existe (orphelines depuis l origine).
@@ -63,7 +76,7 @@ def sup():
 #  de la liste (la regle a ete portee, ils mesurent de nouveau quelque chose)
 #  et deux y sont entres pour la propriete deplacee de la courbe de resultats.
 #  Une liste qui DIMINUE est le signe qu'on la relit.
-TOTAL_ECARTES = 140
+TOTAL_ECARTES = 132
 
 
 #  ═══════════  1. la liste ne grossit pas  ════════════════════════════════════
@@ -128,24 +141,45 @@ def test_chaque_entree_designe_un_fichier_QUI_EXISTE(sup):
 
 
 def test_aucune_entree_ne_designe_un_banc_QUI_PASSE(sup):
-    """La garantie la plus utile, et la plus coûteuse : un banc réécrit doit
-    SORTIR de la liste. Sinon on croit avoir renoncé à une couverture qu'on a
-    en réalité rétablie — et on ne la remet jamais en service.
+    """La garantie la plus utile : un banc redevenu vert doit SORTIR de la
+    liste. Sinon on croit avoir renonce a une couverture qu on a en realite
+    retablie — et on ne la remet jamais en service.
 
-    On ne relance pas les 153 : on en tire un échantillon déterministe, assez
-    large pour voir une dérive et assez court pour ne pas doubler la suite.
+    CE BANC NE TENAIT PAS SON NOM. Il lancait pytest avec `--co` : la
+    COLLECTE seule. Il prouvait que les identifiants existent encore, jamais
+    qu ils echouent encore. Huit gardes etaient donc vertes et ecartees en
+    silence, dont `test_journal_hero_is_honest_no_fabricated_percent` — un
+    controle d honnetete. Le nom promettait « QUI PASSE », le corps mesurait
+    « QUI EXISTE ».
+
+    Il les EXECUTE desormais, toutes, avec le registre neutralise. Cout mesure
+    ~27 s. C est le prix de la garantie : un echantillon laisserait dormir la
+    majorite des cas, et c est exactement ce qui s est produit.
     """
     ids = sorted(sup.REGISTRE)
-    echantillon = [ids[i] for i in range(0, len(ids), 11)]     # ~14 bancs
+    assert ids, 'registre vide : ce banc n aurait plus rien a prouver'
+
+    #  Le registre doit etre neutralise, sinon le hook de `conftest` ecarte
+    #  les bancs qu on vient justement demander a executer.
+    env = dict(os.environ, VERTEX_SUPERSEDE_OFF='1')
     r = subprocess.run(
-        [sys.executable, '-m', 'pytest', '-q', '-p', 'no:cacheprovider',
-         '--no-header', '-p', 'no:randomly', '--co', '-q'] + echantillon,
-        capture_output=True, text=True, errors='replace', cwd=_RACINE)
-    #  La collecte suffit : un banc dont l'identifiant n'est plus collectable
-    #  a ete renomme ou supprime, et son entree est morte.
-    assert 'error' not in (r.stderr or '').lower() or r.returncode == 0, (
-        'des identifiants de la liste ne sont plus collectables :\n%s'
-        % (r.stdout or '')[-1200:])
+        [sys.executable, '-m', 'pytest', '-p', 'no:cacheprovider',
+         '--no-header', '--tb=no', '-v'] + ids,
+        capture_output=True, text=True, errors='replace', cwd=_RACINE, env=env)
+
+    #  Temoin : si RIEN n a ete execute, l absence de vert ne prouve rien.
+    assert re.search(r'\d+ (failed|passed)', r.stdout or ''), (
+        'aucun banc execute — la mesure serait vide de sens :\n%s'
+        % (r.stdout or '')[-800:])
+
+    #  On NOMME les gardes vertes. Un compte seul obligerait a refaire la
+    #  mesure a la main pour savoir lesquelles sortir.
+    verts = sorted(l.split(' ')[0] for l in (r.stdout or '').splitlines()
+                   if ' PASSED' in l)
+    assert verts == [], (
+        '%d garde(s) ecartee(s) passe(nt) aujourd hui : leur couverture est '
+        'retablie mais reste eteinte. Les SORTIR du registre :\n  %s'
+        % (len(verts), '\n  '.join(verts)))
 
 
 #  ═══════════  3. le mécanisme n'écarte que ce qui est listé  ═════════════════
