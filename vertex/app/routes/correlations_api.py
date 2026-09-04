@@ -100,9 +100,12 @@ def api_correlations(sym):
                 out.append([label, round(float(c), 2)])
         out.sort(key=lambda x: -x[1])
         return jsonify({'sym': sym, 'corr': out})
-    except Exception as e:
+    except Exception:                                         # noqa: BLE001
+        #  Code stable, jamais le texte de l'exception.
         return jsonify({'sym': sym, 'corr': [],
-                        'error': '%s: %s' % (type(e).__name__, e)})
+                        'error': 'correlations_unavailable',
+                        'note': 'corrélations indisponibles — série trop '
+                                'courte ou source injoignable'})
 
 
 __all__ = ['bp', 'REFERENCES', 'TTL_S', 'references']
