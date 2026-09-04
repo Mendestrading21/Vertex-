@@ -140,6 +140,23 @@ def test_chaque_entree_designe_un_fichier_QUI_EXISTE(sup):
         'entrees mortes — le fichier n existe plus : %s' % manquants)
 
 
+#: Gardes dont le VERDICT DEPEND DE L ENVIRONNEMENT, et que le banc ci-dessous
+#: ne peut donc pas juger. Nommees une par une, avec leur raison — jamais une
+#: regle large. Une entree ici est un aveu, pas un classement : elle dit « ce
+#: banc n est ni fiablement rouge ni fiablement vert », ce qui est une
+#: information, pas une exemption.
+ETAT_DEPENDANT = {
+    #  Invariance FONCTIONNELLE (scan parallele == scan serie), ecartee a tort
+    #  sous un motif VISUEL. Elle est VRAIE : verifiee hors pytest, 392 326
+    #  octets identiques, horloge figee pour neutraliser les champs derives du
+    #  temps (`age_s`). Mais le banc colle l invariant et son anti-vide
+    #  (`len > 1000`) dans un seul `and` : il passe quand des caches existent
+    #  sur disque, echoue sur un arbre froid. Le rallumer demande de separer
+    #  les deux assertions ET de figer l horloge — non fait, lot a part.
+    'tests/test_scan_parallel.py::test_parallel_scan_is_byte_identical_to_serial',
+}
+
+
 def test_aucune_entree_ne_designe_un_banc_QUI_PASSE(sup):
     """La garantie la plus utile : un banc redevenu vert doit SORTIR de la
     liste. Sinon on croit avoir renonce a une couverture qu on a en realite
@@ -152,11 +169,17 @@ def test_aucune_entree_ne_designe_un_banc_QUI_PASSE(sup):
     controle d honnetete. Le nom promettait « QUI PASSE », le corps mesurait
     « QUI EXISTE ».
 
-    Il les EXECUTE desormais, toutes, avec le registre neutralise. Cout mesure
-    ~27 s. C est le prix de la garantie : un echantillon laisserait dormir la
-    majorite des cas, et c est exactement ce qui s est produit.
+    Il les EXECUTE desormais, avec le registre neutralise. Cout mesure ~27 s.
+    C est le prix de la garantie : un echantillon laisserait dormir la majorite
+    des cas, et c est exactement ce qui s est produit.
+
+    LIMITE ASSUMEE. Les entrees de `ETAT_DEPENDANT` sont exclues : leur verdict
+    depend de l etat du disque, donc ce banc ne peut rien en conclure. Sans
+    cette exclusion il etait lui-meme CAPRICIEUX — vert sur un arbre froid,
+    rouge apres une suite complete qui a rempli les caches. Un gardien qui
+    change d avis selon ce qui a tourne avant ne garde rien.
     """
-    ids = sorted(sup.REGISTRE)
+    ids = sorted(set(sup.REGISTRE) - ETAT_DEPENDANT)
     assert ids, 'registre vide : ce banc n aurait plus rien a prouver'
 
     #  Le registre doit etre neutralise, sinon le hook de `conftest` ecarte
@@ -180,6 +203,18 @@ def test_aucune_entree_ne_designe_un_banc_QUI_PASSE(sup):
         '%d garde(s) ecartee(s) passe(nt) aujourd hui : leur couverture est '
         'retablie mais reste eteinte. Les SORTIR du registre :\n  %s'
         % (len(verts), '\n  '.join(verts)))
+
+
+def test_les_exceptions_d_etat_restent_NOMMEES_et_rares(sup):
+    """Une liste d exceptions qui grossit finit par vider le gardien. Chaque
+    entree doit encore etre ecartee — sinon elle n a plus rien a y faire — et
+    leur nombre est epingle."""
+    hors_registre = sorted(ETAT_DEPENDANT - set(sup.REGISTRE))
+    assert hors_registre == [], (
+        'exception d etat sur un banc qui n est plus ecarte : %s' % hors_registre)
+    assert len(ETAT_DEPENDANT) <= 1, (
+        '%d exceptions d etat : au-dela d une, ce n est plus un aveu ponctuel '
+        'mais une porte de sortie' % len(ETAT_DEPENDANT))
 
 
 #  ═══════════  3. le mécanisme n'écarte que ce qui est listé  ═════════════════
