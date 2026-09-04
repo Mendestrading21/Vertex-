@@ -10,7 +10,7 @@
 
 | fichier | nature |
 |---|---|
-| `docs/VERTEX_VISUAL_COMMAND_CENTER_AUDIT.md` | document d'audit (juillet) |
+| `docs/archives/interface-visuel/VERTEX_VISUAL_COMMAND_CENTER_AUDIT.md` | document d'audit (juillet) |
 | `docs/vertex-1.0/DECISIONS.md` (D-019) | registre de décisions |
 | `vertex/data_sources/ibkr_news.py` | docstring de mesure |
 | `tests/test_vertex_1_0_g5_adaptateurs.py` | ×4, dont l'assertion d'anonymisation |

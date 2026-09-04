@@ -152,8 +152,8 @@ aucune interaction hover-only critique.
 
 ## RC1-M — Documentation release
 Créés : `docs/refactor/validation/RC1-STABILIZATION.md` (ce fichier),
-`docs/release/RC1_CHECKLIST.md`, `docs/release/RC1_KNOWN_ISSUES.md`,
-`docs/release/RC1_CHANGELOG.md`, `docs/release/RC1_ROLLBACK.md`.
+`docs/archives/release/RC1_CHECKLIST.md`, `docs/archives/release/RC1_KNOWN_ISSUES.md`,
+`docs/archives/release/RC1_CHANGELOG.md`, `docs/archives/release/RC1_ROLLBACK.md`.
 
 ## Verdict : **GO (RC1 interne)**
 Tous les critères GO/NO-GO sont satisfaits (voir `RC1_CHECKLIST.md`). RC1 est propre,

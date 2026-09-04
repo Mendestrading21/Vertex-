@@ -6,7 +6,7 @@ Baseline : 414 tests → Final : **448 tests verts** · 0 erreur console sur
 
 ## 1. Audit initial
 
-Voir `docs/VERTEX_MASTER_REDESIGN_AUDIT.md` : 56 routes, 3 générations de
+Voir `docs/archives/interface-visuel/VERTEX_MASTER_REDESIGN_AUDIT.md` : 56 routes, 3 générations de
 pages incompatibles, 2 navigations concurrentes, 5 copies de sidebar,
 4 copies de la logique de sync, 3 helpers KPI, 2 paradigmes graphiques.
 Captures avant : `docs/redesign/before/` (20 captures).

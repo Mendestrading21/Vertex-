@@ -4,7 +4,7 @@ Chaque nom de test exigé par le cahier des charges V3 existe ici (ou dans
 les suites historiques référencées en commentaire). Vérifications statiques
 sur le HTML rendu + les assets ; les vérifications purement navigateur
 (console, overflow réel) sont doublées par les runs Chromium documentés
-dans docs/VERTEX_UI_V3_IMPLEMENTATION.md.
+dans docs/archives/interface-visuel/VERTEX_UI_V3_IMPLEMENTATION.md.
 """
 #  `/performance` RETIRE des listes d'espaces : Performance est repliee
 #  dans le Journal (301). La constitution enumere Journal, pas

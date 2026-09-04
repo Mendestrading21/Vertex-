@@ -110,7 +110,7 @@ règles. → **ticket VX2-CLEANUP-01, décision humaine requise.**
 |---|---|---|
 | `/design-system` | page servie, 200 | **conserver** — surface interne de développement, comme l'exige la consigne |
 | `.interface-design/system.md` | document | preuve historique |
-| `docs/vertex-audit/05-component-inventory.md` | inventaire de dette | preuve historique |
+| `docs/archives/vertex-audit/05-component-inventory.md` | inventaire de dette | preuve historique |
 | `VERTEX_DESIGN_TOKENS.md`, `VERTEX_CHART_LIBRARY.md` | décrivent une palette orange/bleu **abandonnée** | **archiver** — `CLAUDE.md` avertit déjà de ne pas s'y fier |
 
 ## 5. Bibliothèques graphiques réellement servies

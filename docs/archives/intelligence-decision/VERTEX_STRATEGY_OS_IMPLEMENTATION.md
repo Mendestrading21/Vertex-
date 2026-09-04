@@ -54,7 +54,7 @@ tradingview/         vertex_signals.pine + guide d'installation
 
 22 modules migrés (`git mv`, historique préservé), imports réécrits dans
 `terminal.py`, 6 fichiers de routes/données, tests et CI ; 5 imports morts
-supprimés du monolithe. Détail : `docs/NAMESPACE_MIGRATION_AUDIT.md`.
+supprimés du monolithe. Détail : `docs/archives/audits-baselines/NAMESPACE_MIGRATION_AUDIT.md`.
 Zéro nom personnel dans l'arbre (`test_no_personal_name_in_current_tree`),
 clé localStorage migrée `vxPos` avec reprise automatique des données.
 

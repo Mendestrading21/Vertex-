@@ -62,7 +62,7 @@ maintenabilité) · 🟡 mineure (doc / nommage).
   (UI, `tokens.css:120`) + **IBM Plex Mono** (chiffres, `tokens.css:121`).
 - **Décision utilisateur (2026-07-23)** : conserver **Obsidian Copper / Inter**
   (le code actuel fait foi). **Aucun changement runtime nécessaire.**
-- **Reste mineur** : certaines specs (`docs/VERTEX_DESIGN_TOKENS.md`) citent
+- **Reste mineur** : certaines specs (`docs/archives/interface-visuel/VERTEX_DESIGN_TOKENS.md`) citent
   « JetBrains Mono » alors que `tokens.css` utilise **IBM Plex Mono** — écart de
   nommage typographique à réconcilier dans la PR design (n°2), sans urgence.
 - **Validation** : grep « Obsidian Prism »/« General Sans » nul hors docs

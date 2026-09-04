@@ -61,8 +61,8 @@
 - Clé localStorage de positions (`terminal.py:3213-3214`) → `vxPos`, avec
   migration automatique des données depuis la clé héritée (nom reconstruit
   dynamiquement pour ne pas réintroduire l'occurrence).
-- CLAUDE.md (profil utilisateur), README.md, docs/AUDIT.md (nom de dépôt
-  personnel), docs/ARCHITECTURE.md, docs/ROADMAP.md, `vertex/ui/vault.py:130`,
+- CLAUDE.md (profil utilisateur), README.md, docs/archives/audits-baselines/AUDIT.md (nom de dépôt
+  personnel), docs/archives/plateforme/ARCHITECTURE.md, docs/archives/plateforme/ROADMAP.md, `vertex/ui/vault.py:130`,
   commentaires/docstrings (`analysis.py`, `strategy_fit.py`, `command.py`,
   `company.py`, tests) — reformulés.
 

@@ -169,5 +169,5 @@ DecisionStack, seule couche autorisée à produire la décision finale
 55 occurrences (insensible casse) dans 39 fichiers : import du package legacy
 (8 sites), salutation d'accueil en dur (`terminal.py:2572`), clé localStorage
 de positions (`terminal.py:3213-3214`), profil utilisateur dans CLAUDE.md,
-nom de dépôt personnel dans docs/AUDIT.md, références d'architecture dans
+nom de dépôt personnel dans docs/archives/audits-baselines/AUDIT.md, références d'architecture dans
 README/docs/CI. Traitées en Phase 2 (voir NAMESPACE_MIGRATION_AUDIT.md).

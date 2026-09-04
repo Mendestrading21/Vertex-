@@ -22,4 +22,4 @@ Colonnes = axes de la Definition of Done (`references/page-definition-of-done.md
 - **🟡 majoritaire** : base fonctionnelle saine, dette de cohérence (cards/charts/provenance/a11y) à résorber par lots.
 - **⬜ Préparation** : nouveau sous-espace à bâtir en lecture seule (sizing/perte max/ticket), Phase 4-13.
 
-Détail par page à produire dans `docs/vertex-audit/pages/<route>.md` au fil de l'implémentation.
+Détail par page à produire dans `docs/archives/vertex-audit/pages/<route>.md` au fil de l'implémentation.

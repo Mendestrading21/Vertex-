@@ -27,4 +27,4 @@ OBSERVER → COMPRENDRE → DÉTECTER → ÉVALUER → DÉCIDER → **PRÉPARER*
 - **FCT-03 (P2)** — Cohérence de vocabulaire (§27) : signal ≠ recommandation ≠ décision ≠ ordre. Vérifier via
   `__VXVOCAB` (`recommendation.py`) qu'un même concept = un même mot dans code/UI.
 
-Détail page par page à produire dans `docs/vertex-audit/pages/<route>.md` (gabarit `templates/page-audit-template.md`).
+Détail page par page à produire dans `docs/archives/vertex-audit/pages/<route>.md` (gabarit `templates/page-audit-template.md`).

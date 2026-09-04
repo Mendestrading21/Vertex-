@@ -13,7 +13,7 @@ n'introduit de chemin d'ordre. Gardiens conservés.
 
 ## D-02 — Fondation d'abord (docs + skill), implémentation ensuite
 **Décision.** Cette session ne produit **que** le skill `vertex-maximum`, les agents auditeurs, les rules et le
-dossier `docs/vertex-audit/`. **Aucun code applicatif touché.**
+dossier `docs/archives/vertex-audit/`. **Aucun code applicatif touché.**
 **Raison.** Choix utilisateur (« Fondation d'abord ») ; l'utilisateur exige de ne pas réécrire aveuglément.
 **Conséquences.** 919 tests restent verts (garde-fou). L'implémentation se fera par lots vérifiés (Phase 2+).
 

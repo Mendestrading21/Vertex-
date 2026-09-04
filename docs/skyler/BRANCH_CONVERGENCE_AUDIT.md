@@ -62,11 +62,11 @@ Vérifications :
 
 | Fichier | Nature | Présent dans Neon/skyler-v2 ? |
 |---|---|---|
-| `docs/release/RC1_HUMAN_ACCEPTANCE.md` (+143 l.) | dossier d'acceptation humaine RC1 | **NON — perdu** |
+| `docs/archives/release/RC1_HUMAN_ACCEPTANCE.md` (+143 l.) | dossier d'acceptation humaine RC1 | **NON — perdu** |
 | `tests/test_sw_cache_safety_rc1.py` (+55 l.) | gardien de sécurité du cache SW | **NON — perdu** |
 | `vertex/app/routes/system.py` (v50→v51) | bump SW | **Superseded** (Neon est à v87, lignée propre) |
 | `tests/test_redesign_ui.py`, `tests/test_ui_v3.py`, `tests/test_production_guards_canonical.py` | gardiens alignés v51 | **Superseded** (alignés v87 côté Neon) |
-| `docs/release/RC1_CHECKLIST.md` (8 l.) | mise à jour checklist | **NON** (Neon garde la version pré-v51) |
+| `docs/archives/release/RC1_CHECKLIST.md` (8 l.) | mise à jour checklist | **NON** (Neon garde la version pré-v51) |
 
 Conclusion : la seule vraie perte fonctionnelle est **le test gardien
 `test_sw_cache_safety_rc1.py` et le dossier d'acceptation** ; les bumps de version sont
@@ -151,7 +151,7 @@ dans aucune branche de code** ; elle n'existe que comme référence du skill (lo
 | Routes & API | **Neon Glass** | Sur-ensemble strict (aucune route RC1 perdue). |
 | Service worker & gardiens de version | **Neon Glass** (v87) | v51 de RC1 est un ancêtre logique dépassé sur la même lignée. |
 | Tests | **Neon Glass** + récupération de `test_sw_cache_safety_rc1.py` (adapté) | Seul actif RC1 non couvert. |
-| Dossier release RC1 (`docs/release/*`) | **RC1** pour `RC1_HUMAN_ACCEPTANCE.md` + delta checklist | Documents d'acceptation humaine à préserver dans l'historique produit. |
+| Dossier release RC1 (`docs/archives/release/*`) | **RC1** pour `RC1_HUMAN_ACCEPTANCE.md` + delta checklist | Documents d'acceptation humaine à préserver dans l'historique produit. |
 | Gouvernance Skyler (`.claude/skills`, `docs/skyler`) | **`integration/vertex-skyler-v2`** | Seule branche porteuse ; docs-only vérifié. |
 | `main` | Version canonique de release — **ne bouge pas** sans accord humain explicite | CLAUDE.md + gouvernance §3.1–3.2. |
 | Branches V4/Prism | Références historiques gelées | Racine divergente ; jamais une base. |
@@ -163,7 +163,7 @@ conformément au skill. Aucune fusion vers `main` proposée.
 ## 7. Plan de récupération (aucune fusion automatique — validation humaine requise avant exécution)
 
 1. **Récupérer l'actif RC1 perdu** (petite PR dédiée, au plus tôt en lot-0) :
-   - reprendre `docs/release/RC1_HUMAN_ACCEPTANCE.md` et le delta `RC1_CHECKLIST.md`
+   - reprendre `docs/archives/release/RC1_HUMAN_ACCEPTANCE.md` et le delta `RC1_CHECKLIST.md`
      depuis `28d1e4e` (copie de fichiers, pas de cherry-pick du bump SW) ;
    - réintroduire `tests/test_sw_cache_safety_rc1.py` en adaptant l'assertion de version
      à la lignée courante (v87+), et vérifier qu'il passe.

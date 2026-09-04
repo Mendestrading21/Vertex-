@@ -1,6 +1,6 @@
 # Fiches d'audit par page
 
-Une fiche `docs/vertex-audit/pages/<route>.md` par espace, au gabarit
+Une fiche `docs/archives/vertex-audit/pages/<route>.md` par espace, au gabarit
 `.claude/skills/vertex-maximum/templates/page-audit-template.md`. Produites **au fil de l'implémentation** (une
 avant chaque lot de refonte de page) ; les plus urgentes sont amorcées ci-dessous.
 

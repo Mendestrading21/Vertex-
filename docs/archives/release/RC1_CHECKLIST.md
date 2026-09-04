@@ -55,10 +55,10 @@ reduced-motion exhaustif, contrastes AA mesurés) → `RC1_KNOWN_ISSUES.md`.
 
 ## Docs release
 - `docs/refactor/validation/RC1-STABILIZATION.md`
-- `docs/release/RC1_CHECKLIST.md` (ce fichier)
-- `docs/release/RC1_KNOWN_ISSUES.md`
-- `docs/release/RC1_CHANGELOG.md`
-- `docs/release/RC1_ROLLBACK.md`
+- `docs/archives/release/RC1_CHECKLIST.md` (ce fichier)
+- `docs/archives/release/RC1_KNOWN_ISSUES.md`
+- `docs/archives/release/RC1_CHANGELOG.md`
+- `docs/archives/release/RC1_ROLLBACK.md`
 
 ## Validation humaine
 - [ ] Relecture des 8 espaces en démo par l'utilisateur.
@@ -73,5 +73,5 @@ reduced-motion exhaustif, contrastes AA mesurés) → `RC1_KNOWN_ISSUES.md`.
 5. push `main` **uniquement après validation humaine**.
 
 ## Procédure de rollback
-Voir `docs/release/RC1_ROLLBACK.md` (main intouché = rollback trivial ; `revert`
+Voir `docs/archives/release/RC1_ROLLBACK.md` (main intouché = rollback trivial ; `revert`
 préféré ; données desk indépendantes du code).

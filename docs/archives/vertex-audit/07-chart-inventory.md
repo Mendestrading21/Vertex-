@@ -15,7 +15,7 @@ window.VXCharts`), bâtie sur Chart.js (plugins maison `_glowPlugin`/`_leadDotPl
 ## Contrat de graphique (à faire respecter partout)
 Chaque graphe doit porter : **source · timestamp · question posée · conclusion lisible · état vide honnête ·
 palette `C.colors`** (jamais deux couleurs pour une même sémantique, jamais un hex moteur brut). Référence :
-`references/chart-system.md` + `docs/claude/VERTEX_CHART_CONTRACT.md`.
+`references/chart-system.md` + `docs/archives/claude/VERTEX_CHART_CONTRACT.md`.
 
 ## Findings
 - **CHT-01 (P2) — Redondance de primitives lignes/chandeliers.** `candlestick-chart` **et** `candlestick-lwc`

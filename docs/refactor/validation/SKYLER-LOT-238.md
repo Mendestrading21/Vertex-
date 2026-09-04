@@ -25,7 +25,7 @@ mortes vers des fichiers `.md` dans `docs/**` HORS
 | Fichiers .md balayés (hors validation) | 94 |
 | Liens markdown formels vers .md | 1 → **1 valide** |
 | Mentions backticks .md | 162 → 17 signalées par l'heuristique |
-| … dont fichiers EXISTANTS ailleurs dans le dépôt | **14** (docs/refactor/, docs/release/, .claude/skills/vertex-skyler-v2/references/, .claude/FRAMEWORK.md) |
+| … dont fichiers EXISTANTS ailleurs dans le dépôt | **14** (docs/refactor/, docs/archives/release/, .claude/skills/vertex-skyler-v2/references/, .claude/FRAMEWORK.md) |
 | … dont gabarits/raccourcis (pas des références) | **3** (`SKYLER-LOT-XX.md` ×2 — placeholder de prose ; « 08A.md à 08E.md » — raccourci de plage, SKYLER-LOT-08E.md existe) |
 | **Références réellement mortes** | **0** |
 

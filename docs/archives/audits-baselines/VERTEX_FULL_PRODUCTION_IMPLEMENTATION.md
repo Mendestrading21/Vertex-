@@ -14,7 +14,7 @@ capture ou une vérification navigateur reproduite dans cette passe.
   propriétés par grilles déterministes (monotonies spot/vol/temps,
   T=0 = intrinsèque, IV round-trip, scénarios relatifs).
 - Conventions d'unités écrites et testées
-  (`docs/VERTEX_CALCULATION_REFERENCE.md`) : prime par action vs par
+  (`docs/archives/intelligence-decision/VERTEX_CALCULATION_REFERENCE.md`) : prime par action vs par
   contrat (×100), IV décimale canonique (normalisation % tracée à la
   frontière `/api/options/simulate`), delta signé (bandes en valeur
   absolue pour les PUTs), DTE en jours calendaires, T=DTE/365.

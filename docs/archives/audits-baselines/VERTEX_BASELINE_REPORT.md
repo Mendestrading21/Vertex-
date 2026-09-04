@@ -17,7 +17,7 @@ Date : 2026-07-11 · Branche : `claude/vertex-strategy-os-h17dso`
   décision unique, clés de sync canoniques (17), service worker v6.
 
 ## Erreurs connues / limitations déclarées (avant cette passe)
-Voir `docs/VERTEX_MASTER_REDESIGN_IMPLEMENTATION.md` §12 : OHLC non exposé
+Voir `docs/archives/interface-visuel/VERTEX_MASTER_REDESIGN_IMPLEMENTATION.md` §12 : OHLC non exposé
 par le scan (candlestick en repli clôtures), MM en série non fournies,
 comparateur multi-titres redirigé, simulateur paper legacy sans UI dédiée,
 secteurs en anglais dans les filtres, brief IA branchable non branché.
@@ -25,7 +25,7 @@ secteurs en anglais dans les filtres, brief IA branchable non branché.
 ## Routes connues
 8 espaces (`/`, `/markets`, `/opportunities`, `/portfolio`, `/analysis[/sym]`,
 `/performance`, `/intelligence`, `/system`) + 21 sous-vues + 43 redirections
-301 + ~45 routes API (matrice complète : `docs/VERTEX_ROUTE_MATRIX.md`).
+301 + ~45 routes API (matrice complète : `docs/archives/plateforme/VERTEX_ROUTE_MATRIX.md`).
 
 ## Captures initiales
 `docs/redesign/before/` (20, avant refonte) et `docs/redesign/after/`

@@ -107,9 +107,12 @@ une capacité absente comme disponible.
 
 ## Documentation active
 
-Commencer par le skill maître. [`docs/vertex-1.0/README.md`](docs/vertex-1.0/README.md)
-reste une archive technique du runtime actuel ; les anciens documents et
-branches sont des preuves historiques, pas des instructions concurrentes.
+Commencer par le skill maître. [`docs/README.md`](docs/README.md) est l'index du
+dossier de documentation et [`docs/ARBORESCENCE.md`](docs/ARBORESCENCE.md) donne
+le propriétaire et la preuve de consommation de chaque dossier du dépôt.
+[`docs/vertex-1.0/README.md`](docs/vertex-1.0/README.md) reste une archive
+technique du runtime actuel ; les anciens documents et branches sont des preuves
+historiques, pas des instructions concurrentes.
 
 ## Sécurité
 

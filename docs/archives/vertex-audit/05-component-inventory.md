@@ -34,7 +34,7 @@ polish · premium · responsive · states · tables · tokens · utilities`.
   - **Reste (phases suivantes)** : `briefing.py` idx-tile (vx-kpi) + `vx-metric` (7×) ; `portfolio_page.py`
     `H`/`_rk` (**différé** : ton sur delta seulement + font-size 20/22px inline, non byte-identique) ; puis
     retirer `vx-stat-xl` (épinglé `test_cockpit.py:16`).
-- **DES-01 (P1) — Docs de design périmés.** `docs/claude/VERTEX_DESIGN_TOKENS.md` et `VERTEX_CHART_LIBRARY.md`
+- **DES-01 (P1) — Docs de design périmés.** `docs/archives/claude/VERTEX_DESIGN_TOKENS.md` et `VERTEX_CHART_LIBRARY.md`
   décrivent une palette **orange/bleu** abandonnée, contredisant `glass.css` (Black Glass, zéro bleu). Risque :
   induire un futur contributeur en erreur. **Action** : marquer ces docs « PÉRIMÉ — voir glass.css / references/
   design-system.md » ou les régénérer.

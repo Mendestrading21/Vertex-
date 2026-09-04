@@ -135,7 +135,7 @@ artificiellement interminable.
 ## Autorités complémentaires
 
 La carte s’applique avec `.interface-design/system.md`,
-`docs/VERTEX_DESIGN_TOKENS.md`, `docs/VERTEX_OBSIDIAN_COPPER_DEEP.md`,
+`docs/archives/interface-visuel/VERTEX_DESIGN_TOKENS.md`, `docs/archives/interface-visuel/VERTEX_OBSIDIAN_COPPER_DEEP.md`,
 `docs/refactor/CHART_INVENTORY.md` et le skill `vertex-total-rebuild`. En cas de
 conflit visuel, ce document tranche la composition ; les invariants de données,
 de provenance, d’accessibilité et READONLY restent toujours supérieurs.

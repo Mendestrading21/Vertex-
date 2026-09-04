@@ -55,7 +55,7 @@ avant la suivante.
 - **Qualité** : audit factuel, priorisé par sévérité, avec fichier:ligne.
 - **Risques** : sous-estimer le couplage de `terminal.py`.
 - **Tests** : n/a (analyse).
-- **Résultat** : `docs/ARCHITECTURE.md` + backlog priorisé. *(fait)*
+- **Résultat** : `docs/archives/plateforme/ARCHITECTURE.md` + backlog priorisé. *(fait)*
 
 ### Prompt 2 — Architecture
 - **But** : poser le package `vertex/` (factory, config, extensions, routes).

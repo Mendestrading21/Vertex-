@@ -30,7 +30,7 @@ définitions), IBKR `readonly=True` en dur, moteur de décision unique,
 
 ## Routes
 9 pages + 21 sous-vues + 42 redirections 301 + ~60 routes API
-(`docs/VERTEX_ROUTE_MATRIX.md`).
+(`docs/archives/plateforme/VERTEX_ROUTE_MATRIX.md`).
 
 ## État des intégrations (environnement cloud de la session)
 - **IBKR** : hors ligne (pas de TWS) — passerelle `readonly=True` codée en

@@ -42,7 +42,7 @@ Une décroissance monotone d’au moins 15 points de hit rate donne `UNDER_WATCH
 
 ## Contrat de présentation
 
-Le contrat destiné aux couches de présentation est documenté dans `docs/CLAUDE_VERTEX_INTELLIGENCE_CONTRACT.md`. Les champs d’intelligence sont servis par `GET /api/skyler/<SYMBOL>` sous `decision.readiness`, `decision.opportunity_attribution` et `decision.performance_monitor`. La route dédiée `/api/skyler/monitor` fournit le même diagnostic global sans forcer le calcul d’une fiche titre.
+Le contrat destiné aux couches de présentation est documenté dans `docs/archives/intelligence-decision/CLAUDE_VERTEX_INTELLIGENCE_CONTRACT.md`. Les champs d’intelligence sont servis par `GET /api/skyler/<SYMBOL>` sous `decision.readiness`, `decision.opportunity_attribution` et `decision.performance_monitor`. La route dédiée `/api/skyler/monitor` fournit le même diagnostic global sans forcer le calcul d’une fiche titre.
 
 ## Limites conservées
 

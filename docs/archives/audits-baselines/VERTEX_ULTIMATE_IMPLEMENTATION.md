@@ -7,7 +7,7 @@ qui reste). Base de départ : fin d'Experience OS (`ef6bf06`, 543 tests).
 ## Livré, testé et committé dans cette passe
 
 ### Phases 1-2 — Baseline & audit
-- `docs/VERTEX_ULTIMATE_BASELINE.md`, `docs/VERTEX_ULTIMATE_AUDIT.md`
+- `docs/archives/audits-baselines/VERTEX_ULTIMATE_BASELINE.md`, `docs/archives/audits-baselines/VERTEX_ULTIMATE_AUDIT.md`
   (15 écarts identifiés, chacun avec décision).
 
 ### Phases 3-5 — Hard gates (commit `d52d837`)

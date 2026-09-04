@@ -50,8 +50,8 @@ on corrigera étape par étape ») :
 
 | Fichier | Action | Nature |
 |---|---|---|
-| `docs/release/RC1_HUMAN_ACCEPTANCE.md` | restauré tel quel depuis `28d1e4e` | doc historique |
-| `docs/release/RC1_CHECKLIST.md` | remis à son état final RC1 (v51/954 tests — record historique) | doc historique |
+| `docs/archives/release/RC1_HUMAN_ACCEPTANCE.md` | restauré tel quel depuis `28d1e4e` | doc historique |
+| `docs/archives/release/RC1_CHECKLIST.md` | remis à son état final RC1 (v51/954 tests — record historique) | doc historique |
 | `tests/test_sw_cache_safety_rc1.py` | réintroduit **adapté** : assertion de version dynamique (1 seule constante `td-shell-vN`, N ≥ 51 — jamais de régression sous la RC1) ; invariants structurels inchangés (précache = manifest+icône seulement, network-first, purge des vieux caches, aucun graphe supprimé référencé) | test gardien |
 
 Le cherry-pick brut de `28d1e4e` a été refusé (il aurait rétrogradé le SW v87 → v51).

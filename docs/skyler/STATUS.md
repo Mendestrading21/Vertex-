@@ -14085,7 +14085,7 @@ sans autorisation demandée.
   formel → valide ; 162 mentions backticks → 17 signalées par
   l'heuristique de chemin, puis CHAQUE signalement vérifié par
   recherche du nom dans tout le dépôt : 14 fichiers EXISTANTS
-  ailleurs (docs/refactor/, docs/release/,
+  ailleurs (docs/refactor/, docs/archives/release/,
   .claude/skills/vertex-skyler-v2/references/, .claude/FRAMEWORK.md)
   et 3 gabarits/raccourcis de prose (placeholder SKYLER-LOT-XX,
   plage « 08A.md à 08E.md »). **0 référence réellement morte** — pas

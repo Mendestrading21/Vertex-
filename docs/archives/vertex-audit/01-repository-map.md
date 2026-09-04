@@ -6,7 +6,7 @@
 ## Racine
 - `terminal.py` — app Flask, workers IBKR, scan, caches, routes legacy `@app.route`.
 - `ib_reader.py` / `test_connection.py` — accès IBKR lecture seule / diagnostic.
-- `docs/` — ~40 docs + `docs/claude/` (contrats) + `docs/vertex-audit/` (cet audit).
+- `docs/` — ~40 docs + `docs/archives/claude/` (contrats) + `docs/archives/vertex-audit/` (cet audit).
 - `tests/` — **81 fichiers** de tests (`python -m pytest tests/ -q` → 919 passés, 2 skipped).
 - `static/` (racine, legacy) + `vertex/static/vertex/` (canonique : `css/glass.css`, `js/charts/chart-core.js`, `vx-core.js`).
 - Runtime **gitignoré** : `desk_data.json`, `*_cache.json`, `breadth_history.json`, `.env`, `.vertex_secret`, `edge_ledger`, `desk_backup_*`.

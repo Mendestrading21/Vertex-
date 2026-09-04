@@ -40,7 +40,7 @@ globale + logique trading + migration données + IBKR + nettoyage.
 ## Phases 4-13 — Page par page (DoD par page)
 Dashboard → Portefeuille → Opportunités → Analyse → Options → **Préparation (prep/sim)** → Performance →
 Intelligence → Journal → Events → Watchlist → Settings. Pour chacune : provenance visible (DAT-03), anti-fausse-
-fonctionnalité (FCT-01), a11y (A11Y-*), MetricCard/charts unifiés. Fiche `docs/vertex-audit/pages/<route>.md`.
+fonctionnalité (FCT-01), a11y (A11Y-*), MetricCard/charts unifiés. Fiche `docs/archives/vertex-audit/pages/<route>.md`.
 
 ## Phase transverse — Trading & perf (au fil)
 - **ENG-01 (P1) — ✅ FAIT** — plafonds vérifiés PAR TEST dans le code servi (`tests/test_engine_caps.py`) :
