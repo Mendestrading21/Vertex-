@@ -2,7 +2,7 @@
 
 Cache client PERSISTANT (survit au reload), stale-while-revalidate, déduplication,
 invalidation CIBLÉE, annulation anti-hors-ordre. Contrats statiques ; le comportement
-runtime est validé au navigateur (docs/refactor/validation/CONTINUITY-03.md).
+runtime est validé au navigateur (le rapport de continuite 03 (archive, retiree du depot)).
 """
 import os
 from pathlib import Path

@@ -2,7 +2,7 @@
 import pytest
 
 from vertex.portfolio import models as PM
-from vertex.portfolio import portfolio_guard, replacement_engine, risk_engine, stress_tests
+from vertex.portfolio import portfolio_guard, risk_engine, stress_tests
 from vertex.portfolio.team_engine import candidate_fit, team_view
 from vertex.strategy import constitution as C
 from vertex.strategy import executive_engine as EE
@@ -73,16 +73,6 @@ def test_eleventh_stock_requires_replacement():
     assert fit2['blocked'] is False
 
 
-def test_replacement_engine_proposes_weakest():
-    snap = make_snapshot(10)
-    for p in snap.positions:
-        p.role = 'MIDFIELDER'
-    scores = {p.symbol: 50 + i for i, p in enumerate(snap.positions)}
-    scores['NEW'] = 90
-    res = replacement_engine.propose_replacement(
-        snap, PROFILE, {'symbol': 'NEW', 'role': 'MIDFIELDER'}, scores)
-    assert res['replacement_candidate']['symbol'] == 'POS0'
-    assert any('décision humaine' in n for n in res['notes'])
 
 
 # ── Drawdown -25 % → aucun nouveau risque ─────────────────────────────

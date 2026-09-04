@@ -9,7 +9,7 @@ l'annonçait, aucune ligne ne le calculait). L'adéquation au portefeuille est
 produite ailleurs — `vertex/scanner/stages.py` et
 `vertex/strategy/executive_engine.py` (champ `portfolio_fit` du packet). La
 santé de thèse ne la prend donc pas en compte : ne pas le supposer.
-Gardien : `tests/test_thesis_health_dimensions_lot365.py`.
+Gardien : `tests/test_thesis_health_dimensions.py`.
 Une microvariation intraday ne bascule jamais un statut (matérialité).
 """
 from __future__ import annotations

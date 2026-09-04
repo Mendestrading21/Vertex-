@@ -120,8 +120,8 @@ def test_quarters_survives_bad_ticker():
 #  market-data-only a retire la capacite : lire le portefeuille du COMPTE
 #  reste lire le compte, meme en lecture seule. La non-reapparition — route,
 #  worker, consommation UI — est gardee par
-#  `tests/test_vertex_1_0_reconciliation_pnl.py` et l'AST par
-#  `tests/test_frontiere_ibkr_lot02.py`.
+#  `tests/test_reconciliation_pnl.py` et l'AST par
+#  `tests/test_frontiere_ibkr.py`.
 
 def test_la_route_d_import_est_bien_retiree_du_service():
     import terminal

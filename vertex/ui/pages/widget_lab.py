@@ -3,7 +3,7 @@
 Route AUTONOME, hors produit Vertex : elle ne rend AUCUNE donnée réelle et
 n'appelle AUCUN moteur. Toutes les valeurs sont des ÉCHANTILLONS de design,
 clairement étiquetés, servant à voir / comparer / tester / choisir les widgets
-de la bibliothèque (`docs/visual/VERTEX_WIDGET_LIBRARY.md`).
+de la bibliothèque (la bibliotheque de widgets (archive, retiree du depot)).
 
 Chaque widget est présenté en variantes (V1…Vn) + bande d'états. L'utilisateur
 marque chaque variante Officiel / Référence / Rejeté (persisté localStorage), et

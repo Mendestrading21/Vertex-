@@ -13,6 +13,6 @@ gunicorn>=21.0           # serveur de production (cloud)
 # fonctionnaient — et cassaient le jour où l'intermédiaire changerait de crémerie.
 # markupsafe.escape sert à l'ÉCHAPPEMENT HTML de /api/analysis : adosser une
 # primitive de sûreté à une dépendance qu'on ne déclare pas est le cas le moins
-# confortable des deux. Mesuré par tools/vertex_1_0/mesurer_exploitation.py.
+# confortable des deux. Mesuré par tools/mesures/mesurer_exploitation.py.
 requests>=2.31,<3        # appels HTTP directs (briefs, news_plus, constituents)
 markupsafe>=2.1,<4       # escape() — sûreté XSS des sorties analysis_api

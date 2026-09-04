@@ -118,7 +118,7 @@ def make_blueprint(scan_state: dict) -> Blueprint:
     #  consommateur de CETTE forme — la page legacy /strategy-os — est une
     #  redirection 301 : du code mort des deux cotes. Le proprietaire unique
     #  est analysis_api.api_anomalies, sur la serie canonique. Un gardien
-    #  generique (test_collisions_routes_lot09) interdit toute reapparition
+    #  generique (test_collisions_routes) interdit toute reapparition
     #  d'une route a deux proprietaires.
 
     @bp.route('/api/portfolio/team', methods=['GET', 'POST'])

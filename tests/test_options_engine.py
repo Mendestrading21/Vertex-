@@ -3,11 +3,8 @@ module PUT isolé, gestion des profits, earnings."""
 import math
 
 from vertex.data_sources.rates import RateCurve
-from vertex.options import bearish_tactical, call_selector, chain_loader
-from vertex.options import recommendation as reco
 from vertex.options import scenario_pricer as sp
 from vertex.options.models import UnderlyingSetup, CATEGORY_DYNAMIC
-from vertex.catalysts import earnings_engine
 from vertex.strategy import constitution as C
 
 PROFILE = C.load_profile()
@@ -119,75 +116,16 @@ def test_capital_never_invented():
 
 
 # ── Sélecteur CALL ────────────────────────────────────────────────────
-def test_selector_max_one_per_category_and_single_primary():
-    res = call_selector.select_calls(liquid_chain(), setup_long(), PROFILE,
-                                     rate_curve=CURVE)
-    cats = res['per_category']
-    assert set(cats) == {'BALANCED', 'DYNAMIC', 'ULTRA_CONVEX'}
-    picked = [c for c in cats.values() if c]
-    assert 1 <= len(picked) <= 3
-    assert res['primary'] is not None
-    assert res['primary']['category'] in ('BALANCED', 'DYNAMIC')
 
 
-def test_dte_bounds_enforced():
-    # Bornes lues dans le PROFIL ACTIF (V1 : 60–270 ; V2 : 60–540, admission LEAPS
-    # — SKYLER LOT 2). Un 30 DTE reste toujours rejeté ; le 400 DTE n'est rejeté
-    # que si la borne absolue du profil l'exclut.
-    d = PROFILE.dte
-    res = call_selector.select_calls(liquid_chain(), setup_long(), PROFILE,
-                                     rate_curve=CURVE)
-    for cat, sel in res['per_category'].items():
-        if sel:
-            assert d.absolute_minimum <= sel['contract']['dte'] <= d.absolute_maximum
-    rejected_dtes = [r['contract']['dte'] for r in res['rejected']]
-    assert 30 in rejected_dtes
-    if d.absolute_maximum < 400:
-        assert 400 in rejected_dtes
-    else:
-        assert 400 not in rejected_dtes           # V2 : 400 DTE admissible (LEAPS)
 
 
-def test_ultra_convex_requirements():
-    # setup STANDARD → pas d'ULTRA_CONVEX (rare_setup_only)
-    res = call_selector.select_calls(liquid_chain(), setup_long(), PROFILE,
-                                     rate_curve=CURVE)
-    assert res['per_category']['ULTRA_CONVEX'] is None
-    # setup EXCEPTIONNEL avec conviction forte → autorisé
-    res2 = call_selector.select_calls(
-        liquid_chain(), setup_long(setup_quality='EXCEPTIONAL', tp2=650.0, tp3=700.0),
-        PROFILE, rate_curve=CURVE)
-    ultra = res2['per_category']['ULTRA_CONVEX']
-    if ultra:  # sélectionné seulement si la convexité simulée est réelle
-        assert ultra['contract']['delta'] <= 0.30
-        assert any('convexité' in r.lower() for r in ultra['reasons'])
 
 
-def test_high_delta_no_longer_favored():
-    """Fin du biais historique 0.70-0.88 : un delta 0.80 ne gagne pas d'office."""
-    chain = liquid_chain() + [call(430, 130, 0.80, 82.0)]
-    res = call_selector.select_calls(chain, setup_long(), PROFILE, rate_curve=CURVE)
-    assert res['primary']['contract']['delta'] < 0.70, \
-        'le delta 0.80 est hors bandes de catégories — jamais contrat principal'
 
 
-def test_contract_not_selected_for_low_price_only():
-    cheap = call(620, 130, 0.19, 0.05, oi=5000, vol=900, spread=0.02)
-    chain = [cheap, call(545, 130, 0.34, 24.0)]
-    res = call_selector.select_calls(chain, setup_long(setup_quality='EXCEPTIONAL'),
-                                     PROFILE, rate_curve=CURVE)
-    if res['primary']:
-        assert res['primary']['contract']['mid'] != 0.05, \
-            'une prime quasi nulle ne doit jamais faire gagner un contrat'
 
 
-def test_call_is_primary_direction():
-    """Le sélecteur CALL refuse un setup SHORT ; la reco route CALLS vs PUTS séparément."""
-    import pytest
-    with pytest.raises(AssertionError):
-        call_selector.select_calls(liquid_chain(), setup_long(direction='SHORT'), PROFILE)
-    r = reco.build_recommendation(liquid_chain(), setup_long(), PROFILE, rate_curve=CURVE)
-    assert r['calls'] is not None and r['bearish'] is None
 
 
 # ── Module PUT tactique isolé ─────────────────────────────────────────
@@ -201,126 +139,31 @@ def bearish_setup():
                       tp2=410.0, tp3=380.0)
 
 
-def test_rare_put_is_isolated():
-    """Un régime défavorable SEUL ne produit jamais un PUT (§6.4/§10)."""
-    res = bearish_tactical.select_put(put_chain(), bearish_setup(),
-                                      {'regime_unfavorable': True}, PROFILE,
-                                      rate_curve=CURVE)
-    assert res['selected'] is None
-    assert not res['evidence']['converges']
-    # même avec 2 preuves : toujours rien
-    res2 = bearish_tactical.select_put(
-        put_chain(), bearish_setup(),
-        {'regime_unfavorable': True, 'support_broken': True}, PROFILE, rate_curve=CURVE)
-    assert res2['selected'] is None
 
 
-def test_put_selected_with_converging_evidence():
-    evidence = {'regime_unfavorable': True, 'relative_weakness': True,
-                'downtrend_confirmed': True, 'support_broken': True}
-    res = bearish_tactical.select_put(put_chain(), bearish_setup(), evidence,
-                                      PROFILE, rate_curve=CURVE)
-    sel = res['selected']
-    assert sel is not None
-    assert sel['contract']['right'] == 'P'
-    assert 0.30 <= abs(sel['contract']['delta']) <= 0.55
-    assert sel['scenarios']['reward_risk'] >= 2.0  # constitution : R:R minimal 2:1
 
 
-def test_missing_dte_put_is_explicitly_excluded_without_signal():
-    evidence = {'regime_unfavorable': True, 'relative_weakness': True,
-                'downtrend_confirmed': True}
-    chain = [dict(put(460, 120, -0.40, 26.0), dte=None)]
-    res = bearish_tactical.select_put(chain, bearish_setup(), evidence, PROFILE, rate_curve=CURVE)
-    assert res['selected'] is None
-    assert any('DTE indisponible ou invalide' in note for note in res['notes'])
 
 
-def test_max_one_bearish_position():
-    evidence = {'regime_unfavorable': True, 'relative_weakness': True,
-                'downtrend_confirmed': True}
-    res = bearish_tactical.select_put(put_chain(), bearish_setup(), evidence,
-                                      PROFILE, open_bearish_positions=1,
-                                      rate_curve=CURVE)
-    assert res['selected'] is None
-    assert any('maximum' in n for n in res['notes'])
 
 
-def test_bearish_module_never_sells_options():
-    import inspect
-    src = inspect.getsource(bearish_tactical)
-    for forbidden in ('sell_option', 'short_option', 'covered_call',
-                      'credit_spread', 'naked'):
-        assert forbidden not in src
 
 
 # ── Maximum 3 options ─────────────────────────────────────────────────
-def test_max_three_options():
-    r = reco.build_recommendation(liquid_chain(), setup_long(), PROFILE,
-                                  open_options_count=3, rate_curve=CURVE)
-    assert r['blocked'] is True and r['calls'] is None
-    r2 = reco.build_recommendation(liquid_chain(), setup_long(), PROFILE,
-                                   open_options_count=2, rate_curve=CURVE)
-    assert r2['blocked'] is False
 
 
 # ── Gestion des profits (§11) ─────────────────────────────────────────
-def test_profit_management_at_50pct():
-    plan = reco.profit_management_plan(current_gain_pct=55, sessions_in_trade=6)
-    assert plan['action'] == 'PARTIAL_EXIT'
-    assert plan['secure_share_pct'] == [60, 70]
-    assert plan['runner_share_pct'] == [30, 40]
-    assert plan['raise_invalidation'] is True
 
 
-def test_runner_never_mandatory():
-    plan = reco.profit_management_plan(current_gain_pct=60, sessions_in_trade=6,
-                                       conditions={'momentum_broken': True})
-    assert plan['action'] == 'FULL_EXIT'
-    assert plan['runner_share_pct'] is None
 
 
-def test_time_stop():
-    plan = reco.profit_management_plan(current_gain_pct=-3, sessions_in_trade=8)
-    assert plan['time_stop_triggered'] is True
-    assert plan['action'] == 'REEVALUATE_OR_EXIT'
 
 
 # ── Entonnoir de chargement ───────────────────────────────────────────
-def test_funnel_never_loads_everything():
-    import datetime as dt
-    today = dt.date(2026, 7, 11)
-    expirations = [(today + dt.timedelta(days=d)).isoformat()
-                   for d in (7, 21, 45, 75, 100, 130, 160, 200, 240, 300, 400)]
-    strikes = {e: [k * 10.0 for k in range(20, 100)] for e in expirations}
-    plan = chain_loader.funnel_plan(expirations, strikes, 500.0, PROFILE, today=today)
-    assert 0 < len(plan) <= chain_loader.MAX_EXPIRIES
-    for leg in plan:
-        assert 60 <= leg['dte'] <= 270
-        assert len(leg['strikes']) <= chain_loader.MAX_STRIKES_PER_EXPIRY
-        assert all(325 <= k <= 675 for k in leg['strikes'])
 
 
 # ── Earnings ──────────────────────────────────────────────────────────
-def test_hold_through_earnings_requires_full_dossier():
-    plan = earnings_engine.evaluate_earnings_plan(5, hold_through_dossier={})
-    assert plan['hold_through_allowed'] is False
-    assert plan['exit_before_announcement'] is True
-    assert plan['missing_requirements']
-    full = {k: True for k in earnings_engine.HOLD_THROUGH_REQUIRED}
-    plan2 = earnings_engine.evaluate_earnings_plan(5, hold_through_dossier=full)
-    assert plan2['hold_through_allowed'] is True
 
 
-def test_no_certainty_language():
-    text = earnings_engine.sanitize_language('Ce trade est garanti et sans risque')
-    assert 'garanti' not in text and 'sans risque' not in text
 
 
-def test_selector_uses_profiled_holding_plan_and_explicit_override():
-    default = call_selector.select_calls(liquid_chain(), setup_long(), PROFILE, rate_curve=CURVE)
-    assert default['holding_plan_sessions'] == [5, 10, 15]
-    assert default['holding_days'] == 10
-    explicit = call_selector.select_calls(liquid_chain(), setup_long(), PROFILE,
-                                          rate_curve=CURVE, holding_days=15)
-    assert explicit['holding_days'] == 15

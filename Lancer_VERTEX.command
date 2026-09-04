@@ -1,5 +1,5 @@
 #!/bin/bash
-# Vertex 1.0 — analyse uniquement, aucun ordre.
+# Vertex Test 1.0 — analyse uniquement, aucun ordre.
 set -e
 cd "$(dirname "$0")"
 clear

@@ -2,7 +2,7 @@
 
 Préchargement (survol / focus / idle), navigation ticker fluide (SPA), transitions
 respectant reduced-motion. Contrats statiques ; latence & consommation du préchargement
-validées au navigateur (docs/refactor/validation/CONTINUITY-04.md).
+validées au navigateur (le rapport de continuite 04 (archive, retiree du depot)).
 """
 from pathlib import Path
 

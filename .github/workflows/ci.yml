@@ -42,14 +42,14 @@ jobs:
           python -m pip check
       - name: Compile
         run: python -m compileall -q terminal.py vertex
-      - name: Vertex 1.0 contract
+      - name: Contrat produit
         run: |
           python - <<'PY'
           import vertex
           from vertex.product import OPTIONS_MANDATE
           from vertex.strategy.constitution import load_profile
           from vertex.strategy.release import load_release_profile
-          assert vertex.__version__ == "1.0.0rc1"
+          assert vertex.__version__ == "1.0.0"
           assert OPTIONS_MANDATE["holding_weeks"] == (2, 4, 6)
           assert load_profile().version == 3
           assert load_release_profile().version == 4
@@ -83,4 +83,4 @@ jobs:
       - name: Install safety test dependency
         run: python -m pip install -r requirements-dev.txt
       - name: Prove analysis-only invariant
-        run: python -m pytest tests/test_no_orders.py tests/test_vertex_1_0_contract.py -q
+        run: python -m pytest tests/test_no_orders.py tests/test_contract.py -q

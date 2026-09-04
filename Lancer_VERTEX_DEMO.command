@@ -1,5 +1,5 @@
 #!/bin/bash
-# Vertex 1.0 — mode démo, données fictives explicitement marquées.
+# Vertex Test 1.0 — mode démo, données fictives explicitement marquées.
 set -e
 cd "$(dirname "$0")"
 

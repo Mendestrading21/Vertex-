@@ -105,7 +105,7 @@ BLUEPRINTS: Tuple[Tuple[str, str], ...] = (
 )
 
 #: Les blueprints qui restent chez le monolithe, et POURQUOI. Cette liste n'est
-#: pas décorative : `tests/test_vertex_1_0_factory_parity.py` vérifie qu'elle
+#: pas décorative : `tests/test_factory_parity.py` vérifie qu'elle
 #: correspond à ce que `terminal.py` enregistre encore. Une entrée qui disparaît
 #: sans que le blueprint bouge ferait mentir la doc ; une entrée qui reste alors
 #: que le blueprint a migré laisserait croire à un couplage résolu.

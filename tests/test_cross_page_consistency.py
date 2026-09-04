@@ -9,10 +9,10 @@ sorties réelles du serveur (routes réelles, `scan_state` partagé).
 options non vide ») n'est JAMAIS remplie sous pytest, car aucun test de la
 suite ne déclenche de scan. Ils n'ont donc jamais rien protégé. Ils tournent
 désormais sur un `scan_state` alimenté puis restauré (convention de
-`test_options_intelligence_lot6.py`) : ce n'est pas une donnée inventée
+`test_options_intelligence.py`) : ce n'est pas une donnée inventée
 affichée à l'utilisateur, c'est l'entrée d'un test — les routes, elles, sont
 les vraies. Les deux ont été prouvés par mutation au lot 398 (cf.
-`docs/refactor/validation/SKYLER-LOT-398.md`).
+le rapport du lot 398 (archive, retiree du depot)).
 """
 import pytest
 

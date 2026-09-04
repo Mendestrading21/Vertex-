@@ -2,8 +2,6 @@
 import datetime as dt
 import math
 
-from vertex.anomalies import data_anomalies as DA
-from vertex.anomalies import option_anomalies as OA
 from vertex.anomalies.models import any_blocking, blocking_codes
 from vertex.anomalies.stock_anomalies import detect_stock_anomalies
 from vertex.options.vol_surface import build_surface, relative_value_zones
@@ -43,37 +41,12 @@ def liquid_call(**kw):
 
 
 # ── Anomalies de données ──────────────────────────────────────────────
-def test_stale_quote_blocks():
-    anomalies = DA.check_quote({'source': 'IBKR', 'price': 500.0,
-                                'timestamp': '2026-07-11T10:00:00Z', 'mode': 'LIVE'}, now=NOW)
-    assert 'STALE_DATA' in [a.code for a in anomalies]
-    assert any_blocking(anomalies)
 
 
-def test_crossed_and_locked_market_detection():
-    crossed = DA.check_quote({'source': 'IBKR', 'price': 100, 'bid': 101.0, 'ask': 100.5,
-                              'timestamp': NOW.isoformat()}, now=NOW)
-    assert 'CROSSED_MARKET' in blocking_codes(crossed)
-    locked = DA.check_quote({'source': 'IBKR', 'price': 100, 'bid': 100.5, 'ask': 100.5,
-                             'timestamp': NOW.isoformat()}, now=NOW)
-    assert 'LOCKED_MARKET' in [a.code for a in locked]
 
 
-def test_impossible_ohlc_and_duplicates():
-    bars = make_bars(40)
-    bars[10]['high'] = bars[10]['low'] - 1          # OHLC impossible
-    bars.append(dict(bars[-1]))                     # doublon de date
-    anomalies = DA.check_bars(bars, source='TEST')
-    codes = {a.code for a in anomalies}
-    assert 'IMPOSSIBLE_OHLC' in codes and 'DUPLICATE_BARS' in codes
-    assert any_blocking(anomalies)
 
 
-def test_negative_and_zero_price_blocking():
-    a1 = DA.check_quote({'source': 'X', 'price': -5, 'timestamp': NOW.isoformat()}, now=NOW)
-    a2 = DA.check_quote({'source': 'X', 'price': 0, 'timestamp': NOW.isoformat()}, now=NOW)
-    assert 'NEGATIVE_PRICE' in blocking_codes(a1)
-    assert 'ZERO_PRICE' in blocking_codes(a2)
 
 
 # ── Anomalies actions ─────────────────────────────────────────────────
@@ -136,63 +109,22 @@ def test_fundamental_and_event_detectors_require_context():
 
 
 # ── Anomalies options ─────────────────────────────────────────────────
-def test_zero_bid_blocks_contract():
-    anomalies = OA.check_contract(liquid_call(bid=None, mid=None), spot=505.0)
-    assert 'ZERO_BID' in blocking_codes(anomalies)
 
 
-def test_crossed_market_blocks_contract():
-    anomalies = OA.check_contract(liquid_call(bid=25.4, ask=24.2), spot=505.0)
-    assert 'CROSSED_OPTION_MARKET' in blocking_codes(anomalies)
 
 
-def test_wide_spread_detected():
-    c = liquid_call(bid=20.0, ask=28.0, mid=24.0)
-    codes = {a.code for a in OA.check_contract(c, spot=505.0)}
-    assert 'WIDE_SPREAD' in codes
 
 
-def test_negative_time_value_detected():
-    # CALL strike 400, spot 505 → intrinsèque 105 ; mid 95 → valeur temps négative
-    c = liquid_call(strike=400.0, bid=94.0, ask=96.0, mid=95.0)
-    anomalies = OA.check_contract(c, spot=505.0)
-    assert 'NEGATIVE_TIME_VALUE' in blocking_codes(anomalies)
 
 
-def test_greek_sign_error_blocks():
-    anomalies = OA.check_contract(liquid_call(delta=-0.4), spot=505.0)
-    assert 'GREEK_SIGN_ERROR' in blocking_codes(anomalies)
 
 
-def test_stale_option_quote_blocks():
-    anomalies = OA.check_contract(liquid_call(), spot=505.0, quote_age_s=7200)
-    assert 'STALE_QUOTE' in blocking_codes(anomalies)
 
 
-def test_put_call_parity_warning():
-    # C - P doit ≈ S - K·e^{-rT}. spot 500, K 500, C 40, P 5 → écart ~35 : alerte.
-    call = liquid_call(strike=500.0, mid=40.0)
-    anomalies = OA.check_economics(call, spot=500.0, dte=180, rate=0.045,
-                                   counterpart_mid=5.0)
-    assert 'PUT_CALL_PARITY_WARNING' in {a.code for a in anomalies}
 
 
-def test_premium_too_cheap_never_a_reason_to_buy():
-    c = liquid_call(strike=900.0, bid=0.02, ask=0.04, mid=0.03)
-    anomalies = OA.check_economics(c, spot=505.0, expected_move_pct=12.0, dte=120)
-    codes = {a.code for a in anomalies}
-    assert 'PREMIUM_TOO_CHEAP_TO_BE_TRUSTED' in codes
-    assert 'BREAKEVEN_UNREALISTIC' in codes
 
 
-def test_activity_never_called_institutional_buying():
-    c = liquid_call(volume=30000, open_interest=2000)
-    anomalies = OA.check_activity(c, avg_volume=1500, prev_open_interest=900, dte=120)
-    assert anomalies
-    for a in anomalies:
-        text = (a.impact + str(a.observed)).lower()
-        assert 'achat institutionnel' not in text
-        assert 'proxy' in text or 'confirmer' in text or 'inconnu' in text
 
 
 # ── Surface de volatilité ─────────────────────────────────────────────

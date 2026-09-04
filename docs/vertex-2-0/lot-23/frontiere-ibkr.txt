@@ -1,1 +1,0 @@
-OK: aucun appel IBKR sensible détecté dans le périmètre runtime/outils.

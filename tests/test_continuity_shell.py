@@ -4,7 +4,7 @@ Progressive-enhancement : le document complet reste servi (deep link / refresh /
 sans-JS), et une requête « fragment » ne renvoie QUE le contenu + métadonnées +
 scripts de page (shell conservé côté client par vx-router.js). Ces tests verrouillent
 les contrats statiques ; le comportement SPA lui-même est validé au navigateur
-(voir docs/refactor/validation/CONTINUITY-02.md).
+(voir le rapport de continuite 02 (archive, retiree du depot)).
 """
 #  MARCHES EST FUSIONNE DANS LE DASHBOARD (Black Glass).
 #

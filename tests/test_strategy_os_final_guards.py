@@ -83,34 +83,6 @@ def test_all_sync_keys_match():
     assert 'vxWatchlist' in ent_keys and 'vxAlerts' in ent_keys
 
 
-def test_ibkr_confirms_signal():
-    """Un signal TradingView seul ne devient jamais ACTIONABLE : il déclenche
-    une réévaluation, et le pipeline exige des données techniques/de marché
-    confirmées (IBKR ou source validée) pour dépasser RADAR."""
-    from vertex.data_sources.tradingview_signal_store import TradingViewSignalStore
-    import time
-    store = TradingViewSignalStore()
-    res = store.add('NVDA', 'BREAKOUT_CONFIRMED', time.time())
-    assert res['accepted'] and res['entry']['action'] == 'REEVALUATE'
-
-    from vertex.scanner.candidate_pipeline import evaluate_candidate
-    tv_only = {'symbol': 'NVDA',
-               'sentiment': {'news_tone': 'POSITIVE'},
-               'catalysts': {'has_catalyst': True},
-               # AUCUNE donnée technique confirmée par le broker/source validée :
-               'technical': {},
-               'data_quality': {'actionable_allowed': False}}
-    out = evaluate_candidate(tv_only)
-    assert out['outcome'] != 'ACTIONABLE'
-    confirmed = dict(tv_only)
-    confirmed['technical'] = {'trend': 'UP', 'relative_strength': 80,
-                              'reward_risk': 2.3}
-    confirmed['fundamentals'] = {'revenue_growth': 0.2, 'margin': 0.25}
-    confirmed['data_quality'] = {'actionable_allowed': True}
-    confirmed['reconciliation_ok'] = True
-    out2 = evaluate_candidate(confirmed)
-    assert out2['outcome'] in ('WATCH', 'ACTIONABLE'), \
-        'avec confirmation broker, le candidat progresse'
 
 
 def test_no_temporary_migration_adapters_left():

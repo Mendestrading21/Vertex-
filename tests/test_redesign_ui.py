@@ -231,7 +231,7 @@ def test_chart_modules_exist():
     charts = STATIC / 'js' / 'charts'
     # RC1 : correlation-matrix / factor-chart / geographic-exposure / vol-surface
     # (0 référence) et breadth-chart / sector-chart (dormants) supprimés — cf.
-    # docs/refactor/validation/RC1-STABILIZATION.md.
+    # le rapport de stabilisation RC1 (archive, retiree du depot).
     for name in ('chart-core', 'sparkline', 'price-chart', 'candlestick-chart',
                  'line-area-chart', 'bar-chart', 'donut-chart', 'heatmap',
                  'equity-chart', 'drawdown-chart', 'option-payoff',
@@ -362,7 +362,7 @@ def test_service_worker_bumped(client):
     r = client.get('/sw.js')
     assert r.status_code == 200
     body = r.get_data(as_text=True)
-    assert 'td-shell-v282' in body, 'le shell a changé — la version du cache doit suivre'
+    assert 'td-shell-v283' in body, 'le shell a changé — la version du cache doit suivre'
     assert 'td-shell-v49' not in body
 
 

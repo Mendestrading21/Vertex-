@@ -1031,7 +1031,7 @@ _IBKR_CID_BASE = (os.environ.get('IBKR_CLIENT_ID') or '').strip()
 #  idees — dont un qui cherchait le compte PAPIER en premier quand les
 #  quatre autres cherchaient le REEL. Deux ordres differents, c'est
 #  l'ecran qui affiche un compte et le scan qui en lit un autre.
-#  Gardien : `tests/test_vertex_1_0_ibkr_link.py`.
+#  Gardien : `tests/test_ibkr_link.py`.
 
 
 def _ibkr_opt_worker():
@@ -2600,7 +2600,7 @@ def _indices_loop():
 #  n'était référencé hors d'elle (AST, 0 référence). Les doubles écrivains
 #  myRecos/myFavs/myNotes qu'elle portait étaient donc inatteignables : le
 #  seul écrivain servi est vx-entities.js. Gardien :
-#  tests/test_strangler_couche_pages_lot36.py. Rollback : git revert du lot.
+#  tests/test_strangler_couche_pages.py. Rollback : git revert du lot.
 
 
 

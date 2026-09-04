@@ -113,7 +113,7 @@ def _filtres(view: str) -> str:
     commandes — cinq horizons, trois types, « Mes positions seulement » —
     s'affichaient donc exactement comme ailleurs et **ne faisaient rien**.
 
-    Relevé en les CLIQUANT (`tools/vertex_2_0_boutons_morts.py`) : aucune
+    Relevé en les CLIQUANT (`tools/audit/boutons_morts.py`) : aucune
     mutation du DOM, aucune requête, aucun défilement, aucune écriture. Une
     commande qui ne peut rien produire est une fausse fonctionnalité, que la
     doctrine interdit. On ne la désactive pas — on ne la rend pas, et la barre

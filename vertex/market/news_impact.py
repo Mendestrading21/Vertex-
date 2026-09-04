@@ -67,7 +67,7 @@ def potential_impact(event: dict) -> dict:
     inventer une amplitude serait ajouter de la fausse précision. Ce qui est
     corrigé, c'est le SILENCE : quiconque rendra `sentiment` continu doit savoir
     que ces seuils et cette confiance ont été écrits pour un continuum qu'ils
-    n'ont jamais reçu. Gardien : `tests/test_sentiment_contrat_lot609.py`.
+    n'ont jamais reçu. Gardien : `tests/test_sentiment_contrat.py`.
     """
     senti = event.get('sentiment')
     if not isinstance(senti, (int, float)):

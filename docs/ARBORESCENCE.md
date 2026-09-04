@@ -1,110 +1,115 @@
-# Arborescence du dépôt — audit et propriétaires
+# Arborescence — Vertex Test 1.0
 
-Baseline : `main` à `c683c94`, branche `claude/repository-cleanup-organization-ok29ee`.
-Mesure : 2 544 fichiers suivis, 952 modules Python, 524 fichiers de tests.
-Suite au SHA de baseline : **4 469 passés, 153 ignorés, 1 échec** —
-`tests/test_vertex_1_0_branches.py::test_la_classification_est_discriminante`,
-qui exige plus de 100 branches distantes et n'en voit que 2 dans un conteneur
-cloné à plat. Échec d'environnement, antérieur à ce lot, non traité ici.
+État après le tri. Le dépôt passe de **2 546 à 1 021 fichiers suivis**, sans
+qu'une seule route servie disparaisse : **204 avant, 204 après**.
 
-Ce document répond à une seule question, dossier par dossier : **qui le
-consomme ?** Un dossier sans consommateur prouvé est nommé comme tel ; il n'est
-pas supprimé pour autant. L'invariant 9 de `CLAUDE.md` interdit tout retrait
-avant preuve d'absence d'import, de route, de test, de consommateur, de donnée
-et de chemin de rollback.
+## Ce que contient le dépôt
 
-## Verdict
-
-**Aucun dossier de code n'est mort.** Les dix entrées de premier niveau hors
-`docs/` ont toutes un consommateur prouvé — import, route servie, test gardien,
-étape de CI ou fichier réellement servi en HTTP. Le désordre mesuré était
-entièrement documentaire : 177 fichiers à plat à la racine de `docs/`, dont 162
-sans aucune référence dans le dépôt, et quatre sous-dossiers sans consommateur
-hors `docs/`.
-
-## Code et runtime — tous consommés
-
-| Entrée | Fichiers | Propriétaire | Preuve de consommation |
-|---|---|---|---|
-| `vertex/` | 464 | paquet canonique | entrée WSGI `vertex.runtime:app`, entrée locale `python -m vertex`, activée par `render.yaml` et la CI |
-| `tests/` | 527 | suite de gardiens | `python -m pytest -q`, exécutée par les deux jobs de `.github/workflows/ci.yml` |
-| `tools/` | 38 | instruments de mesure | lus **et** gardés par les tests : `tests/test_vertex_1_0_registre_jobs.py`, `tests/test_vertex_1_0_rollback.py`, `tests/test_frontiere_ibkr_lot02.py` en mode `--enforce`, `tests/test_repli_sans_js_lot27.py` |
-| `static/` | 2 | actifs servis | `chart.umd.min.js` et `icon-180.png` servis par la fabrique et pré-cachés par le service worker ; parité gardée par `tests/test_vertex_1_0_factory_parity.py` |
-| `tradingview/` | 2 | webhook TradingView | `vertex/ui/pages/analysis_page.py` renvoie le lecteur vers `tradingview/README.md` ; le blueprint `/api/tradingview/webhook` est monté dans `terminal.py` |
-| `.claude/` | 53 | doctrine et outillage agent | `SKILL.md` est l'autorité unique de `CLAUDE.md` ; `.claude/rules/` cadre les périmètres ; `tests/test_promesses_docstrings_lot366.py` balaie le skill |
-| `.github/` | 2 | CI et modèle de PR | `ci.yml` exécute compile, contrat 1.0, suite complète, fumée runtime et invariant analyse-seule |
-| `.interface-design/` | 1 | mémoire de design | périmètre déclaré par `.claude/rules/vertex-ui.md` |
-| `terminal.py` + scripts racine | 8 | adaptateur historique et lanceurs | recensés et gardés fichier par fichier par `tests/test_replis_racine_lot385.py` et `tests/test_vertex_1_0_constitution_active.py` |
-| `render.yaml`, `pytest.ini`, `requirements*.txt` | 4 | déploiement et outillage | `render.yaml` lance `gunicorn vertex.runtime:app`, vérifié par `tests/test_vertex_1_0_contract.py` |
-
-### Cas examinés puis conservés
-
-- **`vertex/strategy/profiles/` vs `release_profiles/`** — trois JSON identiques
-  de part et d'autre. Ce n'est pas un doublon accidentel : `release_profiles/`
-  porte le profil V4 exécuté par le runtime, `profiles/` porte le chemin de
-  rollback V1–V3 chargé par `vertex/strategy/constitution.py`. Les deux sont
-  cités par la CI et par `tests/test_vertex_1_0_constitution_active.py`.
-  **Conservés.**
-- **Scripts racine hors production** — `test_connection.py`, `verifier_vertex.py`
-  et `lancer_ipad.py` ne sont importés par aucun module de l'application.
-  `tests/test_replis_racine_lot385.py` les déclare explicitement
-  `HORS_PRODUCTION` et vérifie qu'ils restent à la racine. **Conservés.**
-- **`tools/vertex_1_0/`** — outillage d'une itération précédente, mais chaque
-  mesureur est encore lu par un test qui garde son résultat. **Conservé.**
-- **Captures dupliquées à l'octet près** — 25 PNG identiques répartis entre
-  `preuves/final/`, `preuves/lot-NN-apres/` et `lot-NN/`. Git ne stocke qu'un
-  blob par contenu : la duplication ne coûte rien au dépôt, et retirer une copie
-  amputerait le jeu de preuves d'un lot. **Conservées.**
-
-## Documentation — la zone réellement en désordre
-
-État avant : 1 434 fichiers, dont **177 à plat** à la racine de `docs/`.
-Mesure des références par chemin exact `docs/<nom>`, sur l'ensemble des
-2 177 fichiers texte du dépôt : **15 fichiers référencés, 162 sans aucune
-référence**. Sur les 15, deux seulement sont cités hors de `docs/`, et
-uniquement dans une docstring de test.
-
-Quatre sous-dossiers — `claude/`, `release/`, `research/`, `vertex-audit/` —
-n'avaient aucun consommateur hors `docs/`.
-
-### Ce qui a été fait
-
-176 fichiers plats et ces quatre sous-dossiers ont été déplacés sous
-`docs/archives/`, rangés en onze thèmes, par `git mv`. Les 48 mentions
-textuelles de leurs anciens chemins ont été réécrites dans 31 fichiers, de sorte
-qu'aucune référence ne pende. Contrôle après déplacement : les 29 chemins
-`docs/…` inexistants encore cités dans le dépôt sont **tous** antérieurs au
-rangement — `docs/redesign/`, `docs/screenshots/`, `docs/skyler/baseline/`,
-`docs/tests/`, `docs/captures/` avaient déjà disparu au SHA de baseline.
-Ce lot n'en a créé aucun.
-
-Aucun fichier n'a été supprimé, aucun contenu réécrit hors chemins.
-
-### Après
-
-| Chemin | Fichiers | Statut |
+| Chemin | Fichiers | Rôle |
 |---|---|---|
-| `docs/README.md`, `docs/ARBORESCENCE.md` | 2 | index et audit, vivants |
-| `docs/vertex-2-0/` | 474 | preuves du programme en cours ; lu par `tools/vertex_2_0_capture.py` |
-| `docs/refactor/` | 683 | journal SKYLER ; gardé par `tests/test_skyler_index_integrity_lot228.py` et `tests/test_visual_shell_lot620.py` |
-| `docs/vertex-1.0/` | 58 | contrats 1.0 ; existence gardée par `tests/test_vertex_1_0_contract.py` |
-| `docs/visual/` | 6 | bibliothèque de widgets ; lue par `vertex/ui/pages/widget_lab.py` |
-| `docs/skyler/` | 4 | statut et convergence ; gardé par `tests/test_references_vivantes_lot364.py` |
-| `docs/archives/` | 209 | rapports historiques, onze thèmes, index propre |
+| `vertex/` | 398 | le paquet canonique — entrée WSGI `vertex.runtime:app`, entrée locale `python -m vertex` |
+| `tests/` | 502 | les gardiens : `python -m pytest -q` |
+| `tools/audit/` | 17 | instruments d'audit d'interface (balisage, a11y, boutons morts, captures, service worker) |
+| `tools/mesures/` | 17 | mesureurs de runtime (branches, moteurs, rollback, surfaces vides, sondes HTTP) |
+| `static/` | 2 | les deux seuls actifs servis depuis la racine : `chart.umd.min.js`, `icon-180.png` |
+| `tradingview/` | 2 | le script Pine et le contrat du webhook |
+| `docs/` | 3 | l'index, cet audit, les contrats de gouvernance |
+| `.claude/` | 53 | la doctrine `/vertex-2-0`, les règles de périmètre, les six auditeurs |
+| `.github/` | 2 | la CI et le modèle de PR |
+| `.interface-design/` | 1 | la mémoire de design |
+| racine | 22 | `terminal.py` (adaptateur historique), `ib_reader.py`, les lanceurs, la configuration |
 
-## Ce que cet audit ne dit pas
+## Ce qui a été supprimé, et sur quelle preuve
 
-- Il porte sur les **dossiers et fichiers**, pas sur les fonctions. Un module
-  atteignable peut contenir du code mort ; cette mesure ne le voit pas.
-- Il ne rouvre pas le recensement d'atteignabilité des modules `vertex/`
-  (85 modules non atteignables depuis `terminal.py` relevés en son temps).
-  Non atteignable n'est pas synonyme de supprimable, et trancher demande un lot
-  par paquet, avec migration et rollback — pas un rangement d'arborescence.
-- Il ne juge pas le **contenu** des archives. Leurs chiffres décrivent leur
-  commit d'origine, pas le commit courant.
+### Code injoignable — 66 modules, 4 665 lignes
+
+Recensement refait sur le SHA courant, pas repris d'une archive. Méthode :
+
+1. **Mesure au runtime** — démarrage réel de `vertex.runtime`, relevé des
+   modules `vertex.*` présents dans `sys.modules` : 205.
+2. **Clôture transitive AST** depuis quatre racines produit **plus les
+   21 blueprints montés par `importlib`** dans `vertex/app/factory.py`. Cette
+   deuxième racine est indispensable : sans elle, un premier passage déclarait
+   morts `vol_charts`, `gex_history` et `gex_scan`, qui servent des routes.
+   L'erreur a été prise par la suite de tests, pas par le graphe.
+3. **Filtre par point fixe** — tout module encore cité par du code vivant, la
+   CI, les outils ou le skill est retiré des candidats, et l'opération est
+   répétée jusqu'à stabilité.
+4. **Règle de paquet** — un `__init__.py` ne part que si tout le paquet part.
+
+Restent 66 modules qu'aucune surface servie n'atteint : `research/` (23),
+`data_sources/` (8, dont les connecteurs IBKR jamais branchés —
+`cotation_unifiee.py` écrivait lui-même « la fusion était écrite ; elle n'était
+pas branchée »), `options/` (8), `strategy/memory/` (8), et quinze autres
+répartis dans onze paquets.
+
+**Conservé malgré l'absence de consommateur** : `vertex/ai/tool_registry.py`,
+la liste `FORBIDDEN_TOOLS` qui interdit `place_order`, `cancel_order`,
+`transfer_cash` et consorts. Supprimer un registre de sécurité parce qu'il est
+inutilisé affaiblirait la preuve « analyse seule » ; il coûte un fichier.
+
+### Tests devenus sans objet — 42 fichiers
+
+20 gardiens mono-sujet du code supprimé, 5 gardiens de documents supprimés,
+plus l'élagage chirurgical de 13 fichiers mixtes : imports morts et fonctions
+qui s'en servaient retirés, le reste du fichier conservé. Aucun test d'une
+capacité vivante n'a été perdu.
+
+### Documentation historique — 1 434 fichiers, 148 Mo
+
+Rapports de lots, captures d'écran, index de refonte, audits datés. Tout est
+retiré de l'arbre de travail ; l'historique Git le conserve intégralement.
+`docs/` ne porte plus que des documents vrais sur le commit courant.
+
+## Trois défauts réels trouvés en chemin
+
+Le renommage des fichiers de tests a changé l'ordre de collecte de pytest et
+révélé trois dépendances d'ordre que l'ancien classement alphabétique
+masquait. Elles ont été corrigées à la cause, pas contournées.
+
+1. **La constitution fuyait.** `activate_release_profile()` remplace en place
+   quatre attributs du module `constitution` et se garde d'un drapeau sans
+   inverse. Le premier module de test qui l'appelait — à l'import, donc pendant
+   la collecte — imposait V4 à toute la suite. `tests/conftest.py` fige
+   désormais l'état vierge avant la collecte et le restaure autour de chaque
+   test.
+2. **`UNIVERSE` restait tronqué.** `test_scan_vide_muet` réduisait l'univers du
+   monolithe à 12 titres sans le remettre ; tout banc ultérieur comptant
+   l'univers échouait. Restauré en `finally`, et `scan_state` restauré par une
+   fixture.
+3. **Un faux graphe survivait à `monkeypatch`.** `test_graphe_chaud` et
+   `test_graphe_memoise` injectaient un graphe de test qui restait dans le
+   magasin de snapshots après le démontage : `/api/skyler/graph/<sym>` levait
+   ensuite `KeyError: 'as_of'`. Le magasin est vidé avant et après chaque test.
+
+## Noms
+
+**349 fichiers de tests renommés.** Les numéros de lot (`_lot385`) et les
+préfixes de version (`vertex_1_0_`) disparaissent ; les 32 collisions reçoivent
+un nom tiré de leur sujet réel — `test_audit_lot66.py` devient
+`test_audit_coherence.py`, `test_polish_lot58.py` devient
+`test_polish_portefeuille_options.py`. **34 outils renommés** :
+`tools/vertex_2_0_*.py` → `tools/audit/*.py`, `tools/vertex_1_0/` →
+`tools/mesures/`. Les 372 citations croisées dans le code, les docstrings et la
+CI ont suivi.
+
+**Deux noms conservés volontairement.** `skyler` reste : c'est le préfixe des
+routes réellement servies (`/api/skyler/graph`) — le retirer des tests les
+éloignerait de ce qu'ils testent. `/vertex-2-0` reste : c'est la commande que
+l'utilisateur tape et l'identifiant de la doctrine, pas un nom de fichier.
+
+## Validation
+
+- `python -m compileall -q terminal.py vertex` — OK.
+- `python -m pytest -q` — **4 109 passés, 147 ignorés, 1 échec**.
+  L'échec est `test_branches.py::test_la_classification_est_discriminante`, qui
+  exige plus de 100 branches distantes et n'en voit que 2 dans un conteneur
+  cloné à plat. Échec d'environnement, présent à la baseline, sans rapport avec
+  ce tri.
+- `python -m pytest tests/test_no_orders.py -q` — 3 passés.
+- Démarrage réel : `Vertex Test 1.0`, 204 routes, `/healthz` 200.
 
 ## Rollback
 
-Le rangement est un ensemble de `git mv` et de substitutions de chemins.
-`git revert` du commit restaure l'arborescence antérieure sans perte : aucun
-octet de contenu documentaire n'a été supprimé.
+`git revert` du commit restaure l'arbre complet : code injoignable,
+documentation et anciens noms. Rien n'a été effacé de l'historique.

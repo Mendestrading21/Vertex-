@@ -1,7 +1,7 @@
 @echo off
-REM VERTEX 1.0 - analyse uniquement, aucun ordre.
+REM VERTEX TEST 1.0 - analyse uniquement, aucun ordre.
 cd /d "%~dp0"
-title VERTEX 1.0
+title VERTEX TEST 1.0
 cls
 echo ============================================
 echo    V E R T E X  1.0  -  demarrage

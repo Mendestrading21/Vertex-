@@ -21,7 +21,7 @@ l'auto-évaluation du moteur, qui relève de la mémoire et de la calibration
 
 Les trois vues gardent leur corps, leurs messages d'erreur et leur forme de
 réponse. L'extraction déplace la propriété, **pas le comportement** — c'est ce
-que `tests/test_vertex_1_0_routes_company_parity.py` garde.
+que `tests/test_routes_company_parity.py` garde.
 
 ⛔ Lecture seule : aucune de ces routes ne prépare ni ne transmet d'ordre.
 """

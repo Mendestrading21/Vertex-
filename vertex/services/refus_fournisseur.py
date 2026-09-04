@@ -12,7 +12,7 @@ Principes :
 - écarté ≠ oublié : `etat()` nomme chaque écarté et son âge, pour que
   l'interface puisse le DIRE au lieu de le taire.
 
-Module PUR (horloge injectable) — `tests/test_refus_fournisseur_lot43.py`.
+Module PUR (horloge injectable) — `tests/test_refus_fournisseur.py`.
 """
 from __future__ import annotations
 

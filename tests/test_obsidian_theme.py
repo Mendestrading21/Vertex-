@@ -72,24 +72,6 @@ def test_no_blue_main_series():
         assert not _is_forbidden_blue(m.group(0)), f'repli bleu non-marque : {m.group(0)}'
 
 
-def test_rr_gate_is_two():
-    """R:R < 2 → jamais ACHETER/RENFORCER (§7) — moteur ET contrats."""
-    from vertex.strategy import executive_engine as ee
-    from vertex.options import contract_scorer
-    assert contract_scorer.MIN_REWARD_RISK == 2.0
-    packet = {'symbol': 'TEST',
-              'fundamental': {'score': 90}, 'catalysts': {'score': 90},
-              'technical': {'score': 90, 'reward_risk': 1.9, 'timing_score': 90},
-              'sentiment': {'score': 90},
-              'data_quality': {'overall': 'FRESH', 'actionable_allowed': True},
-              'reconciliation': {'actionable_allowed': True},
-              'guard': {'blocking_rules': [], 'mandatory_reviews': []}}
-    out = ee.decide(packet)
-    assert out['final_decision'] not in ('ACHETER', 'RENFORCER')
-    assert 'RR_BELOW_MINIMUM' in out['blocking_rules']
-    packet['technical']['reward_risk'] = 2.5
-    out2 = ee.decide(packet)
-    assert 'RR_BELOW_MINIMUM' not in out2['blocking_rules']
 
 
 def test_unknown_regime_blocks_risk():

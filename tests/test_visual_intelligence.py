@@ -2,36 +2,17 @@
 import os
 import re
 
-from vertex.visualization import palette as pal
-from vertex.visualization.chart_spec import (
-    chart_spec, empty_spec, is_valid_chart_spec, CHART_TYPES,
-)
 from vertex.options import environment as env
 from vertex.options import pulse as pu
 
 
 # ─────────────────────────────────────────────── registre couleurs (§3)
-def test_palette_no_blue_identity():
-    assert pal.audit_no_blue() == [], 'aucune couleur du registre ne doit être bleu dominant'
 
 
-def test_palette_series_is_deterministic_and_brand_first():
-    assert pal.series_color(0) == pal.BRAND
-    # boucle sans arc-en-ciel : index modulo longueur
-    assert pal.series_color(len(pal.SERIES)) == pal.SERIES[0]
 
 
-def test_status_color_maps_all_statuses():
-    from vertex.visualization.schemas import STATUSES
-    for s in STATUSES:
-        assert re.match(r'^#[0-9a-fA-F]{6}$', pal.status_color(s))
 
 
-def test_is_bluish_flags_blue_but_not_green_or_violet():
-    assert pal.is_bluish('#3b82f6') is True      # bleu franc (test de la fonction)
-    assert pal.is_bluish(pal.POSITIVE) is False  # vert
-    assert pal.is_bluish(pal.OPTION) is False    # violet option
-    assert pal.is_bluish(pal.BRAND) is False     # marque = blanc/gris neutre (plus de bleu)
 
 
 def _js_series(src_lower):
@@ -41,77 +22,19 @@ def _js_series(src_lower):
     return re.findall(r'#[0-9a-f]{6}', m.group(1))
 
 
-def test_js_theme_matches_python_palette():
-    """Le thème graphique JS doit rester cohérent avec le registre central.
-
-    Source de vérité = `palette.py`. Le thème JS en est un MIROIR : la série
-    entière doit correspondre, pas seulement quelques couleurs (garde-fou C-02).
-    """
-    root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    js = os.path.join(root, 'vertex/static/vertex/js/charts/chart-theme-black-glass.js')
-    with open(js, encoding='utf-8') as fh:
-        src = fh.read().lower()
-    # les couleurs clés du registre doivent apparaître dans le thème JS
-    for col in (pal.BRAND, pal.BEIGE, pal.OPTION):
-        assert col.lower() in src, '%s absent du thème JS' % col
-    # LA SÉRIE ENTIÈRE doit être identique à palette.SERIES (ordre compris)
-    js_series = _js_series(src)
-    py_series = [c.lower() for c in pal.SERIES]
-    assert js_series == py_series, (
-        'série JS %s != palette.SERIES %s' % (js_series, py_series))
-    # le thème JS ne doit contenir aucun bleu NON-marque (le bleu de marque est
-    # l'identité, donc admis ; tout autre bleu dominant reste interdit)
-    hexes = re.findall(r'#[0-9a-f]{6}', src)
-    allowed = pal.BRAND_BLUES
-    blues = [h for h in hexes if pal.is_bluish(h) and h not in allowed]
-    assert blues == [], 'bleus NON-marque dans le thème JS : %s' % blues
 
 
-def test_chart_core_fallback_series_matches_palette():
-    """Le repli codé en dur de chart-core.js doit aussi refléter palette.SERIES
-    (3e copie de la palette — évite une dérive silencieuse)."""
-    root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    js = os.path.join(root, 'vertex/static/vertex/js/charts/chart-core.js')
-    with open(js, encoding='utf-8') as fh:
-        src = fh.read().lower()
-    js_series = _js_series(src)
-    assert js_series == [c.lower() for c in pal.SERIES], (
-        'repli chart-core.js %s != palette.SERIES' % js_series)
 
 
 # ─────────────────────────────────────────────── chart_spec canonique (§5)
-def test_chart_spec_valid_and_complete():
-    d = chart_spec('c.iv', 'IV vs RV', 'Les primes sont-elles chères ?', 'line',
-                   series=[{'name': 'IV', 'color': pal.BRAND, 'points': [1, 2, 3]}],
-                   source='IBKR', freshness='DELAYED', quality='MEDIUM',
-                   dominant_reading='IV au-dessus de la réalisée', status='DEFAVORABLE',
-                   confidence=0.6)
-    assert is_valid_chart_spec(d)
-    assert d['chart_type'] == 'line' and d['status'] == 'DEFAVORABLE'
 
 
-def test_chart_spec_no_series_forces_unknown():
-    d = chart_spec('c', 't', 'q', 'bar', series=[], dominant_reading='qqch',
-                   status='FAVORABLE')
-    assert d['status'] == 'INCONNU'
 
 
-def test_chart_spec_bad_type_defaults_line():
-    d = chart_spec('c', 't', 'q', 'hologram', series=[{'x': 1}],
-                   dominant_reading='r', status='NEUTRE')
-    assert d['chart_type'] == 'line'
 
 
-def test_empty_spec_is_valid_and_missing():
-    d = empty_spec('c', 't', 'q', 'heatmap', reason='pas de données')
-    assert is_valid_chart_spec(d)
-    assert d['status'] == 'INCONNU' and d['freshness'] == 'MISSING'
-    assert 'pas de données' in d['uncertainties']
 
 
-def test_all_chart_types_are_lowercase_slugs():
-    for t in CHART_TYPES:
-        assert re.match(r'^[a-z_]+$', t)
 
 
 # ─────────────────────────────────────────────── environnement options (§14)

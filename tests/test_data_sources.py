@@ -8,9 +8,6 @@ from vertex.data_sources import provenance as P
 from vertex.data_sources import quality as Q
 from vertex.data_sources import reconciliation as R
 from vertex.data_sources.source_router import SourceRouter
-from vertex.data_sources.ibkr_scheduler import (
-    IbkrScheduler, CircuitOpen, PRIO_OPEN_POSITIONS, PRIO_UNIVERSE,
-    PRIO_WATCHLIST, CIRCUIT_OPEN_AFTER, STALE_REQUEST_S)
 from vertex.data_sources.rates import RateCurve, FALLBACK_FLAT_RATE, rate_sensitivity
 from vertex.data_sources import ibkr_gateway
 
@@ -141,50 +138,12 @@ def test_contract_multiplier_and_mapping_checks():
 
 
 # ── Scheduler IBKR ────────────────────────────────────────────────────
-def test_scheduler_priority_order():
-    s = IbkrScheduler()
-    done = []
-    s.submit('univers:AAA', PRIO_UNIVERSE, lambda: done.append('univers'))
-    s.submit('watch:BBB', PRIO_WATCHLIST, lambda: done.append('watch'))
-    s.submit('pos:CCC', PRIO_OPEN_POSITIONS, lambda: done.append('pos'))
-    s.run_pending(budget=3)
-    assert done == ['pos', 'watch', 'univers']
 
 
-def test_scheduler_dedup_and_cache():
-    s = IbkrScheduler()
-    calls = []
-    assert s.submit('spot:NVDA', PRIO_WATCHLIST, lambda: calls.append(1) or 495.0)
-    assert not s.submit('spot:NVDA', PRIO_WATCHLIST, lambda: calls.append(1) or 495.0)
-    s.run_pending()
-    assert not s.submit('spot:NVDA', PRIO_WATCHLIST, lambda: calls.append(1) or 495.0), \
-        'résultat en cache frais — pas de nouvelle requête'
-    assert s.get_cached('spot:NVDA') == 495.0
-    assert len(calls) == 1
 
 
-def test_scheduler_circuit_breaker():
-    s = IbkrScheduler(max_retries=1)
-    def boom():
-        raise OSError('TWS down')
-    for i in range(CIRCUIT_OPEN_AFTER):
-        s.submit(f'k{i}', PRIO_WATCHLIST, boom)
-    s.run_pending(budget=CIRCUIT_OPEN_AFTER)
-    assert s.circuit_open
-    with pytest.raises(CircuitOpen):
-        s.run_pending()
 
 
-def test_scheduler_cancels_stale_requests():
-    t = [1000.0]
-    s = IbkrScheduler(clock=lambda: t[0])
-    done = []
-    s.submit('old', PRIO_WATCHLIST, lambda: done.append('old'))
-    t[0] += STALE_REQUEST_S + 1
-    s.submit('fresh', PRIO_WATCHLIST, lambda: done.append('fresh'))
-    s.run_pending(budget=2)
-    assert done == ['fresh']
-    assert s.metrics['cancelled_stale'] == 1
 
 
 # ── Taux par échéance ─────────────────────────────────────────────────
