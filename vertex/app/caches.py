@@ -22,11 +22,11 @@ existant continue d'écrire là où les lecteurs lisent.
 C'est le même que celui de `scan_state` dans `CLAUDE.md` : **muter en place,
 jamais réassigner.** Une réaffectation (`terminal._IDX_IBKR = {...}`) ne
 déplace que l'étiquette : le module qui a importé l'objet garde l'ancien, et
-les deux vues divergent en silence. `tests/test_pass_terminal_lot386.py`
+les deux vues divergent en silence. `tests/test_pass_terminal.py`
 pratique justement un `monkeypatch.setattr` de ce genre — il reste correct
 aujourd'hui parce que les fonctions de `terminal.py` résolvent leurs globals à
 l'appel, mais il cesserait de l'être le jour où un blueprint lirait le cache
-depuis ce module. `tests/test_vertex_1_0_caches_parity.py` garde l'identité.
+depuis ce module. `tests/test_caches_parity.py` garde l'identité.
 
 ## Ce que ce module n'est pas
 
@@ -54,7 +54,7 @@ _SOURCE_BUDGET_STATE = {'yfinance': 'UNKNOWN', 'stooq': 'UNKNOWN'}
 # cinq demandes SIMULTANÉES du même titre faisaient cinq collectes, dont une à
 # 136,9 s. Ce magasin sert l'instantané daté et coalesce les reconstructions.
 #
-# Il vit ICI parce que `test_vertex_1_0_caches_parity` exige que tout ce que
+# Il vit ICI parce que `test_caches_parity` exige que tout ce que
 # `POLITIQUE` déclare soit un objet réel de ce module — un registre qui décrit
 # des caches inexistants ne décrit plus rien.
 from vertex.app.snapshot import Magasin as _Magasin           # noqa: E402

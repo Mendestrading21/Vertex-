@@ -110,7 +110,7 @@ def json_for_script(value) -> str:
     relit à l'identique dans un littéral de chaîne : le comportement client est
     inchangé, seul l'analyseur HTML ne peut plus voir de balise fermante.
 
-    Gardien : `tests/test_json_script_lot372.py`.
+    Gardien : `tests/test_json_script.py`.
     """
     import json as _json
     return (_json.dumps(value)

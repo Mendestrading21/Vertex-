@@ -19,10 +19,10 @@ _LOCK = threading.Lock()
 # boucle historique ; les jobs « événement » ont interval_s None.
 _JOBS: dict[str, dict] = {}
 
-#  ── LA QUATRIÈME COLONNE : `implemente` (Vertex 1.0, #779/G1) ──────────────
+#  ── LA QUATRIÈME COLONNE : `implemente` (Vertex Test 1.0, #779/G1) ──────────────
 #  Elle a été ajoutée parce que la mesure a contredit le registre. Le registre
 #  ne reçoit d'information que par `beat('NOM')` ; or
-#  `tools/vertex_1_0/mesurer_registre_jobs.py` a énuméré à l'AST TOUS les appels
+#  `tools/mesures/mesurer_registre_jobs.py` a énuméré à l'AST TOUS les appels
 #  `beat` du dépôt et trouvé **7 émetteurs pour 27 jobs déclarés**. Les 20 autres
 #  ne pouvaient pas tourner : aucun code ne porte leur nom.
 #
@@ -34,7 +34,7 @@ _JOBS: dict[str, dict] = {}
 #
 #  `implemente=False` n'est donc pas un aveu de dette : c'est la seule
 #  description honnête d'une intention non encore réalisée. Le drapeau n'est pas
-#  déclaratif au sens faible — `tests/test_vertex_1_0_registre_jobs.py` le
+#  déclaratif au sens faible — `tests/test_registre_jobs.py` le
 #  confronte à la mesure dans les DEUX sens : marquer un job implémenté sans
 #  émetteur échoue, et poser un émetteur sans lever le drapeau échoue aussi.
 _CANONICAL_4 = (

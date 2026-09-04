@@ -255,7 +255,7 @@ class IBRejoue:
     moitié de la preuve. Un double qui exposerait ces méthodes permettrait à un
     futur appel d'ordre de passer les tests sans jamais toucher TWS. La liste
     exacte des noms interdits vit dans le banc
-    `tests/test_vertex_1_0_g5_adaptateurs.py`, pas ici — les écrire dans un
+    `le banc de rejeu`, pas ici — les écrire dans un
     module de production ferait échouer le gardien anti-ordres, à raison.
     """
 

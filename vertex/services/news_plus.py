@@ -44,7 +44,7 @@ def sentiment(text):
     affichée sur `/`. La valeur a donc une conséquence visible — mais deux états
     utiles seulement (signé / neutre).
 
-    Gardien : `tests/test_sentiment_contrat_lot609.py`.
+    Gardien : `tests/test_sentiment_contrat.py`.
     """
     t = ' ' + (text or '').lower() + ' '
     pos = sum(1 for w in _POS if w in t)

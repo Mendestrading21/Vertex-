@@ -28,7 +28,7 @@ _WARM_LOCKS = {}
 #: POURQUOI une chaine n'a pas pu etre chargee, par symbole. Trois `except:
 #: pass` vivaient ici : les puts perdus, la sonde des deux cotes, et l'echec
 #: complet du prechauffage. Chacun jetait une information sans le dire — et le
-#: gardien `test_pass_et_contexte_lot379` a refuse de voir sa borne relevee
+#: gardien `test_pass_et_contexte` a refuse de voir sa borne relevee
 #: sans examen. Il avait raison : une chaine qui ne se charge pas doit pouvoir
 #: le DIRE, sinon « aucun contrat » et « la source a refuse » se confondent —
 #: et seul le second se corrige.

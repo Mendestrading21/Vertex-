@@ -62,7 +62,7 @@ def test_desk_sync_keys_single_source_of_truth():
     Historique (lots 381/394/37) : les anciennes références (vx_kit.JS,
     journal.JS) n'étaient PAS servies — modules retirés au lot 37. La liste
     servie vit dans vx-entities.js (+ repli inline de system_page, égalité
-    gardée par test_desk_keys_servies_lot381). Ici : l'ancre complète, clé à
+    gardée par test_desk_keys_servies). Ici : l'ancre complète, clé à
     clé — retirer vxAlerts ou vxWatchlist de la liste servie MORD.
     """
     attendu = {'myTrades', 'myTradesClosed', 'myTradesEquity', 'myRecos',

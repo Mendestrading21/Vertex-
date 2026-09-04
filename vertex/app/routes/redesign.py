@@ -216,7 +216,7 @@ def make_blueprint(scan_state: dict) -> Blueprint:
     # ── Widget Lab — LABORATOIRE du Design System (bibliothèque de widgets).
     # Route AUTONOME hors produit : aucune donnée réelle, aucun moteur, pas dans
     # la nav. Sert à voir/comparer/tester/choisir les widgets (V1…Vn + états).
-    # Source de vérité : docs/visual/VERTEX_WIDGET_LIBRARY.md.
+    # Source de vérité : la bibliotheque de widgets (archive, retiree du depot).
     @bp.route('/widget-lab')
     def widget_lab_route():
         from vertex.ui.pages import widget_lab

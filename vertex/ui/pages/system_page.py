@@ -1321,7 +1321,7 @@ async function loadAutomations(){
       ${jobs.map(j=>{
         /* #779/G1 — AVANT, une seule branche : `last_run===null` -> « jamais
            exécuté ». Le même mot pour un job EN PANNE et pour un job qu'AUCUN
-           code n'exécute. La mesure (tools/vertex_1_0/mesurer_registre_jobs.py)
+           code n'exécute. La mesure (tools/mesures/mesurer_registre_jobs.py)
            a trouvé 18 des 27 jobs déclarés sans le moindre émetteur `beat` :
            ils ne pouvaient pas tourner, et l'écran les accusait d'un échec.
            Le serveur tranche désormais lui-même via `etat`. */

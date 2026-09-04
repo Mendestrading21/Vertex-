@@ -18,7 +18,7 @@ def classe(nom: str):
 
     Toute classe ib_async (Stock, Option, Index, CFD, IB,
     ScannerSubscription…) s'obtient ICI, jamais par un import direct —
-    gardien : tests/test_import_ibkr_unique_lot28.py. Import paresseux :
+    gardien : tests/test_import_ibkr_unique.py. Import paresseux :
     l'application démarre et fonctionne sans la dépendance (mode dégradé).
     """
     import ib_async

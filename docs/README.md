@@ -1,18 +1,22 @@
-# Documentation Vertex
+# Documentation — Vertex Test 1.0
 
-## Documentation active
+## Autorité
 
-Toute nouvelle décision produit, architecture, trading, design, données,
-sécurité ou release doit être enregistrée sous [`vertex-1.0/`](vertex-1.0/).
+La seule doctrine active est le skill maître
+[`.claude/skills/vertex-2-0/SKILL.md`](../.claude/skills/vertex-2-0/SKILL.md).
+Aucun document de `docs/` ne le remplace ni ne le contredit.
 
-Point de départ: [`vertex-1.0/README.md`](vertex-1.0/README.md).
+## Contenu
 
-## Documentation historique
+| Document | Rôle |
+|---|---|
+| [`ARBORESCENCE.md`](ARBORESCENCE.md) | propriétaire et preuve de consommation de chaque dossier du dépôt |
+| [`CONTRATS.md`](CONTRATS.md) | les contrats de gouvernance que le code nomme dans ses docstrings |
 
-Les autres fichiers et dossiers (`skyler/`, `refactor/`, `release/`, anciens
-audits, plans V4, Total Rebuild, Neon Glass et Signal OS) sont conservés pour
-la traçabilité. Ils décrivent des commits et branches différents; leurs
-chiffres, statuts et instructions ne sont pas nécessairement actuels.
+## Règle
 
-Règle: une archive peut justifier une décision, mais ne peut jamais remplacer
-un contrat Vertex 1.0 ou le comportement mesuré sur le commit candidat.
+`docs/` ne porte que des documents **vivants** : vrais sur le commit courant,
+vérifiables, et maintenus avec le code. Un rapport daté, une capture de lot, un
+état « GO » d'une itération passée ne vont pas ici — l'historique du dépôt le
+conserve déjà, et un document périmé qui traîne finit par être lu comme une
+instruction.

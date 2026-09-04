@@ -1,4 +1,4 @@
-"""Point d'entrée WSGI et local canonique de Vertex 1.0.
+"""Point d'entrée WSGI et local canonique de Vertex Test 1.0.
 
 ``terminal.py`` reste temporairement le noyau de composition historique. Ce
 module active d'abord le profil de release V4, puis charge l'adaptateur legacy.

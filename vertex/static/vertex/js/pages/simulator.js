@@ -24,7 +24,7 @@
      nom, donc silencieux — le bouton « Ajouter a la comparaison » ne disait
      rien, ni en cas de succes, ni quand il n'y avait pas encore de simulation
      a ajouter.
-     Releve en CLIQUANT le bouton (tools/vertex_2_0_boutons_morts.py) : aucun
+     Releve en CLIQUANT le bouton (tools/audit/boutons_morts.py) : aucun
      effet mesurable. Une garde sur un mauvais nom ne leve pas d'erreur ; elle
      rend la panne invisible. */
   function dire(message, ton) {

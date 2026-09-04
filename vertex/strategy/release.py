@@ -1,4 +1,4 @@
-"""Activation explicite du profil de release Vertex 1.0.
+"""Activation explicite du profil de release Vertex Test 1.0.
 
 Les profils V1–V3 restent dans ``strategy/profiles`` pour la compatibilité et
 le rollback. Le runtime canonique active ``strategy/release_profiles`` avant

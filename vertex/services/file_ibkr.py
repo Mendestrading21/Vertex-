@@ -14,7 +14,7 @@ change pas. Ce que la FIFO nue n'offrait pas, la file l'apporte :
   les ports à chaque job (6 s × ports × jobs en attente).
 
 Aucune dépendance ib_async ici : la file est PURE (horloge injectable) et
-testée à froid — `tests/test_file_ibkr_lot40.py`.
+testée à froid — `tests/test_file_ibkr.py`.
 """
 from __future__ import annotations
 

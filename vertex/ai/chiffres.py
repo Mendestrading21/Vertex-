@@ -121,7 +121,7 @@ def nombres_du_packet(packet) -> set:
         if isinstance(o, (int, float)):
             #  Pas de `try/except pass` : `o` est deja un int ou un float, et
             #  un `except` muet ici serait du bruit defensif que le gardien
-            #  `test_pass_et_contexte_lot379` compte a juste titre. Ce qu'il
+            #  `test_pass_et_contexte` compte a juste titre. Ce qu'il
             #  faut ecarter, c'est l'infini et le NaN — un `inf` dans le packet
             #  sourcerait n'importe quel chiffre par la tolerance relative.
             f = float(o)

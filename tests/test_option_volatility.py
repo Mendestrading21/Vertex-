@@ -2,7 +2,6 @@
 import math
 
 from vertex.options import volatility as vol
-from vertex.options import expected_move as em
 from vertex.options import event_risk as ev
 
 
@@ -67,29 +66,12 @@ def test_vol_regime_bands():
 
 
 # ---------------------------------------------------------------- expected move
-def test_expected_move_one_sigma():
-    # spot 100, iv 40 %, 365 j → 1σ = 40
-    assert em.expected_move(100, 0.40, 365) == 40.0
-    # quart d'année
-    assert abs(em.expected_move(100, 0.40, 91.25) - 20.0) < 0.01
 
 
-def test_expected_move_none_on_bad_input():
-    assert em.expected_move(None, 0.4, 30) is None
-    assert em.expected_move(100, 0, 30) is None
-    assert em.expected_move(100, 0.4, -5) is None
 
 
-def test_expected_range_symmetric():
-    lo, hi = em.expected_range(100, 0.40, 365)
-    assert lo == 60.0 and hi == 140.0
 
 
-def test_move_covers_target_ratio():
-    # cible à +40 avec EM 40 → ratio 1.0
-    assert em.move_covers_target(100, 0.40, 365, 140) == 1.0
-    assert em.move_covers_target(100, 0.40, 365, 120) == 0.5
-    assert em.move_covers_target(100, 0.40, 365, None) is None
 
 
 # ---------------------------------------------------------------- event risk

@@ -32,7 +32,7 @@ def system_diagnostics(scan_state: dict | None = None,
     #  connecte » n'indique aucun geste a faire.
     #  INJECTE comme les autres sections : la premiere version importait le
     #  module ici meme, ce qui faisait apparaitre la section sans qu'aucune
-    #  source ne soit fournie — `test_observability_lot179` l'a refuse, et il a
+    #  source ne soit fournie — `test_observability` l'a refuse, et il a
     #  raison : « rien d'invente sans source » vaut aussi pour un etat vrai.
     if ibkr_link is not None:
         out['ibkr_link'] = ibkr_link.etat()

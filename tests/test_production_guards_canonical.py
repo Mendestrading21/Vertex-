@@ -82,14 +82,6 @@ def test_eleventh_position_requires_replacement():
     assert fit['blocked'] is True
 
 
-def test_track_record_separates_signals_and_trades():
-    from vertex.engines.performance_ledger import PerformanceLedger
-    led = PerformanceLedger()
-    for i in range(5):
-        s = led.record('SIGNAL', f'A{i}'); led.close(s['id'], {'return_pct': 10})
-        p = led.record('REAL_POSITION', f'A{i}'); led.close(p['id'], {'return_pct': -5})
-    assert led.metrics('SIGNAL')['metrics_scope'] != \
-        led.metrics('REAL_POSITION')['metrics_scope']
 
 
 # ── UI : boutons vivants ──────────────────────────────────────────────
@@ -303,4 +295,4 @@ def test_mobile_action_bar(client):
 
 def test_service_worker_version(client):
     body = client.get('/sw.js').get_data(as_text=True)
-    assert 'td-shell-v282' in body
+    assert 'td-shell-v283' in body

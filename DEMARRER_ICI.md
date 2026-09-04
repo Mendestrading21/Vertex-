@@ -1,4 +1,4 @@
-# ▲ VERTEX 1.0 — Démarrer ici
+# ▲ VERTEX TEST 1.0 — Démarrer ici
 
 Vertex est un terminal d'**analyse** et d'aide à la décision. Il est
 **strictement en lecture seule** et ne passe jamais d'ordre.

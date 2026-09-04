@@ -4,7 +4,7 @@ Chaque nom de test exigé par le cahier des charges V3 existe ici (ou dans
 les suites historiques référencées en commentaire). Vérifications statiques
 sur le HTML rendu + les assets ; les vérifications purement navigateur
 (console, overflow réel) sont doublées par les runs Chromium documentés
-dans docs/VERTEX_UI_V3_IMPLEMENTATION.md.
+dans le rapport de refonte UI V3 (archive, retiree du depot).
 """
 #  `/performance` RETIRE des listes d'espaces : Performance est repliee
 #  dans le Journal (301). La constitution enumere Journal, pas
@@ -229,7 +229,7 @@ def test_no_console_errors():
 
 def test_service_worker_version_bumped(client):
     body = client.get('/sw.js').get_data(as_text=True)
-    assert 'td-shell-v282' in body
+    assert 'td-shell-v283' in body
     assert 'td-shell-v49' not in body
 
 

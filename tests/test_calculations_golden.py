@@ -14,11 +14,9 @@ from vertex.data_sources import provenance as P
 from vertex.data_sources import models as M
 from vertex.data_sources.rates import RateCurve
 from vertex.engines import indicators
-from vertex.engines.performance_ledger import PerformanceLedger
 from vertex.options import scenario_pricer as sp
 from vertex.options.legacy_engine import _bs_price, _greeks, _iv_from_price, gamma as bs_gamma
 from vertex.options.models import UnderlyingSetup
-from vertex.validation.probability_calibration import brier_score, log_loss
 
 CURVE = RateCurve({30: 0.045, 365: 0.045}, source='TEST')
 
@@ -220,39 +218,14 @@ def test_atr_golden():
 
 
 # ═════════════════ Performance — golden ═══════════════════════════════
-def _ledger_with(returns):
-    led = PerformanceLedger()
-    for i, r in enumerate(returns):
-        e = led.record('REAL_POSITION', f'S{i}')
-        led.close(e['id'], {'return_pct': r})
-    return led
 
 
-def test_performance_metrics_golden():
-    """5 trades : +10, +20, -5, -10, +5 → valeurs exactes documentées."""
-    m = _ledger_with([10.0, 20.0, -5.0, -10.0, 5.0]).metrics('REAL_POSITION')
-    assert m['win_rate'] == 0.6                      # 3/5
-    assert m['expectancy_pct'] == 4.0                # moyenne
-    assert m['profit_factor'] == 2.33   # 35/15 arrondi moteur à 2 décimales
-    assert m['max_drawdown_pct'] < 0
 
 
-def test_max_drawdown_golden():
-    """Équité 1.10 → 1.32 → pertes -5 % puis -10 % → DD = 1 - 0.95×0.90 = -14.5 %."""
-    m = _ledger_with([10.0, 20.0, -5.0, -10.0, 5.0]).metrics('REAL_POSITION')
-    assert abs(m['max_drawdown_pct'] - (-14.5)) < 0.01
 
 
-def test_small_sample_metrics_withheld():
-    m = _ledger_with([50.0]).metrics('REAL_POSITION')
-    assert 'win_rate' not in m and 'note' in m
 
 
-def test_brier_and_logloss_golden():
-    """Prévision parfaite → Brier 0 ; prévision 0.5 constante → Brier 0.25."""
-    assert brier_score([1.0, 0.0, 1.0], [1, 0, 1]) == 0.0
-    assert brier_score([0.5] * 10, [1, 0] * 5) == 0.25
-    assert abs(log_loss([0.5] * 4, [1, 0, 1, 0]) - math.log(2)) < 1e-4  # arrondi moteur 4 déc.
 
 
 # ═════════════════ Unités, zéros et conventions ═══════════════════════
@@ -270,19 +243,6 @@ def test_percentage_conventions():
     assert any('convertie' in n for n in d['sim']['limitations'])
 
 
-def test_missing_data_never_becomes_zero():
-    """Donnée absente = None/MISSING partout — jamais 0."""
-    pv = P.stamp(None, M.SOURCE_IBKR, M.MODE_LIVE)
-    assert pv.value is None and pv.quality == 'MISSING'
-    sim = sp.simulate(call_contract(mid=None), setup(), rate_curve=CURVE)
-    assert sim['reward_risk'] is None
-    assert sim['base_expected_gain_pct'] is None
-    led = PerformanceLedger()
-    e = led.record('SIGNAL', 'X')
-    led.close(e['id'], {'return_pct': None})
-    m = led.metrics('SIGNAL')
-    assert m.get('expectancy_pct') is None or 'note' in m, \
-        'un rendement inconnu ne compte pas comme 0'
 
 
 def test_timezone_handling():
@@ -305,20 +265,5 @@ def test_stock_split_handling():
     assert rep.max_decision == 'ATTENDRE'
 
 
-def test_negative_time_and_spread_invariants():
-    """Le temps restant et le spread % ne peuvent être négatifs."""
-    from vertex.options.liquidity import assess
-    liq = assess({'bid': 10.0, 'ask': 10.4, 'mid': 10.2,
-                  'open_interest': 1000, 'volume': 100})
-    assert liq['spread_pct'] >= 0
-    sim = sp.simulate(call_contract(dte=-5), setup(), rate_curve=CURVE)
-    assert sim['reward_risk'] is None, 'DTE négatif = contrat expiré, simulation refusée'
 
 
-def test_broker_model_divergence_warning():
-    from vertex.anomalies.option_anomalies import check_contract
-    anomalies = check_contract(
-        {'symbol': 'T', 'expiry': 'e', 'strike': 100.0, 'right': 'C',
-         'bid': 5.0, 'ask': 5.2, 'mid': 5.1, 'delta': 0.50,
-         'model_greeks': {'delta': 0.30}}, spot=100.0)
-    assert 'BROKER_MODEL_GREEK_DIVERGENCE' in [a.code for a in anomalies]

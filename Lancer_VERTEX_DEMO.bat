@@ -1,7 +1,7 @@
 @echo off
-REM VERTEX 1.0 - mode DEMO, donnees fictives explicitement marquees.
+REM VERTEX TEST 1.0 - mode DEMO, donnees fictives explicitement marquees.
 cd /d "%~dp0"
-title VERTEX 1.0 - DEMO
+title VERTEX TEST 1.0 - DEMO
 cls
 
 where python >nul 2>nul

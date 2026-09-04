@@ -1,4 +1,4 @@
-"""Contrat produit canonique de Vertex 1.0.
+"""Contrat produit canonique de Vertex Test 1.0.
 
 Ce module contient uniquement des constantes stables et testables. Les moteurs,
 l'interface, les documents et les agents IA doivent s'aligner sur ces valeurs.

@@ -17,6 +17,30 @@ os.environ['VERTEX_CODE'] = ''
 os.environ['ACCESS_CODE'] = ''
 
 
+# ── Etat VIERGE de la constitution, fige AVANT la collecte ─────────────────
+#
+#  Un module de test qui importe `vertex.runtime` appelle
+#  `activate_release_profile()` DES L'IMPORT, donc avant toute fixture : un
+#  instantane pris au premier test capturerait deja la pollution, et V4
+#  s'imposerait a toute la suite selon le seul ordre de collecte.
+#
+#  L'import est garde : le job `safety` de la CI n'installe QUE
+#  `requirements-dev.txt` et n'exerce que deux bancs qui n'ont besoin ni de
+#  numpy ni de Flask. Un conftest qui exige le paquet complet ferait echouer ce
+#  job au chargement, avant le moindre test — c'est exactement ce qui est
+#  arrive. On ne masque rien : sans le paquet, il n'y a pas d'etat a isoler.
+try:  # noqa: E402
+    from vertex.strategy import constitution as _c_mod
+    from vertex.strategy import release as _r_mod
+except ModuleNotFoundError:            # dependances de calcul absentes
+    _c_mod = _r_mod = None
+    _CONSTITUTION_VIERGE = None
+else:
+    _CONSTITUTION_VIERGE = (_c_mod.PROFILES_DIR, _c_mod.load_profile,
+                            _c_mod.list_versions, _c_mod.propose_new_version,
+                            _r_mod._ACTIVATED)
+
+
 # ── Gardes rendues caduques par la refonte Black Glass ──────────────────────
 #
 #  Cent cinquante-trois bancs de `main` decrivent, jeton par jeton et
@@ -25,7 +49,7 @@ os.environ['ACCESS_CODE'] = ''
 #  en emporterait de nouveaux sans qu'on le voie.
 #
 #  `tests/_supersede.py` porte la liste et l'explication ; le recensement
-#  `test_vertex_1_0_gardes_superseedees.py` verifie qu'elle ne grossit pas,
+#  `test_gardes_superseedees.py` verifie qu'elle ne grossit pas,
 #  qu'aucune entree n'est morte, et qu'un banc hors liste n'est jamais ecarte.
 def pytest_collection_modifyitems(config, items):
     import importlib.util
@@ -45,3 +69,28 @@ def pytest_collection_modifyitems(config, items):
         motif = mod.REGISTRE.get(item.nodeid.replace(sep, '/'))
         if motif:
             item.add_marker(pytest.mark.skip(reason='SUPERSEDE - ' + motif))
+
+
+# ── Isolation de la constitution active ────────────────────────────────────
+#
+#  `vertex.strategy.release.activate_release_profile()` remplace en place
+#  `PROFILES_DIR`, `load_profile`, `list_versions` et `propose_new_version` du
+#  module `constitution`, et se garde d'un drapeau `_ACTIVATED` sans inverse.
+#  Le premier test qui l'appelle imposait donc V4 a TOUS les suivants : la
+#  suite ne passait que grace a l'ordre alphabetique des anciens noms de
+#  fichiers. Un test ne doit pas dependre du nom de son voisin.
+import pytest as _pytest
+
+
+def _restaurer_constitution():
+    if _CONSTITUTION_VIERGE is None:
+        return
+    (_c_mod.PROFILES_DIR, _c_mod.load_profile, _c_mod.list_versions,
+     _c_mod.propose_new_version, _r_mod._ACTIVATED) = _CONSTITUTION_VIERGE
+
+
+@_pytest.fixture(autouse=True)
+def _constitution_isolee():
+    _restaurer_constitution()
+    yield
+    _restaurer_constitution()
