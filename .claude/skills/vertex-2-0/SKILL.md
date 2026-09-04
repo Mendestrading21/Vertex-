@@ -160,7 +160,9 @@ Les méthodes Anthropic, Vercel, Trail of Bits, Playwright, Lighthouse CI,
 Ruff, OpenTelemetry et Locust peuvent guider un lot après audit de licence,
 maintenance, permissions, hooks, dépendances et adéquation à Flask. Elles ne
 sont jamais installées, exécutées ou copiées automatiquement. Lire
-[methodology-sources.md](references/methodology-sources.md).
+[methodology-sources.md](references/methodology-sources.md). L'audit et les
+méthodes retenues du catalogue ECC pour les lots de qualité sont dans
+[ecc-method-adoption.md](references/ecc-method-adoption.md).
 
 ## Acceptation
 

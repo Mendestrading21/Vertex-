@@ -54,6 +54,21 @@ Retenir uniquement les méthodes utiles, sans installer le catalogue :
 Ces skills sont des sources de méthode. Leur structure, leurs templates et
 leurs services optionnels ne sont ni copiés ni activés automatiquement.
 
+## Everything Claude Code (ECC)
+
+Source : https://github.com/affaan-m/ECC — licence MIT, version 2.2.1,
+SHA audité `847e7f6`.
+
+Catalogue de 286 skills. Trois seulement sont retenus comme méthode :
+`python-testing`, `e2e-testing` et `browser-qa`. Aucun n'est installé comme
+skill actif — l'autorité unique de `vertex-2-0` l'interdit et
+`scripts/audit_claude_surface.py` le refuse. Les hooks bloquants du catalogue
+(`safety-guard`, `delivery-gate`, `gateguard`) sont écartés : ils
+constitueraient une seconde grille de gates.
+
+Audit complet, méthodes retenues, méthodes rejetées et matrice de preuves :
+`ecc-method-adoption.md`.
+
 ## Trail of Bits
 
 Source : https://github.com/trailofbits/skills
