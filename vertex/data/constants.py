@@ -12,8 +12,17 @@ BENCH = 'SPY'
 # Taux sans risque annualisé utilisé par les modèles d'options (Black-Scholes).
 R = 0.045
 
-# Marqueur de version — visible dans /healthz et /api/system-status.
-BUILD = 'VERTEX-1.0'
+# Marqueur de version — visible dans /healthz, /readyz et la page Système.
+#
+# DÉRIVÉ de `vertex/version.py`, seul propriétaire canonique de la version.
+# La valeur était recopiée à la main (`'VERTEX-1.0'`) : au renommage du produit
+# en Vertex Test 1.0, elle a cessé de correspondre sans que rien ne le signale,
+# et l'opérateur lisait dans « Build » une version qui n'existait plus. Deux
+# propriétaires pour une même métrique, c'est la dérive garantie.
+# `vertex/version.py` n'importe rien : aucun cycle possible.
+from vertex.version import RELEASE_NAME as _RELEASE_NAME
+
+BUILD = _RELEASE_NAME
 
 # Intervalle (secondes) entre deux scans complets de l'univers en boucle de fond.
 # MODÈLE « SESSION D'ANALYSE 30 MIN » : le premier scan (démarrage à froid) calcule
