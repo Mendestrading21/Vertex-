@@ -1569,7 +1569,13 @@ def _radar_loop():
         #  radar gardait sa valeur precedente PAR OMISSION, sans que la raison
         #  existe nulle part. Une absence silencieuse ressemble a une absence
         #  de marche ; ce n'en est pas une.
-        motifs = []
+        #  DEUX DESTINATAIRES, DEUX NIVEAUX DE DETAIL. `absents` ne porte que
+        #  des NOMS DE FLUX : il part au client via `/scan`, et le vocabulaire
+        #  d'erreur servi est fait de codes stables, jamais d'un type Python
+        #  (cf. `tests/test_aucune_exception_servie.py`). Le motif complet va
+        #  au registre, surface d'exploitation, ou nommer la cause est le
+        #  contrat — comme `_weekly_loop` le fait deja.
+        absents, motifs = [], []
         for code, key in (('TOP_PERC_GAIN', 'gainers'), ('TOP_PERC_LOSE', 'losers'),
                           ('MOST_ACTIVE', 'active')):
             try:
@@ -1577,12 +1583,14 @@ def _radar_loop():
                 if r:
                     out[key] = r
             except Exception as e:
+                absents.append(key)
                 motifs.append('%s: %s: %s' % (key, type(e).__name__, e))
         try:
             nw = _opt_job('news', (), timeout=40)
             if nw:
                 out['news'] = _news_plus.sanitize_news(nw[:35])   # XSS : titres IBKR externes
         except Exception as e:
+            absents.append('news')
             motifs.append('news: %s: %s' % (type(e).__name__, e))
         if out:
             out['updated'] = datetime.now().strftime('%H:%M %d/%m')
@@ -1592,8 +1600,9 @@ def _radar_loop():
         #  L'ecart se DIT, qu'il soit total ou partiel : quatre flux attendus,
         #  ceux qui ont manque sont nommes. La valeur precedente reste servie —
         #  elle est reelle — mais elle ne passe plus pour fraiche en silence.
-        scan_state['radar_ecart'] = ({'flux_absents': motifs,
-                                      'ts': time.time()} if motifs else None)
+        scan_state['radar_ecart'] = ({'flux_absents': absents,
+                                      'attendus': 4,
+                                      'ts': time.time()} if absents else None)
         try:
             #  CETTE BOUCLE NE BATTAIT RIEN. Elle interroge les scanners du
             #  marche entier et le fil Dow Jones toutes les 240 s, et aucune
