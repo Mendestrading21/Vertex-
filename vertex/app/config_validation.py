@@ -41,6 +41,14 @@ _SPEC = (
      'Europe/Zurich par défaut'),
     ('MARKET_TIMEZONE', False, lambda v: '/' in v,
      'America/New_York par défaut'),
+    #  BLOQUANT pour la SEC, et pourtant invisible jusqu'ici : `sec_edgar`
+    #  REFUSE d'appeler sans lui (`EntitlementManquant`), mais la variable
+    #  n'était ni dans ce tableau ni dans `.env.example`. L'utilisateur
+    #  recevait un refus sans aucun moyen de découvrir quoi poser. Le
+    #  fair-access de la SEC exige un contact réel ; Vertex ne l'invente pas.
+    ('SEC_USER_AGENT', False, lambda v: '@' in v and len(v) >= 10,
+     'fondamentaux SEC EDGAR indisponibles — la SEC exige un User-Agent '
+     'nommant un contact réel, que Vertex n’invente pas'),
 )
 
 # Alias historiques acceptés (compat .env existants)
