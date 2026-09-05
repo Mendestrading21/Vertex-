@@ -18,7 +18,10 @@ import time
 import threading
 from datetime import datetime, timedelta
 
-import numpy as np
+#  `numpy` n'est plus importé ici : son dernier usage dans ce fichier était
+#  `edge_backtest`, partie dans `vertex/engines/edge_validation.py`.
+#  `test_terminal_imports` l'a relevé — un import orphelin donne à croire
+#  que le monolithe calcule encore ce qu'il ne calcule plus.
 import pandas as pd
 import yfinance as yf
 
@@ -1821,106 +1824,20 @@ def _fund_loop():
 # score → prouve (ou non) que score élevé = rendement supérieur. Zéro look-ahead. LECTURE SEULE.
 # Corrélation de rangs (Spearman) : source unique dans vertex/engines/stats.py.
 _spearman = _stats.spearman
+from vertex.engines import edge_validation as _edge_validation  # noqa: E402
 
 
+#  DÉPLACÉ (strangler) vers `vertex/engines/edge_validation.py`, qui reçoit
+#  la collecte et l'analyse en PARAMÈTRE. Le backtest y devient éprouvable sans
+#  réseau — il ne l'était pas ici, et n'avait donc aucun test.
+#  Cette porte garde la signature d'origine : `_edge_loop` est inchangée, et
+#  `_download_universe` reste résolu dans CES globales au moment de l'appel,
+#  donc les doublures de test continuent de mordre.
 def edge_backtest(syms=None, horizons=(5, 21, 63), step=8, lookback=460):
-    Hmax = max(horizons)
-    syms = syms or list(dict.fromkeys(WATCHLIST + _BIG_EXTRA + _TREND_EXTRA))[:140]
-    try:
-        data = _download_universe(syms + [BENCH], period='3y')
-    except Exception:
-        return None
-    bc = data.get(BENCH)
-    bclose = bc['Close'].dropna() if bc is not None else None
-    obs = []
-    used = set()
-    for sym in syms:
-        df = data.get(sym)
-        if df is None:
-            continue
-        df = df.dropna()
-        if len(df) < 260 + Hmax:
-            continue
-        close = df['Close']; n = len(df)
-        start = max(260, n - lookback - Hmax)
-        for pos in range(start, n - Hmax, step):
-            sub = df.iloc[:pos + 1]
-            bret = 0.0
-            try:
-                bi = bclose.index.get_indexer([df.index[pos]], method='ffill')[0]
-                if bi > 63:
-                    bret = float(bclose.iloc[bi]) / float(bclose.iloc[bi - 63]) - 1
-            except Exception:
-                pass
-            try:
-                sc = analyse(sub, bret).get('score')
-            except Exception:
-                continue
-            if sc is None:
-                continue
-            p0 = float(close.iloc[pos])
-            if p0 <= 0:
-                continue
-            rec = {'d': str(df.index[pos].date()), 's': float(sc)}
-            ok = True
-            for H in horizons:
-                pv = float(close.iloc[pos + H])
-                if pv <= 0:
-                    ok = False; break
-                rec['f%d' % H] = (pv / p0 - 1) * 100
-            if ok:
-                obs.append(rec); used.add(sym)
-    if len(obs) < 50:
-        return None
-    BK = [('85-100', 85, 101), ('70-85', 70, 85), ('55-70', 55, 70), ('40-55', 40, 55), ('0-40', 0, 40)]
-    out = {'updated': datetime.now().strftime('%H:%M:%S'), 'n_obs': len(obs), 'n_syms': len(used),
-           'horizons': list(horizons), 'buckets': {}, 'ic': {}, 'spread': {}, 'monotone': {}}
-    for H in horizons:
-        key = 'f%d' % H
-        rows = []
-        for lab, lo, hi in BK:
-            vals = [o[key] for o in obs if lo <= o['s'] < hi]
-            if vals:
-                rows.append({'label': lab, 'lo': lo, 'hi': hi, 'n': len(vals),
-                             'mean': round(float(np.mean(vals)), 2),
-                             'hit': round(100 * float(np.mean([1.0 if v > 0 else 0.0 for v in vals])))})
-            else:
-                rows.append({'label': lab, 'lo': lo, 'hi': hi, 'n': 0, 'mean': None, 'hit': None})
-        out['buckets'][str(H)] = rows
-        out['ic'][str(H)] = _spearman([o['s'] for o in obs], [o[key] for o in obs])
-        top = next((r['mean'] for r in rows if r['label'] == '85-100' and r['mean'] is not None), None)
-        bot = next((r['mean'] for r in rows if r['label'] == '0-40' and r['mean'] is not None), None)
-        out['spread'][str(H)] = round(top - bot, 2) if (top is not None and bot is not None) else None
-        ms = [r['mean'] for r in rows[::-1] if r['mean'] is not None]   # tranche basse → haute
-        out['monotone'][str(H)] = (all(ms[i] <= ms[i + 1] for i in range(len(ms) - 1)) if len(ms) >= 3 else None)
-    # COURBE D'ÉQUITÉ (illustrative) : panier score≥70 vs équipondéré, rééquilibré ~mensuellement
-    from collections import defaultdict
-    byd = defaultdict(list)
-    for o in obs:
-        if 'f21' in o:
-            byd[o['d']].append(o)
-    picks, last = [], None
-    for d in sorted(byd.keys()):
-        try:
-            dd = datetime.strptime(d, '%Y-%m-%d')
-        except Exception:
-            continue
-        if last is None or (dd - last).days >= 28:
-            picks.append(d); last = dd
-    eq = [{'t': 0, 'strat': 1.0, 'bench': 1.0}]
-    s_eq = b_eq = 1.0
-    for d in picks:
-        grp = byd[d]
-        hi = [o['f21'] for o in grp if o['s'] >= 70]
-        if not hi:
-            g2 = sorted(grp, key=lambda x: -x['s']); k = max(1, len(g2) // 5); hi = [o['f21'] for o in g2[:k]]
-        allr = [o['f21'] for o in grp]
-        s_eq *= (1 + float(np.mean(hi)) / 100); b_eq *= (1 + float(np.mean(allr)) / 100)
-        eq.append({'t': len(eq), 'strat': round(s_eq, 3), 'bench': round(b_eq, 3)})
-    out['equity'] = eq
-    out['n_dates'] = len(picks)
-    return out
-
+    return _edge_validation.edge_backtest(
+        telecharger=_download_universe, analyser=analyse,
+        univers=list(dict.fromkeys(WATCHLIST + _BIG_EXTRA + _TREND_EXTRA))[:140],
+        bench=BENCH, syms=syms, horizons=horizons, step=step, lookback=lookback)
 
 _EDGE_CACHE = _load_json('edge_cache.json', None)
 if _EDGE_CACHE:

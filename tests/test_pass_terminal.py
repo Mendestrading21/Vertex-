@@ -45,6 +45,15 @@ chose de vrai à lire.
 
 ## L1342 — `bret = 0.0` : mesuré, pas excusé
 
+> DEPUIS : ce handler a suivi `edge_backtest` dans
+> `vertex/engines/edge_validation.py` (strangler). Il n'a été ni supprimé ni
+> corrigé, seulement déplacé, et le plafond de `vertex/` l'absorbe. Tout ce
+> qui suit reste vrai : la caractérisation porte sur la formule de force
+> relative et sur le chemin de scan vivant, pas sur l'emplacement du `pass`.
+> Le backtest est en revanche désormais ÉPROUVÉ — voir
+> `tests/test_edge_validation.py`, qui vérifie l'absence de look-ahead que
+> personne ne pouvait mesurer tant que la fonction appelait le réseau.
+
 Dans `edge_backtest`, l'échec du calcul du rendement de référence laisse
 `bret = 0.0`, qui part dans `analyse(sub, bret)`. J'ai failli l'excuser en
 disant que 0 est neutre. **La mesure dit le contraire** : dans
@@ -120,13 +129,23 @@ FICHIER = 'terminal.py'
 #  ne suffit plus — la reprise de la valeur précédente est désormais EXPLICITE
 #  (`_tilt = scan_state.get('strat_tilt')`), même sémantique, dite au lieu
 #  d'avalée. La famille passe de 11 à 10.
+#  MISE À JOUR (strangler, extraction du backtest de l'edge) : 33 -> 32. Le
+#  `pass` retiré est L1342, l'un des DEUX « examinés de près » : celui qui
+#  laisse `bret = 0.0` quand le rendement de référence ne se calcule pas. Il
+#  n'a pas disparu — il a suivi `edge_backtest` dans
+#  `vertex/engines/edge_validation.py`, où le plafond de `vertex/`
+#  (`test_pass_et_contexte.MAX_PASS`) l'absorbe sans dérive. Sa
+#  caractérisation ci-dessous reste entièrement valable : elle porte sur la
+#  formule de force relative (`analysis.py`) et sur le chemin de scan vivant,
+#  pas sur l'emplacement du handler. La famille « examinés de près » passe de
+#  2 à 1 pour `terminal.py` : il n'y reste que l'overlay IBKR (L621).
 FAMILLES = {
     'nettoyage/fermeture': 6,
     'journal/persistance': 9,
     'import/config optionnel': 1,
     'infra thread': 2,
     'absence honnête': 10,
-    'examinés de près': 2,
+    'examinés de près': 1,
     #  Fusion Black Glass : arrivés de `vertex-live`, classés ici parce qu'une
     #  notification perdue ou un enrichissement absent ne rend AUCUNE donnée
     #  fausse — la valeur reste celle de la source, simplement sans le
@@ -139,7 +158,7 @@ FAMILLES = {
 #  persistee laissant max-pain vide), quatre best-effort — chaine de
 #  demo, deux notifications SSE, arrondi du spot. Classement complet en
 #  tete de `test_pass_et_contexte.py`.
-TOTAL_PASS = 33
+TOTAL_PASS = 32
 
 # Fenêtre de fraîcheur de l'overlay IBKR. Au-delà, une valeur périmée serait
 # présentée comme du temps réel : c'est la borne d'honnêteté du mécanisme.
