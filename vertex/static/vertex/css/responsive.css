@@ -36,6 +36,12 @@
   .vx-tabs::-webkit-scrollbar{display:block;height:3px}
   .vx-tabs::-webkit-scrollbar-thumb{background:var(--vx-border-strong);border-radius:999px}
   .vx-tabs::-webkit-scrollbar-track{background:transparent}
+  /*  `.vx2-tabs` souffre du MÊME défaut et reçoit le même remède — mais dans
+      `vertex-2-0.css`, pas ici. La coque charge les feuilles dans un ordre
+      contractuel où `vertex-2-0.css` est la DERNIÈRE (`vertex/ui/shell/`) :
+      sa règle `.vx2-tabs{scrollbar-width:none}`, à spécificité égale, gagne
+      par ordre de source, y compris sur une règle sous media query écrite
+      ici. Écrit à cet endroit, le correctif était sans effet — mesuré. */
   h1{font-size:24px}
   .vx-topbar{padding:0 var(--vx-s3);gap:var(--vx-s2)}
   /* lot 56 : masquer AUSSI le séparateur adjacent — sinon slash orphelin */
@@ -128,8 +134,18 @@
      laisserait un topbar sans aucun repère de lieu. */
   .vx-breadcrumb .vx-crumb-space:not(:last-child),
   .vx-breadcrumb .vx-crumb-space:not(:last-child) + span{display:none}
+  /*  `overflow-x:auto` + `scrollbar-width:none` : la rangée DÉFILAIT, mais sans
+      aucune barre — donc sans le moindre indice qu'elle continue. Mesuré à
+      390 px sur Aujourd'hui : le sélecteur de densité recevait 119 px pour
+      210 px de contenu, et deux de ses trois options finissaient à 408 et
+      470 px — hors de l'écran, sans que rien ne le signale. « Confort » et
+      « Dense » existaient sans être atteignables.
+      La rangée REPLIE désormais : trois contrôles sur deux lignes, tous
+      visibles et tactiles. Même remède que `.vx2-context-group` et
+      `.vx-chart-controls` — un contrôle caché derrière un défilement invisible
+      est un contrôle absent. */
   .vx-page-header .vx-actions{width:100%;justify-content:flex-start;
-    overflow-x:auto;scrollbar-width:none}
+    flex-wrap:wrap;row-gap:var(--vx-s2)}
   .vx-kpi .vx-kpi-value{font-size:22px}
   .vx-drawer,.vx-drawer[data-variant="summary"],.vx-drawer[data-variant="detail"]{
     width:100vw;min-width:0;max-width:none}

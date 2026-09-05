@@ -50,6 +50,7 @@ from __future__ import annotations
 
 import os
 import socket
+import logging
 import threading
 import time
 
@@ -287,7 +288,87 @@ def oublier() -> None:
         _DERNIERS_ESSAIS.clear()
 
 
+#  ── LE JOURNAL DU COURTIER : DIRE UNE FOIS, PAS CINQUANTE ──────────────────
+#
+#  Sans TWS ouvert, `ib_async` écrit DEUX lignes par tentative et par port, sur
+#  quatre ports, pour quatre workers, en boucle. Mesuré à un premier lancement
+#  sans TWS : **168 lignes** « API connection failed: ConnectionRefusedError »
+#  en une minute. Le message est en anglais, il est vrai, et il est illisible :
+#  quelqu'un qui lance Vertex pour la première fois y voit une application
+#  cassée alors que l'état est parfaitement normal.
+#
+#  Ce filtre NE TAIT RIEN QUI NE SOIT DÉJÀ DIT AILLEURS. La première occurrence
+#  passe, traduite et complète ; les répétitions sont comptées et le compte est
+#  lisible (`repetitions_tues()`). L'état lui-même vit dans `etat()` et sur la
+#  page Système → Connexions, qui dit « IBKR non activé (aucune session
+#  TWS/Gateway détectée) ». Ce qui disparaît, c'est la répétition, pas
+#  l'information.
+#
+#  Tout message du courtier qui n'est PAS cette répétition passe intact : un
+#  refus de permission, une collision de clientId ou une erreur de marché doit
+#  rester visible mot pour mot.
+_REPETITIONS = ('API connection failed', 'Make sure API port')
+
+_PREMIERE = ("TWS / IB Gateway injoignable sur %s — c'est l'etat NORMAL sans "
+             "session courtier ouverte. Vertex sert les donnees differees "
+             "(yfinance) et le dit sur chaque valeur. Statut detaille : "
+             "page Systeme > Connexions.")
+
+
+class _FiltreRepetitions(logging.Filter):
+    """Laisse passer la première, compte les suivantes."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.tues = 0
+        self._dit = False
+        self._v = threading.Lock()
+
+    def filter(self, record) -> bool:        # noqa: A003  (API de logging)
+        try:
+            message = record.getMessage()
+        except Exception:                    # noqa: BLE001  un record exotique passe
+            return True
+        if not any(m in message for m in _REPETITIONS):
+            return True                      # tout le reste : INTACT
+        with self._v:
+            if self._dit:
+                self.tues += 1
+                return False
+            self._dit = True
+        record.msg = _PREMIERE % ', '.join(str(p) for p in ordre_des_ports())
+        record.args = ()
+        record.levelno = logging.WARNING
+        record.levelname = 'WARNING'
+        return True
+
+
+_FILTRE = _FiltreRepetitions()
+_POSE = False
+
+
+def calmer_le_journal_du_courtier() -> bool:
+    """Installe le filtre sur les journaux du courtier. Idempotent.
+
+    Rend `True` s'il vient d'être posé, `False` s'il l'était déjà — un appelant
+    ne peut donc pas croire l'avoir posé deux fois."""
+    global _POSE
+    with _VERROU:
+        if _POSE:
+            return False
+        for nom in ('ib_async', 'ib_async.client', 'ib_insync', 'ib_insync.client'):
+            logging.getLogger(nom).addFilter(_FILTRE)
+        _POSE = True
+        return True
+
+
+def repetitions_tues() -> int:
+    """Combien de répétitions ont été retenues. Jamais perdu, seulement compté."""
+    return _FILTRE.tues
+
+
 __all__ = ['PORTS', 'CLIENT_IDS', 'MODES', 'ECHELLE_DONNEES',
+           'calmer_le_journal_du_courtier', 'repetitions_tues',
            'LIBELLE_DONNEES', 'type_suivant', 'libelle_donnees', 'hote', 'client_id', 'ports_declares',
            'ordre_des_ports', 'sonder', 'noter_succes', 'noter_echec', 'etat',
            'oublier']

@@ -2602,6 +2602,12 @@ def _demarrer_les_boucles():
     scan synthétique : les autres boucles (options/news/calendrier/hebdo/fondamentaux)
     dépendent de yfinance — inutiles et coûteuses (mémoire/CPU) quand le réseau est
     bloqué sur le serveur. Hors démo, tout démarre normalement."""
+    #  AVANT TOUT THREAD : `ib_async` ecrit deux lignes par tentative et par
+    #  port, sur quatre ports et quatre workers. Mesure d'un premier lancement
+    #  sans TWS : 168 lignes en une minute, en anglais, pour un etat
+    #  parfaitement normal. Le filtre en garde UNE, traduite, et compte le
+    #  reste ; l'etat reel reste sur Systeme > Connexions.
+    _ibkr_link.calmer_le_journal_du_courtier()
     threading.Thread(target=_loop, daemon=True).start()
     threading.Thread(target=_alerts_loop, daemon=True).start()   # 🔔 alertes utilisateur actives
     if DEMO_MODE:                                     # VITRINE : calendrier earnings synthétique

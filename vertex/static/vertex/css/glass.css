@@ -314,11 +314,23 @@ body::before{
 /* ══════════════════════════════════════════════════════════════════
    12) SLIDERS (filtres screener) — piste neutre + poignée argent
    ══════════════════════════════════════════════════════════════════ */
-input[type="range"]{-webkit-appearance:none;appearance:none;height:4px;border-radius:99px;
-  background:rgba(255,255,255,.09);outline:none;cursor:pointer}
+/*  LA PISTE ÉTAIT AUSSI LA CIBLE. `height:4px` sur l'`input` lui-même donnait
+    une zone tactile de 86 x 4 px — mesuré sur les cinq curseurs du screener à
+    390 px, et repris par le gardien des cibles tactiles du dépôt, dont le
+    plancher secondaire est 32 px. Quatre pixels ne se saisissent pas au doigt.
+    La piste garde ses 4 px : c'est le dessin, et il ne change pas d'un pixel.
+    Elle est simplement peinte par `::-webkit-slider-runnable-track` au lieu du
+    fond de l'`input`, qui devient une zone de préhension transparente de
+    32 px. La poignée se recentre sur la piste (`margin-top`). */
+input[type="range"]{-webkit-appearance:none;appearance:none;height:32px;
+  background:transparent;outline:none;cursor:pointer}
+input[type="range"]::-webkit-slider-runnable-track{height:4px;border-radius:99px;
+  background:rgba(255,255,255,.09)}
+input[type="range"]::-moz-range-track{height:4px;border-radius:99px;
+  background:rgba(255,255,255,.09)}
 input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:14px;height:14px;
   border-radius:50%;background:var(--vx-silver);border:2px solid var(--vx-surface-base);
-  box-shadow:0 1px 4px rgba(0,0,0,.5);cursor:pointer}
+  box-shadow:0 1px 4px rgba(0,0,0,.5);cursor:pointer;margin-top:-5px}
 input[type="range"]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;
   background:var(--vx-silver);border:2px solid var(--vx-surface-base);cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.5)}
 input[type="range"]:focus-visible::-webkit-slider-thumb{box-shadow:0 0 0 3px var(--vx-silver-soft)}

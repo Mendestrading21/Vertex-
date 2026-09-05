@@ -663,6 +663,25 @@ table td,table th{
   scrollbar-width:none;-webkit-overflow-scrolling:touch;
 }
 .vx2-tabs::-webkit-scrollbar{display:none}
+/*  MOBILE : la barre redevient VISIBLE. Mesuré à 390 px sur les douze
+    espaces — cette barre d'onglets déborde sur HUIT d'entre eux, et la
+    masquer entièrement laissait des sous-vues hors de l'écran sans le
+    moindre indice : six sur Options (Radar, Scénarios, Positions,
+    Événements, Positionnement, Scanner LEAPS), cinq sur Système, quatre
+    sur Vertex IA. Le défilement reste la bonne forme — replier une barre
+    de 960 px mangerait l'écran ; c'est l'ABSENCE DE SIGNAL qui était le
+    défaut. Même remède que `.vx-tabs` a reçu de son côté.
+    La règle vit ICI et non dans `responsive.css` : la coque charge
+    cette feuille en DERNIER, donc la base ci-dessus l'emporterait sur
+    une media query écrite plus haut dans la cascade. */
+@media (max-width:768px){
+  .vx2-tabs{scrollbar-width:thin;scrollbar-color:var(--vx-border-strong) transparent;
+    padding-bottom:2px}
+  .vx2-tabs::-webkit-scrollbar{display:block;height:3px}
+  .vx2-tabs::-webkit-scrollbar-thumb{background:var(--vx-border-strong);
+    border-radius:999px}
+  .vx2-tabs::-webkit-scrollbar-track{background:transparent}
+}
 .vx2-tab{
   padding:var(--vx2-s2) var(--vx2-s3);
   font-family:inherit;font-size:13px;font-weight:600;
