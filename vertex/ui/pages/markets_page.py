@@ -689,21 +689,25 @@ async function loadMacroCal(){
 function loadSectors(scan){
   const sectors=(scan&&scan.sectors)||[];
   if(!sectors.length){
-    emptyCard('vx-mk-sectors-chart','Secteurs non calculés par le dernier scan.',SCAN_ACTION);
-    VXCharts.heatmapCard('vx-mk-sectors-heat',{
-    title:'Performance et momentum par secteur',unit:'%',unit:'%',unit:'%',
-    question:'Quels secteurs attirent le capital aujourd’hui ?',
-    conclusion:'Vert = flux entrant, rouge = flux sortant (variation moyenne du jour).',
-    columns:['Var. moyenne %','Score','RVOL','Titres'],
-    rows:sectors.map(sec=>({label:esc(sec.sector||'n/d'),cells:[
-      {value:sec.avg_change??null,onclick:'/opportunities?view=stocks&sector='+encodeURIComponent(sec.sector||'')},
-      {value:sec.avg_score??null,label:VX.fmt.nd(sec.avg_score)},
-      {value:null,label:VX.fmt.nd(sec.avg_rvol)},
-      {value:null,label:String(sec.n??'—')}]})),
-    min:-3,max:3,fmt:(v)=>v===null?'—':VX.fmt.pct(v),
-    source:(scan&&scan.source)||'scan',timestamp:scan&&(scan.scan_ts||scan.updated),mode:modeOf(scan),
-    limits:'univers = leaders scannés'});
-  ($('vx-mk-sectors-leaders')||{}).innerHTML=VX.states.empty('Secteurs non calculés par le dernier scan.');
+    /*  DEUX DÉFAUTS ICI, mesurés sur un scan sans secteurs — l'état d'un
+        démarrage à froid ou d'un réseau qui ne répond pas.
+
+        1. `emptyCard('vx-mk-sectors-chart', …)` visait un identifiant qui
+           N'EXISTE PAS dans le balisage (seuls `-heat` et `-leaders` y sont).
+           `emptyCard` sort silencieusement sur un hôte introuvable : le
+           message « Secteurs non calculés » n'était jamais affiché.
+        2. À la place, un `heatmapCard` recopié dans cette branche dessinait
+           la carte AVEC `rows: sectors.map(...)` sur un `sectors` VIDE —
+           mesuré : une carte de 196 px, titrée « PERFORMANCE ET MOMENTUM PAR
+           SECTEUR », posant sa question et n'y répondant par aucune ligne.
+           Sa signature d'accident : `unit:'%'` y était écrit TROIS FOIS.
+
+        La branche dit maintenant ce qu'elle a à dire, sur l'hôte qui existe,
+        et ne dessine plus une carte creuse. */
+    emptyCard('vx-mk-sectors-heat','Secteurs non calculés par le dernier scan.',
+              SCAN_ACTION,'Performance et momentum par secteur');
+    ($('vx-mk-sectors-leaders')||{}).innerHTML=
+      VX.states.empty('Secteurs non calculés par le dernier scan.');
     return;
   }
   VXCharts.heatmapCard('vx-mk-sectors-heat',{
