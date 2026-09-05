@@ -1729,6 +1729,7 @@ def _cal_loop():
         try:
             if scan_state.get('rows'):
                 items, fails = [], 0
+                echec = None
                 for i, sym in enumerate(targets):
                     try:
                         cal = yf.Ticker(sym).calendar
@@ -1750,11 +1751,26 @@ def _cal_loop():
                     if i and i % 40 == 0:             # publication INCRÉMENTALE (pas d'attente 5 min)
                         _publish(items)
                 _publish(items)
-                time.sleep(3 * 3600)
             else:
                 time.sleep(10)
+                continue
+        except Exception as e:
+            #  L'echec est NOMME, pas avale — meme regle que `_weekly_loop`.
+            echec = '%s: %s' % (type(e).__name__, e)
+        try:
+            #  LE BATTEMENT MANQUAIT SUR CE CHEMIN. Il n'existait que dans la
+            #  branche `DEMO_MODE` ci-dessus : `CATALYST_REFRESH` etait donc le
+            #  SEUL job du depot dont l'unique emetteur vivait sous DEMO. En
+            #  reel, `last_run` restait None a jamais et la page Systeme
+            #  affichait « EN_ATTENTE » — « pas encore passe depuis le
+            #  demarrage » — pour un calendrier rafraichi toutes les trois
+            #  heures. C'est exactement la confusion que le registre existe
+            #  pour empecher, appliquee cette fois a un job QUI MARCHE.
+            from vertex.scheduler import registry as _sched
+            _sched.beat('CATALYST_REFRESH', ok=(echec is None), error=echec)
         except Exception:
-            time.sleep(30)
+            pass
+        time.sleep(30 if echec else 3 * 3600)
 
 
 # ─── FONDAMENTAUX : P/E par titre + médianes secteur (lent, rafraîchi /6h) ───

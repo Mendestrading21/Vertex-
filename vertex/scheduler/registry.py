@@ -44,7 +44,14 @@ _CANONICAL_4 = (
     ('MARKET_DATA_REFRESH', 'Scan univers + indices + contexte marché', 360, True),
     ('PORTFOLIO_RECALCULATION', 'Risque portefeuille sur positions réelles', None, False),
     ('DECISION_RECALCULATION', 'Décisions exécutives (par requête/à la demande)', None, False),
-    ('CATALYST_REFRESH', 'Calendrier earnings + macro', 3600, True),
+    #  3600 -> 10800 : la cadence annoncee etait le TIERS de la boucle reelle
+    #  (`time.sleep(3 * 3600)` en reel, `wait_force('calendar', 3 * 3600)` en
+    #  demo). Deux consequences, toutes deux fausses a l'ecran : un ETA
+    #  « prochaine dans ~1 h » pour un job qui repasse dans trois, et surtout
+    #  l'etat SILENCIEUX des que 2 x 3600 s etaient passees — soit a chaque
+    #  cycle, une alarme permanente sur un job sain. Meme famille que
+    #  NEWS_REFRESH et POSITION_REFRESH ; il en restait un.
+    ('CATALYST_REFRESH', 'Calendrier earnings + macro', 3 * 3600, True),
     ('NEWS_REFRESH', 'Fil de nouvelles assaini', 60, True),
     ('PREMARKET_BRIEF', 'Brief pré-marché', None, False),
     ('INTRADAY_BRIEF', 'Brief intraday', None, False),

@@ -139,9 +139,21 @@ FICHIER = 'terminal.py'
 #  formule de force relative (`analysis.py`) et sur le chemin de scan vivant,
 #  pas sur l'emplacement du handler. La famille « examinés de près » passe de
 #  2 à 1 pour `terminal.py` : il n'y reste que l'overlay IBKR (L621).
+#  MISE À JOUR (battement manquant du calendrier) : 32 -> 33. Le `pass` AJOUTÉ
+#  entoure l'import et l'émission du battement `CATALYST_REFRESH` dans
+#  `_cal_loop`, à l'identique de celui de `_weekly_loop` — famille
+#  « journal/persistance » (9 -> 10), celle des beats du scheduler.
+#  Pourquoi il est admissible : ce `try` n'entoure aucune donnée financière. Un
+#  registre indisponible ne doit pas coûter le rafraîchissement du calendrier ;
+#  son échec produit une ABSENCE de diagnostic, jamais une valeur fausse.
+#  Ce qu'il coûte, dit franchement : si l'émission échouait, la page Système
+#  réafficherait « EN_ATTENTE » — le défaut même que ce lot corrige. Le risque
+#  est borné à un import de module déjà chargé et à une écriture de
+#  dictionnaire sous verrou ; il est accepté pour la même raison que chez son
+#  voisin, et il est nommé ici plutôt que supposé inoffensif.
 FAMILLES = {
     'nettoyage/fermeture': 6,
-    'journal/persistance': 9,
+    'journal/persistance': 10,
     'import/config optionnel': 1,
     'infra thread': 2,
     'absence honnête': 10,
@@ -158,7 +170,7 @@ FAMILLES = {
 #  persistee laissant max-pain vide), quatre best-effort — chaine de
 #  demo, deux notifications SSE, arrondi du spot. Classement complet en
 #  tete de `test_pass_et_contexte.py`.
-TOTAL_PASS = 32
+TOTAL_PASS = 33
 
 # Fenêtre de fraîcheur de l'overlay IBKR. Au-delà, une valeur périmée serait
 # présentée comme du temps réel : c'est la borne d'honnêteté du mécanisme.
