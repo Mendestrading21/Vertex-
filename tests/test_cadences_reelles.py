@@ -153,7 +153,8 @@ def test_le_banc_couvre_bien_les_boucles_connues():
     couverts = {nom for nom, _iv, _fn in _a_comparer()}
     attendus = {'MARKET_DATA_REFRESH', 'CATALYST_REFRESH', 'NEWS_REFRESH',
                 'ALERTS_EVALUATION', 'WEEKLY_REVIEW', 'TRACK_RECORD_UPDATE',
-                'FUNDAMENTALS_REFRESH', 'OPTIONS_BOARD_REFRESH'}
+                'FUNDAMENTALS_REFRESH', 'OPTIONS_BOARD_REFRESH',
+                'MARKET_RADAR_REFRESH'}
     manquants = sorted(attendus - couverts)
     assert not manquants, (
         'ces boucles cadencées ne sont plus comparées — leur émetteur a quitté '

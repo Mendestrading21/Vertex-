@@ -80,6 +80,11 @@ _CANONICAL_4 = (
     #  l'emprunter aurait refait la faute corrigée sur
     #  `TRACK_RECORD_UPDATE` — parler au nom d'un autre travail.
     ('OPTIONS_BOARD_REFRESH', 'Board options — rotation univers + focus', 120, True),
+    #  AJOUT : `_radar_loop` interroge les scanners du marché ENTIER
+    #  (gainers, losers, most active) et le fil Dow Jones / Briefing
+    #  toutes les 240 s — la dernière boucle cadencée du produit qui
+    #  n'avait aucune ligne à l'écran.
+    ('MARKET_RADAR_REFRESH', 'Radar marché entier + fil courtier', 240, True),
     ('PREMARKET_BRIEF', 'Brief pré-marché', None, False),
     ('INTRADAY_BRIEF', 'Brief intraday', None, False),
     ('CLOSE_BRIEF', 'Brief de clôture', None, False),

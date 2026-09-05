@@ -184,12 +184,22 @@ FICHIER = 'terminal.py'
 #      qui manquait quand la séquence de démarrage elle-même casse — le job
 #      restait « EN_ATTENTE » à jamais et la raison partait dans un `print`.
 #  Famille « journal/persistance » : 11 + 2 = 13.
+#  MISE À JOUR (le radar nomme ce qui manque) : 32 -> 31. Deux handlers
+#  RETIRÉS dans `_radar_loop` — celui de la boucle des trois scanners et celui
+#  du fil courtier. Ils étaient classés « absence honnête » (6 -> 4) à tort :
+#  quand les quatre flux échouaient — le cas NOMINAL sans TWS — `out` restait
+#  vide, le `if out` sautait l'écriture, et le radar gardait sa valeur
+#  précédente PAR OMISSION, sans que la raison existe nulle part. Une absence
+#  silencieuse ressemble à une absence de marché ; ce n'en est pas une. Les
+#  motifs sont désormais retenus, servis dans `scan_state['radar_ecart']` et
+#  transmis au registre. Une garde AJOUTÉE entoure l'émission du battement
+#  (« journal/persistance » 13 -> 14), comme chez ses sept voisines.
 FAMILLES = {
     'nettoyage/fermeture': 6,
-    'journal/persistance': 13,
+    'journal/persistance': 14,
     'import/config optionnel': 1,
     'infra thread': 2,
-    'absence honnête': 6,
+    'absence honnête': 4,
     'examinés de près': 1,
     #  Fusion Black Glass : arrivés de `vertex-live`, classés ici parce qu'une
     #  notification perdue ou un enrichissement absent ne rend AUCUNE donnée
@@ -203,7 +213,7 @@ FAMILLES = {
 #  persistee laissant max-pain vide), quatre best-effort — chaine de
 #  demo, deux notifications SSE, arrondi du spot. Classement complet en
 #  tete de `test_pass_et_contexte.py`.
-TOTAL_PASS = 32
+TOTAL_PASS = 31
 
 # Fenêtre de fraîcheur de l'overlay IBKR. Au-delà, une valeur périmée serait
 # présentée comme du temps réel : c'est la borne d'honnêteté du mécanisme.

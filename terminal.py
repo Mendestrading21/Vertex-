@@ -1563,24 +1563,46 @@ def _radar_loop():
     time.sleep(30)
     while True:
         out = {}
+        #  LES MOTIFS SONT RETENUS, PAS AVALES. Quatre flux, quatre
+        #  `except: pass` : quand ils echouaient tous — c'est le cas nominal
+        #  sans TWS — `out` restait vide, le `if out` sautait l'ecriture, et le
+        #  radar gardait sa valeur precedente PAR OMISSION, sans que la raison
+        #  existe nulle part. Une absence silencieuse ressemble a une absence
+        #  de marche ; ce n'en est pas une.
+        motifs = []
         for code, key in (('TOP_PERC_GAIN', 'gainers'), ('TOP_PERC_LOSE', 'losers'),
                           ('MOST_ACTIVE', 'active')):
             try:
                 r = _opt_job('scan', (code,), timeout=45)
                 if r:
                     out[key] = r
-            except Exception:
-                pass
+            except Exception as e:
+                motifs.append('%s: %s: %s' % (key, type(e).__name__, e))
         try:
             nw = _opt_job('news', (), timeout=40)
             if nw:
                 out['news'] = _news_plus.sanitize_news(nw[:35])   # XSS : titres IBKR externes
-        except Exception:
-            pass
+        except Exception as e:
+            motifs.append('news: %s: %s' % (type(e).__name__, e))
         if out:
-            out['updated'] = datetime.now().strftime('%H:%M:%S')
+            out['updated'] = datetime.now().strftime('%H:%M %d/%m')
+            out['ts'] = time.time()          # epoque serveur — la page affiche un age VRAI
             scan_state['radar'] = out
             _save_json('radar_cache.json', out)
+        #  L'ecart se DIT, qu'il soit total ou partiel : quatre flux attendus,
+        #  ceux qui ont manque sont nommes. La valeur precedente reste servie —
+        #  elle est reelle — mais elle ne passe plus pour fraiche en silence.
+        scan_state['radar_ecart'] = ({'flux_absents': motifs,
+                                      'ts': time.time()} if motifs else None)
+        try:
+            #  CETTE BOUCLE NE BATTAIT RIEN. Elle interroge les scanners du
+            #  marche entier et le fil Dow Jones toutes les 240 s, et aucune
+            #  ligne de la page Systeme ne la representait.
+            from vertex.scheduler import registry as _sched
+            _sched.beat('MARKET_RADAR_REFRESH', ok=bool(out),
+                        error='; '.join(motifs)[:200] or None)
+        except Exception:
+            pass
         time.sleep(240)
 
 
