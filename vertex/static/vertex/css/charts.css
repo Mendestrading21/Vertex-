@@ -9,7 +9,14 @@
 /* Élévation douce au survol de carte-graphique (sans translation — le graphe ne saute pas). */
 .vx-chart-card{transition:border-color var(--vx-t),box-shadow var(--vx-t)}
 .vx-chart-card:hover{box-shadow:var(--vx-shadow-2)}
-.vx-chart-head .vx-chart-controls{margin-left:auto;display:flex;gap:6px;align-items:center}
+/*  `flex-wrap` MANQUAIT — même famille que `.vx2-context-group`. Les six
+    puces du calendrier d'Aujourd'hui (Jour · Semaine · Tous · Macro ·
+    Résultats · Mes actions) tenaient sur UNE ligne de 355 px dans un en-tête
+    de 332 px à 390 px : « Mes actions » finissait à 384 px, hors du bord, et
+    `overflow-x:clip` la coupait au lieu de la rendre atteignable. Le filtre
+    existait, l'utilisateur ne pouvait ni le voir ni le toucher. */
+.vx-chart-head .vx-chart-controls{margin-left:auto;display:flex;gap:6px;
+  align-items:center;flex-wrap:wrap;row-gap:6px;min-width:0}
 .vx-chart-question{font-size:12px;color:var(--vx-text-muted);font-style:italic;
   width:100%}
 .vx-chart-conclusion{font-size:12.5px;color:var(--vx-text-secondary);

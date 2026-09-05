@@ -1189,7 +1189,14 @@ html,body{max-width:100%;overflow-x:clip}
    devient ainsi le comportement de toutes les largeurs, au lieu d'une
    exception. */
 #vx-content .vx-card-header{flex-wrap:wrap;row-gap:var(--vx2-s1)}
-#vx-content .vx-card-header > .vx-card-title{flex:0 0 auto}
+#vx-content .vx-card-header > .vx-card-title{flex:0 1 auto;min-width:0}
+/*  `flex:0 0 auto` interdisait TOUT rétrécissement. Juste tant que le titre
+    tient ; faux dès qu'il est plus large que sa carte : « LECTURE EN CLAIR —
+    TENDANCE, VOLATILITÉ, HUMEUR » mesurait 396 px dans un en-tête de 316 px à
+    390 px, et débordait au lieu de se replier. `0 1 auto` conserve l'intention
+    du lot 25 — avec `flex-wrap`, un titre qui tient reste sur sa ligne à sa
+    largeur naturelle, aucun facteur de rétrécissement ne s'applique — et ne
+    l'autorise à se replier que dans le seul cas où il ne tient pas. */
 
 /* === 26. Six autres classes rendues sans aucune règle servie =================
    Relevé au navigateur : on collecte les classes dont les SEULES règles vivent
