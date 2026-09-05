@@ -175,12 +175,21 @@ FICHIER = 'terminal.py'
 #  honnête » retirés est donc RAISONNÉE — leur `try` entourait une collecte
 #  dont l'échec laissait une donnée absente — et non retrouvée dans une
 #  classification d'origine. Le total, lui, est mesuré.
+#  MISE À JOUR (les deux dernières boucles muettes) : 31 -> 32.
+#    · `_opt_loop` : son `except: pass` — qui avalait tout le cycle du board
+#      d'options — nomme désormais son motif et le transmet au registre
+#      (« absence honnête » 7 -> 6) ; une garde AJOUTÉE entoure l'émission du
+#      battement, comme chez ses quatre voisines ;
+#    · `_startup`  : une garde AJOUTÉE entoure le battement de repli, celui
+#      qui manquait quand la séquence de démarrage elle-même casse — le job
+#      restait « EN_ATTENTE » à jamais et la raison partait dans un `print`.
+#  Famille « journal/persistance » : 11 + 2 = 13.
 FAMILLES = {
     'nettoyage/fermeture': 6,
-    'journal/persistance': 11,
+    'journal/persistance': 13,
     'import/config optionnel': 1,
     'infra thread': 2,
-    'absence honnête': 7,
+    'absence honnête': 6,
     'examinés de près': 1,
     #  Fusion Black Glass : arrivés de `vertex-live`, classés ici parce qu'une
     #  notification perdue ou un enrichissement absent ne rend AUCUNE donnée
@@ -194,7 +203,7 @@ FAMILLES = {
 #  persistee laissant max-pain vide), quatre best-effort — chaine de
 #  demo, deux notifications SSE, arrondi du spot. Classement complet en
 #  tete de `test_pass_et_contexte.py`.
-TOTAL_PASS = 31
+TOTAL_PASS = 32
 
 # Fenêtre de fraîcheur de l'overlay IBKR. Au-delà, une valeur périmée serait
 # présentée comme du temps réel : c'est la borne d'honnêteté du mécanisme.

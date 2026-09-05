@@ -354,11 +354,52 @@ def test_un_tour_EN_ECHEC_ne_declare_pas_le_job_sain(monkeypatch):
 #  le chemin de succès, `ok=False, error=str(e)` dans son `except`. Il sert de
 #  témoin négatif — le banc ne doit pas crier sur lui.
 
-_JOBS_QUI_DOIVENT_POUVOIR_ECHOUER = (
+#  LA LISTE EST DÉRIVÉE DU REGISTRE, PAS ÉCRITE À LA MAIN. Une liste
+#  manuelle se périme en silence : le job suivant serait ajouté sans jamais
+#  entrer dans ce banc, et « aucun vert de façade » resterait vrai en ne
+#  couvrant plus rien.
+#
+#  Le critère est la CADENCE. Un job cadencé qui échoue en boucle doit pouvoir
+#  le dire : sans cela, il reste au dernier battement réussi, bascule
+#  SILENCIEUX — « la boucle est morte ou coincée » — et la vraie raison
+#  n'existe nulle part. Les jobs à `interval_s is None` sont déclenchés par un
+#  événement ou une requête : leur échec remonte à l'appelant, il n'y a pas de
+#  boucle à surveiller. Ils sont donc HORS du critère, et c'est dit ici plutôt
+#  que sous-entendu par une absence.
+def _jobs_cadences_avec_emetteur() -> list[str]:
+    emis = set(_emetteurs())
+    return [nom for nom, _d, interval, implemente in _reg._CANONICAL_4
+            if implemente and interval is not None and nom in emis]
+
+
+#: Plancher ANTI-VIDE : ces jobs-là doivent rester couverts. Si la dérivation
+#: ci-dessus se mettait à ne rien rendre, le banc paramétré deviendrait vide et
+#: passerait — la panne exacte que ce dépôt appelle « un détecteur muet ».
+_PLANCHER = frozenset({
     'ALERTS_EVALUATION', 'TRACK_RECORD_UPDATE', 'NEWS_REFRESH',
     'CATALYST_REFRESH', 'WEEKLY_REVIEW', 'MARKET_DATA_REFRESH',
-    'FUNDAMENTALS_REFRESH',
-)
+    'FUNDAMENTALS_REFRESH', 'OPTIONS_BOARD_REFRESH', 'DATA_BACKUP',
+})
+
+
+def test_la_derivation_couvre_au_moins_les_jobs_connus():
+    couverts = set(_jobs_cadences_avec_emetteur())
+    manquants = sorted(_PLANCHER - couverts)
+    assert not manquants, (
+        'ces jobs cadencés ne sont plus couverts par le banc — soit leur '
+        'émetteur a disparu, soit leur cadence est passée à None : %s'
+        % manquants)
+
+
+def test_les_jobs_SANS_cadence_sont_bien_ecartes():
+    """Contre-épreuve du critère. `POSITION_REFRESH` et `STARTUP_HEALTH_CHECK`
+    n'ont pas de cadence : ils sont déclenchés par une requête ou par le
+    démarrage. Les inclure exigerait une cérémonie sans objet ; les exclure par
+    hasard rendrait le critère creux. Ils sont écartés POUR CETTE RAISON."""
+    sans_cadence = {nom for nom, _d, iv, impl in _reg._CANONICAL_4
+                    if impl and iv is None}
+    assert {'POSITION_REFRESH', 'STARTUP_HEALTH_CHECK'} <= sans_cadence
+    assert not (sans_cadence & set(_jobs_cadences_avec_emetteur()))
 
 
 def _formes_de_battement() -> dict[str, list[dict]]:
@@ -403,7 +444,7 @@ def test_le_detecteur_de_forme_distingue_les_trois_ecritures():
     assert vus == {'A': (True, False), 'B': (True, False), 'C': (False, True)}, vus
 
 
-@pytest.mark.parametrize('job', _JOBS_QUI_DOIVENT_POUVOIR_ECHOUER)
+@pytest.mark.parametrize('job', _jobs_cadences_avec_emetteur())
 def test_chaque_boucle_peut_declarer_son_echec(job):
     """Au moins un émetteur du job transmet un `ok` CALCULÉ et son motif.
     Un émetteur supplémentaire figé à `ok=True` reste licite — la branche

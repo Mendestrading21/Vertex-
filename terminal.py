@@ -1492,6 +1492,7 @@ def _opt_loop():
     global _LAST_FOCUS
     while True:
         if scan_state.get('rows') and scan_state.get('detail'):
+            echec_opt = None
             try:
                 probe = _opt_job('meta', ('SPY',), timeout=15) if IBKR_ENABLED else None
                 options.yf = _IbkrYF if probe else _YF_FOR_OPTIONS
@@ -1536,6 +1537,19 @@ def _opt_loop():
                         scan_state['options_board'] = ob
                         scan_state['options_as_of'] = time.time()
                         _save_json('options_cache.json', {'board': ob, 'ts': time.time()})
+            except Exception as e:
+                echec_opt = '%s: %s' % (type(e).__name__, e)
+            try:
+                #  CETTE BOUCLE NE BATTAIT RIEN. Elle rafraichit le board
+                #  d'options toutes les 120 s — rotation de l'univers puis
+                #  focus — et aucune ligne de la page Systeme ne la
+                #  representait. `OPTION_POSITION_REFRESH` existe au registre
+                #  mais decrit la cotation des POSITIONS options : l'emprunter
+                #  aurait refait la faute que ce lot vient de corriger sur
+                #  `TRACK_RECORD_UPDATE`, parler au nom d'un autre travail.
+                from vertex.scheduler import registry as _sched
+                _sched.beat('OPTIONS_BOARD_REFRESH', ok=(echec_opt is None),
+                            error=echec_opt)
             except Exception:
                 pass
             time.sleep(120)
@@ -2603,10 +2617,29 @@ def _start_app():
             from vertex.scheduler import registry as _sched
             from vertex.services.live_stream import BROKER as _broker
             rep = run_startup_sequence(scan_state)
-            _sched.beat('STARTUP_HEALTH_CHECK', ok=rep.get('ok', False))
+            #  Le motif MANQUAIT : `ok=False` sans raison laisse la page
+            #  Systeme dire « en echec » sans dire de quoi. Le rapport porte
+            #  deja la reponse — chaque etape a son `status` et son `detail` —
+            #  elle n'etait simplement pas transmise. On NOMME les etapes en
+            #  ERROR, celles-la memes qui font basculer `ok` a faux.
+            _casses = [e for e in (rep.get('steps') or [])
+                       if e.get('status') == 'ERROR']
+            _sched.beat('STARTUP_HEALTH_CHECK', ok=rep.get('ok', False),
+                        error='; '.join('%s: %s' % (e.get('step'), e.get('detail'))
+                                        for e in _casses) or None)
             _broker.publish('system', {'startup': True, 'ok': rep.get('ok')})
         except Exception as _e:
+            #  ET SURTOUT : quand la sequence elle-meme casse, il n'y avait
+            #  AUCUN battement — le job restait « EN_ATTENTE » a jamais et la
+            #  raison partait dans un `print` que personne ne lit. Un rapport
+            #  de demarrage indisponible est une information de premier ordre.
             print('[startup] rapport indisponible:', _e)
+            try:
+                from vertex.scheduler import registry as _sched2
+                _sched2.beat('STARTUP_HEALTH_CHECK', ok=False,
+                             error='%s: %s' % (type(_e).__name__, _e))
+            except Exception:
+                pass
 
     def _brain_boot():
         """« Lancer avec Claude » : enrichit toutes les surfaces au démarrage.

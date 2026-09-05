@@ -60,6 +60,13 @@ _CANONICAL_4 = (
     #  annonce la cadence de CROISIERE, celle qui vaut une fois le cache
     #  rempli — annoncer 45 s ferait crier SILENCIEUX pendant six heures.
     ('FUNDAMENTALS_REFRESH', 'Fondamentaux P/E + médianes secteur', 6 * 3600, True),
+    #  AJOUT : `_opt_loop` rafraîchit le board d'options toutes les 120 s
+    #  — rotation de l'univers puis focus — et AUCUNE ligne de la page
+    #  Système ne la représentait. `OPTION_POSITION_REFRESH` existe
+    #  au-dessus, mais décrit la cotation des POSITIONS options :
+    #  l'emprunter aurait refait la faute corrigée sur
+    #  `TRACK_RECORD_UPDATE` — parler au nom d'un autre travail.
+    ('OPTIONS_BOARD_REFRESH', 'Board options — rotation univers + focus', 120, True),
     ('PREMARKET_BRIEF', 'Brief pré-marché', None, False),
     ('INTRADAY_BRIEF', 'Brief intraday', None, False),
     ('CLOSE_BRIEF', 'Brief de clôture', None, False),

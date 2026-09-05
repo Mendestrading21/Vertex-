@@ -98,8 +98,18 @@ def _backup_desk():
         olds = sorted(glob.glob(persist.cache_path('desk_backup_*.json')))
         for p in olds[:-BACKUP_KEEP]:
             os.remove(p)
-    except Exception:
-        pass
+    except Exception as e:
+        #  L'ECHEC ETAIT MUET. Le battement ne vivait que sur le chemin de
+        #  succes : une copie qui echoue — disque plein, permission, fichier
+        #  verrouille — ne disait RIEN. Le job tombait « SILENCIEUX » au bout
+        #  de deux jours, sans raison, et la sauvegarde du desk s'arretait sans
+        #  que personne l'apprenne. C'est le genre de panne qu'on decouvre au
+        #  moment ou l'on a besoin du backup.
+        try:
+            _sched.beat('DATA_BACKUP', ok=False,
+                        error='%s: %s' % (type(e).__name__, e))
+        except Exception:
+            pass
 
 POSQ_TTL_S = 45          # fraîcheur d'une cotation de trade perso
 POSQ_MAX_POSITIONS = 24  # borne dure par requête
