@@ -312,7 +312,15 @@ table td,table th{
   border-top:1px solid var(--vx2-line-faint);
   border-bottom:1px solid var(--vx2-line-faint);
 }
-.vx2-context-group{display:flex;align-items:center;gap:var(--vx2-s2);min-width:0}
+/*  `flex-wrap` MANQUAIT ici alors que `.vx2-contextbar` l'a. Les puces d'un
+    groupe restaient donc sur une seule ligne : à 390 px, « 120 jours » finissait
+    à 431 px — au-delà du bord, et `html,body{overflow-x:clip}` la COUPAIT au
+    lieu de la rendre atteignable. Le filtre existait, l'utilisateur ne pouvait
+    ni le voir ni le toucher. */
+.vx2-context-group{
+  display:flex;align-items:center;gap:var(--vx2-s2);min-width:0;
+  flex-wrap:wrap;row-gap:var(--vx2-s2);
+}
 .vx2-context-label{
   font-size:10.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;
   color:var(--vx-text-faint);

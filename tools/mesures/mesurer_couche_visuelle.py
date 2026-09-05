@@ -331,8 +331,17 @@ def mesurer(base: str = BASE_DEFAUT, largeur: int = LARGEUR_DEFAUT, *,
         if temoins:
             echecs = _temoins(nav)
         for ident, href in espaces():
+            #  `has_touch` EST NECESSAIRE. La regle de cible tactile du produit
+            #  vit sous `@media (pointer:coarse)` : sans contexte tactile, elle
+            #  ne s'applique PAS, et cette sonde relevait alors chaque puce a
+            #  28 px comme « trop basse ». Douze faux defauts sur /calendar,
+            #  mesures sur un produit correct — la regle existait, c'est
+            #  l'instrument qui regardait au mauvais endroit. Verifie : avec
+            #  `has_touch`, les memes puces font 44 px.
             ctx = nav.new_context(viewport={'width': largeur, 'height': 900},
-                                  service_workers='block')
+                                  service_workers='block',
+                                  has_touch=(largeur <= 480),
+                                  is_mobile=(largeur <= 480))
             page = ctx.new_page()
             page.goto(base.rstrip('/') + href, wait_until='domcontentloaded', timeout=25000)
             page.wait_for_timeout(1800)
