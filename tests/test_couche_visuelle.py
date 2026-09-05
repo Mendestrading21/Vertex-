@@ -64,18 +64,25 @@ from tools.mesures.mesurer_qa_espaces import _chromium  # noqa: E402
 
 _RESPONSIVE = RACINE / 'vertex' / 'static' / 'vertex' / 'css' / 'responsive.css'
 
-#: RÉSIDU ASSUMÉ, gelé à la mesure. Après correction, six sous-libellés sur huit
-#: tiennent en entier dans les 84 px du fil. Deux dépassent encore de ~12 px :
+#: RÉSIDU ASSUMÉ, gelé à la mesure — aujourd'hui VIDE.
+#:
+#: Il recensait deux sous-libellés qui dépassaient les 84 px du fil :
 #:
 #:     briefing  « Résumé du jour »   96 px pour 84
 #:     markets   « Vue d'ensemble »   98 px pour 84
 #:
-#: Les récupérer demanderait de rogner le champ de recherche — que le lot 289 a
-#: délibérément porté à ≥40 px comme « chemin tactile vers la palette ». C'est
-#: un arbitrage de design, tranché par l'humain en faveur du champ de recherche.
-#: Ce recensement existe pour que le résidu reste CE résidu : un espace de plus
-#: qui tronque est une régression, un de moins doit être retiré d'ici.
-FILS_ENCORE_TRONQUES = {'briefing', 'markets'}
+#: Ni l'un ni l'autre n'est le sous-libellé de ces espaces : ils sont devenus
+#: « Marchés US » (72 px) et « Synthèse » (55 px) au lot 28. Le résidu a donc
+#: disparu par le RACCOURCISSEMENT DES LIBELLÉS, et non par l'arbitrage qu'il
+#: décrivait — `.vx-topbar-search input{min-height:40px}` (lot 289) est
+#: intact, le champ de recherche n'a pas été rogné. Mesuré au navigateur :
+#: douze espaces, zéro troncature, le plus long à 72 px pour 84.
+#:
+#: Un recensement vide serait indiscernable d'une sonde devenue aveugle. C'est
+#: pourquoi `mesurer_couche_visuelle._temoins` présente désormais à `SONDE_FIL`
+#: un fil fabriqué portant un segment qui tronque et un qui tient : le vide
+#: ci-dessous ne vaut que tant que ces deux témoins tiennent.
+FILS_ENCORE_TRONQUES: set[str] = set()
 
 
 def _navigateur_dispo():

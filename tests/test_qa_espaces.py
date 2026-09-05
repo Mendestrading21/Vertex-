@@ -235,8 +235,25 @@ def test_les_huit_espaces_sont_propres_a_390_px():
 
 @pytest.mark.skipif(not (_navigateur_dispo() and _serveur_repond()),
                     reason='navigateur ou serveur absent')
-def test_le_balayage_porte_bien_sur_les_huit_espaces_du_registre():
+def test_le_balayage_porte_bien_sur_TOUS_les_espaces_du_registre():
     """Une mesure qui porterait sur 3 pages et rendrait « 0 defaut » serait
-    verte et vide. Le registre est lu depuis `PRIMARY_NAV`, jamais recopié."""
+    verte et vide. Le registre est lu depuis `PRIMARY_NAV`, jamais recopié.
+
+    LE NOMBRE N'EST PLUS FIGÉ. Il valait `== 8`, et la refonte 2.0 a porté la
+    navigation à douze espaces : l'assertion était fausse depuis, sans que
+    personne le voie — ce banc s'abstient dès qu'il manque un navigateur ou un
+    serveur sur 127.0.0.1:5002, et il ne s'était jamais exécuté.
+    `.claude/rules/vertex-tests.md` l'interdit d'ailleurs explicitement :
+    « ne jamais figer un nombre comme vérité permanente ; mesurer le SHA
+    courant ».
+
+    Ce qui compte est l'ÉGALITÉ entre ce que la sonde balaie et ce que la coque
+    déclare — plus un plancher anti-vide, pour qu'un registre tombé à trois
+    pages ne rende pas ce banc silencieux."""
     from vertex.ui.shell import PRIMARY_NAV
-    assert len(_mes.espaces()) == len(PRIMARY_NAV) == 8
+    assert len(_mes.espaces()) == len(PRIMARY_NAV), (
+        'la sonde balaie %d espaces, la coque en déclare %d'
+        % (len(_mes.espaces()), len(PRIMARY_NAV)))
+    assert len(PRIMARY_NAV) >= 8, (
+        'seulement %d espaces déclarés — plancher anti-vide franchi'
+        % len(PRIMARY_NAV))

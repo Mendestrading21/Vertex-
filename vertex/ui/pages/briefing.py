@@ -515,7 +515,11 @@ _CONTENT = """
     <div class="vx-card-header"><span class="vx-card-title">Ce qui compte</span></div>
     <div id="vx-brief-side-body">%%LOADING%%</div>
   </section>
-  <aside class="vx-insight-rail" style="grid-template-columns:minmax(0,1fr)" aria-label="Changements depuis la dernière visite">
+  <!-- `vx-col-12` MANQUAIT : sans classe de portée, un enfant direct de
+       `.vx-grid` occupe UNE colonne sur douze. « Ce qui a changé » était
+       donc servie à 95 px à 1600 px et à 20 px à 390 px — un ruban de
+       texte illisible, à toutes les largeurs, depuis sa création. -->
+  <aside class="vx-insight-rail vx-col-12" style="grid-template-columns:minmax(0,1fr)" aria-label="Changements depuis la dernière visite">
     <section class="vx-card">
       <div class="vx-card-header"><span class="vx-card-title">Ce qui a changé</span></div>
       <div id="vx-diff">%%LOADING%%</div>

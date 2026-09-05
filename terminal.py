@@ -18,7 +18,10 @@ import time
 import threading
 from datetime import datetime, timedelta
 
-import numpy as np
+#  `numpy` n'est plus importé ici : son dernier usage dans ce fichier était
+#  `edge_backtest`, partie dans `vertex/engines/edge_validation.py`.
+#  `test_terminal_imports` l'a relevé — un import orphelin donne à croire
+#  que le monolithe calcule encore ce qu'il ne calcule plus.
 import pandas as pd
 import yfinance as yf
 
@@ -208,19 +211,16 @@ backtest = _backtest.backtest
 
 
 # ─── SOURCE DE SECOURS : STOOQ (EOD gratuit, NON bloqué sur les IP cloud/Render) ──
-# Yahoo (yfinance) rate-limite les serveurs de datacenter → yf.download revient vide
-# sur Render. Stooq sert de filet : données de clôture quotidiennes, mises en cache
-# 6 h (EOD = 1 maj/jour, donc aucun spam de l'endpoint gratuit). Lecture seule.
-#
-# #779 — LE CACHE ET SON TTL VIVENT DÉSORMAIS DANS `vertex/app/caches.py`, avec
-# leur propriétaire mesuré et leur politique de fraîcheur écrite
-# (QUALITY_STANDARD §8). L'objet est le MÊME : muté en place, jamais réassigné,
-# donc `terminal._STOOQ_CACHE is caches._STOOQ_CACHE`.
+#  DÉPLACÉ (strangler) vers `vertex/data_sources/stooq.py` : une source de
+#  données n'a pas sa place dans l'adaptateur historique. Les trois noms sont
+#  réexportés ici parce que deux bancs remplacent `terminal._stooq_download`
+#  par une doublure, et que `_download_universe` le résout dans CES globales.
+from vertex.data_sources.stooq import (       # noqa: E402,F401
+    STOOQ_REQUEST_TIMEOUT_SECONDS, _STOOQ_IDX,
+    _stooq_symbol, _stooq_one, _stooq_download,
+)
+
 YFINANCE_BATCH_TIMEOUT_SECONDS = 10
-STOOQ_REQUEST_TIMEOUT_SECONDS = 8
-_STOOQ_IDX = {'^GSPC': '^spx', '^DJI': '^dji', '^IXIC': '^ndq', '^RUT': '^rut', '^VIX': '^vix',
-              # matières premières / crypto (mapping stooq)
-              'GC=F': 'xauusd', 'SI=F': 'xagusd', 'CL=F': 'cl.f', 'BZ=F': 'cb.f', 'BTC-USD': 'btcusd'}
 # symboles matières premières / crypto (bande sous les indices) — yfinance
 _COMMO = [('GC=F', 'Or', '🥇'), ('SI=F', 'Argent', '🥈'), ('BTC-USD', 'Bitcoin', '₿'),
           ('CL=F', 'WTI', '🛢️'), ('BZ=F', 'Brent', '🛢️')]
@@ -229,71 +229,6 @@ _MACRO_TK = [('^IRX', 'Taux 3 mois', '%', 'y'), ('^FVX', 'Taux 5 ans', '%', 'y')
              ('^TNX', 'Taux 10 ans', '%', 'y'), ('^TYX', 'Taux 30 ans', '%', 'y'),
              ('DX-Y.NYB', 'Dollar (DXY)', '', 'p')]
 
-
-def _stooq_symbol(t):
-    if t in _STOOQ_IDX:
-        return _STOOQ_IDX[t]
-    if t.startswith('^'):
-        return t[1:].lower()
-    return t.lower() + '.us'          # ex: AAPL→aapl.us, BRK-B→brk-b.us
-
-
-def _stooq_one(t):
-    """Télécharge l'historique quotidien d'UN ticker depuis Stooq (CSV)."""
-    import urllib.request
-    from io import StringIO
-    d2 = datetime.now()
-    d1 = d2 - timedelta(days=1100)    # ~3 ans → assez pour MM200
-    url = (f'https://stooq.com/q/d/l/?s={_stooq_symbol(t)}'
-           f'&d1={d1:%Y%m%d}&d2={d2:%Y%m%d}&i=d')
-    try:
-        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-        with urllib.request.urlopen(req, timeout=STOOQ_REQUEST_TIMEOUT_SECONDS) as r:
-            txt = r.read().decode('utf-8', 'ignore')
-        if not txt or 'Date' not in txt[:60]:   # 'No data' / page HTML → échec
-            return t, None
-        df = pd.read_csv(StringIO(txt))
-        if df.empty or 'Close' not in df.columns or 'Date' not in df.columns:
-            return t, None
-        df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
-        df = df.dropna(subset=['Date']).set_index('Date').sort_index()
-        keep = [c for c in ('Open', 'High', 'Low', 'Close', 'Volume') if c in df.columns]
-        df = df[keep].dropna(subset=['Close'])
-        return (t, df) if not df.empty else (t, None)
-    except Exception:
-        return t, None
-
-
-def _stooq_download(tickers):
-    """Filet de secours mutualisé + caché 6 h. Renvoie {ticker: DataFrame}.
-    Cache FUSIONNÉ : si le cache est frais mais qu'il MANQUE des tickers demandés,
-    on ne télécharge que les manquants (au lieu de les affamer pendant 6 h)."""
-    now = time.time()
-    cache = _STOOQ_CACHE['frames']
-    fresh = bool(cache) and (now - _STOOQ_CACHE['ts'] < _STOOQ_TTL)
-    todo = [t for t in tickers if not (fresh and t in cache)]
-    if fresh and not todo:
-        return {t: cache[t] for t in tickers if t in cache}
-    out = {}
-    try:
-        from concurrent.futures import ThreadPoolExecutor
-        with ThreadPoolExecutor(max_workers=6) as ex:   # doux pour l'endpoint gratuit
-            for t, df in ex.map(_stooq_one, todo):
-                if df is not None and len(df) >= 60:
-                    out[t] = df
-    except Exception:
-        for t in todo:
-            _t, df = _stooq_one(t)
-            if df is not None and len(df) >= 60:
-                out[_t] = df
-    if out:
-        merged = dict(cache) if fresh else {}
-        merged.update(out)
-        _STOOQ_CACHE['frames'] = merged
-        _STOOQ_CACHE['ts'] = now if not fresh else _STOOQ_CACHE['ts']
-        cache = merged
-    _SOURCE_BUDGET_STATE['stooq'] = 'AVAILABLE' if out else ('CACHED' if cache else 'UNAVAILABLE')
-    return {t: cache[t] for t in tickers if t in cache} if cache else out
 
 
 # ── LOT 2 : cache mémoire du téléchargement quotidien (TTL selon la séance) ────
@@ -1557,6 +1492,7 @@ def _opt_loop():
     global _LAST_FOCUS
     while True:
         if scan_state.get('rows') and scan_state.get('detail'):
+            echec_opt = None
             try:
                 probe = _opt_job('meta', ('SPY',), timeout=15) if IBKR_ENABLED else None
                 options.yf = _IbkrYF if probe else _YF_FOR_OPTIONS
@@ -1601,6 +1537,19 @@ def _opt_loop():
                         scan_state['options_board'] = ob
                         scan_state['options_as_of'] = time.time()
                         _save_json('options_cache.json', {'board': ob, 'ts': time.time()})
+            except Exception as e:
+                echec_opt = '%s: %s' % (type(e).__name__, e)
+            try:
+                #  CETTE BOUCLE NE BATTAIT RIEN. Elle rafraichit le board
+                #  d'options toutes les 120 s — rotation de l'univers puis
+                #  focus — et aucune ligne de la page Systeme ne la
+                #  representait. `OPTION_POSITION_REFRESH` existe au registre
+                #  mais decrit la cotation des POSITIONS options : l'emprunter
+                #  aurait refait la faute que ce lot vient de corriger sur
+                #  `TRACK_RECORD_UPDATE`, parler au nom d'un autre travail.
+                from vertex.scheduler import registry as _sched
+                _sched.beat('OPTIONS_BOARD_REFRESH', ok=(echec_opt is None),
+                            error=echec_opt)
             except Exception:
                 pass
             time.sleep(120)
@@ -1614,24 +1563,55 @@ def _radar_loop():
     time.sleep(30)
     while True:
         out = {}
+        #  LES MOTIFS SONT RETENUS, PAS AVALES. Quatre flux, quatre
+        #  `except: pass` : quand ils echouaient tous — c'est le cas nominal
+        #  sans TWS — `out` restait vide, le `if out` sautait l'ecriture, et le
+        #  radar gardait sa valeur precedente PAR OMISSION, sans que la raison
+        #  existe nulle part. Une absence silencieuse ressemble a une absence
+        #  de marche ; ce n'en est pas une.
+        #  DEUX DESTINATAIRES, DEUX NIVEAUX DE DETAIL. `absents` ne porte que
+        #  des NOMS DE FLUX : il part au client via `/scan`, et le vocabulaire
+        #  d'erreur servi est fait de codes stables, jamais d'un type Python
+        #  (cf. `tests/test_aucune_exception_servie.py`). Le motif complet va
+        #  au registre, surface d'exploitation, ou nommer la cause est le
+        #  contrat — comme `_weekly_loop` le fait deja.
+        absents, motifs = [], []
         for code, key in (('TOP_PERC_GAIN', 'gainers'), ('TOP_PERC_LOSE', 'losers'),
                           ('MOST_ACTIVE', 'active')):
             try:
                 r = _opt_job('scan', (code,), timeout=45)
                 if r:
                     out[key] = r
-            except Exception:
-                pass
+            except Exception as e:
+                absents.append(key)
+                motifs.append('%s: %s: %s' % (key, type(e).__name__, e))
         try:
             nw = _opt_job('news', (), timeout=40)
             if nw:
                 out['news'] = _news_plus.sanitize_news(nw[:35])   # XSS : titres IBKR externes
-        except Exception:
-            pass
+        except Exception as e:
+            absents.append('news')
+            motifs.append('news: %s: %s' % (type(e).__name__, e))
         if out:
-            out['updated'] = datetime.now().strftime('%H:%M:%S')
+            out['updated'] = datetime.now().strftime('%H:%M %d/%m')
+            out['ts'] = time.time()          # epoque serveur — la page affiche un age VRAI
             scan_state['radar'] = out
             _save_json('radar_cache.json', out)
+        #  L'ecart se DIT, qu'il soit total ou partiel : quatre flux attendus,
+        #  ceux qui ont manque sont nommes. La valeur precedente reste servie —
+        #  elle est reelle — mais elle ne passe plus pour fraiche en silence.
+        scan_state['radar_ecart'] = ({'flux_absents': absents,
+                                      'attendus': 4,
+                                      'ts': time.time()} if absents else None)
+        try:
+            #  CETTE BOUCLE NE BATTAIT RIEN. Elle interroge les scanners du
+            #  marche entier et le fil Dow Jones toutes les 240 s, et aucune
+            #  ligne de la page Systeme ne la representait.
+            from vertex.scheduler import registry as _sched
+            _sched.beat('MARKET_RADAR_REFRESH', ok=bool(out),
+                        error='; '.join(motifs)[:200] or None)
+        except Exception:
+            pass
         time.sleep(240)
 
 
@@ -1739,8 +1719,19 @@ def _news_loop():
             #  fausse elle aussi ; la vraie est celle d'en dessous, 60 s.
             from vertex.scheduler import registry as _sched
             _sched.beat('NEWS_REFRESH', ok=True)
-        except Exception:
-            pass
+        except Exception as e:
+            #  Ce battement ne pouvait JAMAIS dire ERREUR : place en fin de
+            #  `try`, il n'etait atteint qu'en cas de succes, et l'echec
+            #  partait dans un `pass` sans motif. Le fil tombait donc en
+            #  SILENCIEUX — « la boucle est morte ou coincee » — alors qu'elle
+            #  tournait et echouait toutes les 60 s pour une raison nommable.
+            #  Le registre a un champ pour cette raison ; il restait vide.
+            try:
+                from vertex.scheduler import registry as _sched
+                _sched.beat('NEWS_REFRESH', ok=False,
+                            error='%s: %s' % (type(e).__name__, e))
+            except Exception:
+                pass
         _live.wait_force('news', 60)
 
 
@@ -1794,6 +1785,7 @@ def _cal_loop():
         try:
             if scan_state.get('rows'):
                 items, fails = [], 0
+                echec = None
                 for i, sym in enumerate(targets):
                     try:
                         cal = yf.Ticker(sym).calendar
@@ -1815,11 +1807,26 @@ def _cal_loop():
                     if i and i % 40 == 0:             # publication INCRÉMENTALE (pas d'attente 5 min)
                         _publish(items)
                 _publish(items)
-                time.sleep(3 * 3600)
             else:
                 time.sleep(10)
+                continue
+        except Exception as e:
+            #  L'echec est NOMME, pas avale — meme regle que `_weekly_loop`.
+            echec = '%s: %s' % (type(e).__name__, e)
+        try:
+            #  LE BATTEMENT MANQUAIT SUR CE CHEMIN. Il n'existait que dans la
+            #  branche `DEMO_MODE` ci-dessus : `CATALYST_REFRESH` etait donc le
+            #  SEUL job du depot dont l'unique emetteur vivait sous DEMO. En
+            #  reel, `last_run` restait None a jamais et la page Systeme
+            #  affichait « EN_ATTENTE » — « pas encore passe depuis le
+            #  demarrage » — pour un calendrier rafraichi toutes les trois
+            #  heures. C'est exactement la confusion que le registre existe
+            #  pour empecher, appliquee cette fois a un job QUI MARCHE.
+            from vertex.scheduler import registry as _sched
+            _sched.beat('CATALYST_REFRESH', ok=(echec is None), error=echec)
         except Exception:
-            time.sleep(30)
+            pass
+        time.sleep(30 if echec else 3 * 3600)
 
 
 # ─── FONDAMENTAUX : P/E par titre + médianes secteur (lent, rafraîchi /6h) ───
@@ -1839,6 +1846,7 @@ def _fund_loop():
     targets = UNIVERSE[:FUND_N]
     while True:
         if scan_state.get('rows'):
+            echec_fund = None
             try:
                 candidats = [s for s in targets if s not in _FUND_CACHE]
                 missing, _morts = _REFUS_FUND.filtrer(candidats)
@@ -1869,13 +1877,20 @@ def _fund_loop():
                 if _FUND_CACHE:
                     scan_state['fundamentals'] = {'by_sym': _FUND_CACHE,
                                                   'by_sector': _recompute_sectors(_FUND_CACHE)}
-            except Exception:
-                pass
+            except Exception as e:
+                echec_fund = '%s: %s' % (type(e).__name__, e)
             still_missing = any(s not in _FUND_CACHE and not _REFUS_FUND.refuse_recemment(s)
                                 for s in targets)
             try:
+                #  Cette boucle emettait `TRACK_RECORD_UPDATE`, le job d'une
+                #  AUTRE boucle, et a `ok=True` fige apres un `except: pass`.
+                #  Deux fautes en une : elle parlait au nom d'un travail
+                #  qu'elle ne fait pas, et elle le declarait sain quoi qu'il
+                #  arrive. Elle declare desormais SON job — les fondamentaux
+                #  tournaient sans aucune ligne a l'ecran — et dit la verite.
                 from vertex.scheduler import registry as _sched
-                _sched.beat('TRACK_RECORD_UPDATE', ok=True)
+                _sched.beat('FUNDAMENTALS_REFRESH', ok=(echec_fund is None),
+                            error=echec_fund)
             except Exception:
                 pass
             time.sleep(45 if still_missing else 6 * 3600)     # rapide tant que ça remplit, puis lent
@@ -1889,106 +1904,20 @@ def _fund_loop():
 # score → prouve (ou non) que score élevé = rendement supérieur. Zéro look-ahead. LECTURE SEULE.
 # Corrélation de rangs (Spearman) : source unique dans vertex/engines/stats.py.
 _spearman = _stats.spearman
+from vertex.engines import edge_validation as _edge_validation  # noqa: E402
 
 
+#  DÉPLACÉ (strangler) vers `vertex/engines/edge_validation.py`, qui reçoit
+#  la collecte et l'analyse en PARAMÈTRE. Le backtest y devient éprouvable sans
+#  réseau — il ne l'était pas ici, et n'avait donc aucun test.
+#  Cette porte garde la signature d'origine : `_edge_loop` est inchangée, et
+#  `_download_universe` reste résolu dans CES globales au moment de l'appel,
+#  donc les doublures de test continuent de mordre.
 def edge_backtest(syms=None, horizons=(5, 21, 63), step=8, lookback=460):
-    Hmax = max(horizons)
-    syms = syms or list(dict.fromkeys(WATCHLIST + _BIG_EXTRA + _TREND_EXTRA))[:140]
-    try:
-        data = _download_universe(syms + [BENCH], period='3y')
-    except Exception:
-        return None
-    bc = data.get(BENCH)
-    bclose = bc['Close'].dropna() if bc is not None else None
-    obs = []
-    used = set()
-    for sym in syms:
-        df = data.get(sym)
-        if df is None:
-            continue
-        df = df.dropna()
-        if len(df) < 260 + Hmax:
-            continue
-        close = df['Close']; n = len(df)
-        start = max(260, n - lookback - Hmax)
-        for pos in range(start, n - Hmax, step):
-            sub = df.iloc[:pos + 1]
-            bret = 0.0
-            try:
-                bi = bclose.index.get_indexer([df.index[pos]], method='ffill')[0]
-                if bi > 63:
-                    bret = float(bclose.iloc[bi]) / float(bclose.iloc[bi - 63]) - 1
-            except Exception:
-                pass
-            try:
-                sc = analyse(sub, bret).get('score')
-            except Exception:
-                continue
-            if sc is None:
-                continue
-            p0 = float(close.iloc[pos])
-            if p0 <= 0:
-                continue
-            rec = {'d': str(df.index[pos].date()), 's': float(sc)}
-            ok = True
-            for H in horizons:
-                pv = float(close.iloc[pos + H])
-                if pv <= 0:
-                    ok = False; break
-                rec['f%d' % H] = (pv / p0 - 1) * 100
-            if ok:
-                obs.append(rec); used.add(sym)
-    if len(obs) < 50:
-        return None
-    BK = [('85-100', 85, 101), ('70-85', 70, 85), ('55-70', 55, 70), ('40-55', 40, 55), ('0-40', 0, 40)]
-    out = {'updated': datetime.now().strftime('%H:%M:%S'), 'n_obs': len(obs), 'n_syms': len(used),
-           'horizons': list(horizons), 'buckets': {}, 'ic': {}, 'spread': {}, 'monotone': {}}
-    for H in horizons:
-        key = 'f%d' % H
-        rows = []
-        for lab, lo, hi in BK:
-            vals = [o[key] for o in obs if lo <= o['s'] < hi]
-            if vals:
-                rows.append({'label': lab, 'lo': lo, 'hi': hi, 'n': len(vals),
-                             'mean': round(float(np.mean(vals)), 2),
-                             'hit': round(100 * float(np.mean([1.0 if v > 0 else 0.0 for v in vals])))})
-            else:
-                rows.append({'label': lab, 'lo': lo, 'hi': hi, 'n': 0, 'mean': None, 'hit': None})
-        out['buckets'][str(H)] = rows
-        out['ic'][str(H)] = _spearman([o['s'] for o in obs], [o[key] for o in obs])
-        top = next((r['mean'] for r in rows if r['label'] == '85-100' and r['mean'] is not None), None)
-        bot = next((r['mean'] for r in rows if r['label'] == '0-40' and r['mean'] is not None), None)
-        out['spread'][str(H)] = round(top - bot, 2) if (top is not None and bot is not None) else None
-        ms = [r['mean'] for r in rows[::-1] if r['mean'] is not None]   # tranche basse → haute
-        out['monotone'][str(H)] = (all(ms[i] <= ms[i + 1] for i in range(len(ms) - 1)) if len(ms) >= 3 else None)
-    # COURBE D'ÉQUITÉ (illustrative) : panier score≥70 vs équipondéré, rééquilibré ~mensuellement
-    from collections import defaultdict
-    byd = defaultdict(list)
-    for o in obs:
-        if 'f21' in o:
-            byd[o['d']].append(o)
-    picks, last = [], None
-    for d in sorted(byd.keys()):
-        try:
-            dd = datetime.strptime(d, '%Y-%m-%d')
-        except Exception:
-            continue
-        if last is None or (dd - last).days >= 28:
-            picks.append(d); last = dd
-    eq = [{'t': 0, 'strat': 1.0, 'bench': 1.0}]
-    s_eq = b_eq = 1.0
-    for d in picks:
-        grp = byd[d]
-        hi = [o['f21'] for o in grp if o['s'] >= 70]
-        if not hi:
-            g2 = sorted(grp, key=lambda x: -x['s']); k = max(1, len(g2) // 5); hi = [o['f21'] for o in g2[:k]]
-        allr = [o['f21'] for o in grp]
-        s_eq *= (1 + float(np.mean(hi)) / 100); b_eq *= (1 + float(np.mean(allr)) / 100)
-        eq.append({'t': len(eq), 'strat': round(s_eq, 3), 'bench': round(b_eq, 3)})
-    out['equity'] = eq
-    out['n_dates'] = len(picks)
-    return out
-
+    return _edge_validation.edge_backtest(
+        telecharger=_download_universe, analyser=analyse,
+        univers=list(dict.fromkeys(WATCHLIST + _BIG_EXTRA + _TREND_EXTRA))[:140],
+        bench=BENCH, syms=syms, horizons=horizons, step=step, lookback=lookback)
 
 _EDGE_CACHE = _load_json('edge_cache.json', None)
 if _EDGE_CACHE:
@@ -2005,8 +1934,22 @@ def _edge_loop():
                     _save_json('edge_cache.json', eb)
             except Exception:
                 pass
+            #  LE BATTEMENT ETAIT DANS LA MAUVAISE BOUCLE. `TRACK_RECORD_UPDATE`
+            #  — « Mise a jour de la fiabilite mesuree » — etait emis par
+            #  `_fund_loop`, la boucle des FONDAMENTAUX, qui n'y touche pas.
+            #  La vraie mise a jour est ici, `_track.record`, et elle ne
+            #  battait rien. La page Systeme declarait donc la fiabilite
+            #  mesuree « ACTIF » sur la foi d'un cycle de fondamentaux, et un
+            #  `_track.record` en echec a chaque tour n'aurait rien dit.
+            echec_track = None
             try:
                 _track.record(scan_state)             # 📓 snapshot quotidien des verdicts (idempotent)
+            except Exception as e:
+                echec_track = '%s: %s' % (type(e).__name__, e)
+            try:
+                from vertex.scheduler import registry as _sched
+                _sched.beat('TRACK_RECORD_UPDATE', ok=(echec_track is None),
+                            error=echec_track)
             except Exception:
                 pass
             time.sleep(6 * 3600)
@@ -2015,51 +1958,11 @@ def _edge_loop():
 
 
 # ─── BAROMÈTRE DU MARCHÉ : internals / breadth agrégés depuis le scan (vue top-down) ──
-def _market_internals(rows, detail, breadth):
-    n = len(rows) or 1
-    up = sum(1 for r in rows if (r.get('change') or 0) > 0)
-    dn = sum(1 for r in rows if (r.get('change') or 0) < 0)
-    a50 = a200 = 0
-    for r in rows:
-        sg = (detail.get(r['symbol']) or {}).get('signals') or {}
-        if sg.get('above50'):
-            a50 += 1
-        if sg.get('above200'):
-            a200 += 1
-    nh = sum(1 for r in rows if (r.get('pos52') or 0) >= 95)
-    nl = sum(1 for r in rows if (r.get('pos52') if r.get('pos52') is not None else 100) <= 5)
-    rsis = [r.get('rsi') for r in rows if r.get('rsi') is not None]
-    ob = sum(1 for x in rsis if x >= 70)
-    ov = sum(1 for x in rsis if x <= 30)
-    dist = [0] * 10
-    for r in rows:
-        s = r.get('score')
-        if s is not None:
-            dist[min(9, max(0, int(s // 10)))] += 1
-    nb = sum(1 for r in rows if r.get('verdict') == 'BUY')
-    nw = sum(1 for r in rows if r.get('verdict') in ('WATCH', 'WAIT'))
-    na = sum(1 for r in rows if r.get('verdict') == 'AVOID')
-    pa50 = round(100 * a50 / n)
-    pa200 = round(100 * a200 / n)
-    advpct = round(100 * up / max(1, up + dn))
-    health = max(0, min(100, round(0.30 * pa50 + 0.25 * pa200 + 0.25 * breadth + 0.20 * advpct)))
-    sec = {}
-    for r in rows:
-        s = _GICS_SECTOR.get(r['symbol'])
-        if not s:
-            continue
-        sg = (detail.get(r['symbol']) or {}).get('signals') or {}
-        d = sec.setdefault(s, [0, 0])
-        d[1] += 1
-        if sg.get('above50'):
-            d[0] += 1
-    sectors_breadth = sorted([{'sector': s, 'pct': round(100 * v[0] / v[1]), 'n': v[1]}
-                              for s, v in sec.items() if v[1] >= 5], key=lambda x: -x['pct'])
-    return {'n': n, 'up': up, 'dn': dn, 'pct_a50': pa50, 'pct_a200': pa200, 'nh': nh, 'nl': nl,
-            'pct_ob': round(100 * ob / max(1, len(rsis))), 'pct_os': round(100 * ov / max(1, len(rsis))),
-            'avg_rsi': round(sum(rsis) / len(rsis)) if rsis else None, 'dist': dist,
-            'nb': nb, 'nw': nw, 'na': na, 'advpct': advpct, 'breadth': breadth,
-            'health': health, 'sectors': sectors_breadth}
+#  DÉPLACÉ (strangler) vers `vertex/market/internals.py`. La fonction ne
+#  collecte rien : tout entre par ses arguments, tout sort par sa valeur de
+#  retour — elle n'avait aucune raison de vivre dans le monolithe. Le nom est
+#  réexporté ici parce que `_scan_once` le résout dans CES globales.
+from vertex.market.internals import market_internals as _market_internals  # noqa: E402,F401
 
 
 # ─── WATCHLIST DE LA SEMAINE : sélection FIGÉE le lundi (état partagé → state.py) ──
@@ -2637,6 +2540,7 @@ def _alert_price(sym):
 
 def _alerts_loop():
     while True:
+        echec = None
         try:
             blob = _load_json('desk_data.json', {}) or {}
             raw = (blob.get('data') or {}).get('vxAlerts')
@@ -2670,11 +2574,19 @@ def _alerts_loop():
                     _broker.publish('alerts', {'fired': len(_ALERTS_FIRED)})
                 except Exception:
                     pass
-        except Exception:
-            pass
+        except Exception as e:
+            #  L'echec est NOMME, pas avale.
+            echec = '%s: %s' % (type(e).__name__, e)
         try:
+            #  LE VERT ETAIT INCONDITIONNEL. Ce battement vivait APRES le
+            #  `except ...: pass` englobant, a `ok=True` fige : un cycle
+            #  entierement en echec — fichier du desk illisible, JSON
+            #  malforme — declarait quand meme le job SAIN. La page Systeme
+            #  affichait « Evaluation serveur des alertes utilisateur : ACTIF »
+            #  pendant que plus aucune alerte n'etait evaluee. C'est le filet
+            #  de l'utilisateur : le mensonge y coute le plus cher.
             from vertex.scheduler import registry as _sched
-            _sched.beat('ALERTS_EVALUATION', ok=True)
+            _sched.beat('ALERTS_EVALUATION', ok=(echec is None), error=echec)
         except Exception:
             pass
         time.sleep(60)
@@ -2736,10 +2648,29 @@ def _start_app():
             from vertex.scheduler import registry as _sched
             from vertex.services.live_stream import BROKER as _broker
             rep = run_startup_sequence(scan_state)
-            _sched.beat('STARTUP_HEALTH_CHECK', ok=rep.get('ok', False))
+            #  Le motif MANQUAIT : `ok=False` sans raison laisse la page
+            #  Systeme dire « en echec » sans dire de quoi. Le rapport porte
+            #  deja la reponse — chaque etape a son `status` et son `detail` —
+            #  elle n'etait simplement pas transmise. On NOMME les etapes en
+            #  ERROR, celles-la memes qui font basculer `ok` a faux.
+            _casses = [e for e in (rep.get('steps') or [])
+                       if e.get('status') == 'ERROR']
+            _sched.beat('STARTUP_HEALTH_CHECK', ok=rep.get('ok', False),
+                        error='; '.join('%s: %s' % (e.get('step'), e.get('detail'))
+                                        for e in _casses) or None)
             _broker.publish('system', {'startup': True, 'ok': rep.get('ok')})
         except Exception as _e:
+            #  ET SURTOUT : quand la sequence elle-meme casse, il n'y avait
+            #  AUCUN battement — le job restait « EN_ATTENTE » a jamais et la
+            #  raison partait dans un `print` que personne ne lit. Un rapport
+            #  de demarrage indisponible est une information de premier ordre.
             print('[startup] rapport indisponible:', _e)
+            try:
+                from vertex.scheduler import registry as _sched2
+                _sched2.beat('STARTUP_HEALTH_CHECK', ok=False,
+                             error='%s: %s' % (type(_e).__name__, _e))
+            except Exception:
+                pass
 
     def _brain_boot():
         """« Lancer avec Claude » : enrichit toutes les surfaces au démarrage.

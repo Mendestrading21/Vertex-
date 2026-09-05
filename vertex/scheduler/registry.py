@@ -19,6 +19,13 @@ _LOCK = threading.Lock()
 # boucle historique ; les jobs « événement » ont interval_s None.
 _JOBS: dict[str, dict] = {}
 
+#  Cadence du scan, DÉRIVÉE de son unique propriétaire au lieu d'être
+#  recopiée. Elle valait 360 s ici pour une boucle à 1800 : deux nombres
+#  pour une seule vérité, et c'est toujours le duplicata qui dérive.
+#  `vertex.data.constants` n'importe que `vertex.version`, qui n'importe
+#  rien : aucun cycle possible.
+from vertex.data.constants import REFRESH_SEC as _REFRESH_SEC  # noqa: E402
+
 #  ── LA QUATRIÈME COLONNE : `implemente` (Vertex Test 1.0, #779/G1) ──────────────
 #  Elle a été ajoutée parce que la mesure a contredit le registre. Le registre
 #  ne reçoit d'information que par `beat('NOM')` ; or
@@ -41,19 +48,60 @@ _CANONICAL_4 = (
     ('STARTUP_HEALTH_CHECK', 'Vérification des connexions au démarrage', None, True),
     ('POSITION_REFRESH', 'Cotation des positions déclarées (pos-quotes)', None, True),
     ('OPTION_POSITION_REFRESH', 'Chaînes options IBKR (lecture seule)', 300, False),
-    ('MARKET_DATA_REFRESH', 'Scan univers + indices + contexte marché', 360, True),
+    #  360 -> REFRESH_SEC (1800). MESURÉ SUR LE REGISTRE : l'état SILENCIEUX
+    #  tombe dès 2 x la cadence annoncée, soit 720 s, alors que le scan ne
+    #  repasse qu'à 1800 s. Le job CENTRAL du produit était donc déclaré
+    #  « la boucle est morte ou coincée » pendant 1080 s de chaque cycle —
+    #  60 % du temps — en tournant parfaitement.
+    ('MARKET_DATA_REFRESH', 'Scan univers + indices + contexte marché',
+     _REFRESH_SEC, True),
     ('PORTFOLIO_RECALCULATION', 'Risque portefeuille sur positions réelles', None, False),
     ('DECISION_RECALCULATION', 'Décisions exécutives (par requête/à la demande)', None, False),
-    ('CATALYST_REFRESH', 'Calendrier earnings + macro', 3600, True),
+    #  3600 -> 10800 : la cadence annoncee etait le TIERS de la boucle reelle
+    #  (`time.sleep(3 * 3600)` en reel, `wait_force('calendar', 3 * 3600)` en
+    #  demo). Deux consequences, toutes deux fausses a l'ecran : un ETA
+    #  « prochaine dans ~1 h » pour un job qui repasse dans trois, et surtout
+    #  l'etat SILENCIEUX des que 2 x 3600 s etaient passees — soit a chaque
+    #  cycle, une alarme permanente sur un job sain. Meme famille que
+    #  NEWS_REFRESH et POSITION_REFRESH ; il en restait un.
+    ('CATALYST_REFRESH', 'Calendrier earnings + macro', 3 * 3600, True),
     ('NEWS_REFRESH', 'Fil de nouvelles assaini', 60, True),
+    #  AJOUT : la boucle des fondamentaux tournait sans AUCUNE ligne a
+    #  l'ecran — elle empruntait le battement de `TRACK_RECORD_UPDATE`,
+    #  le job d'une autre boucle. Elle a desormais le sien. Cadence : la
+    #  boucle dort 45 s tant qu'il manque des titres, puis 6 h ; on
+    #  annonce la cadence de CROISIERE, celle qui vaut une fois le cache
+    #  rempli — annoncer 45 s ferait crier SILENCIEUX pendant six heures.
+    ('FUNDAMENTALS_REFRESH', 'Fondamentaux P/E + médianes secteur', 6 * 3600, True),
+    #  AJOUT : `_opt_loop` rafraîchit le board d'options toutes les 120 s
+    #  — rotation de l'univers puis focus — et AUCUNE ligne de la page
+    #  Système ne la représentait. `OPTION_POSITION_REFRESH` existe
+    #  au-dessus, mais décrit la cotation des POSITIONS options :
+    #  l'emprunter aurait refait la faute corrigée sur
+    #  `TRACK_RECORD_UPDATE` — parler au nom d'un autre travail.
+    ('OPTIONS_BOARD_REFRESH', 'Board options — rotation univers + focus', 120, True),
+    #  AJOUT : `_radar_loop` interroge les scanners du marché ENTIER
+    #  (gainers, losers, most active) et le fil Dow Jones / Briefing
+    #  toutes les 240 s — la dernière boucle cadencée du produit qui
+    #  n'avait aucune ligne à l'écran.
+    ('MARKET_RADAR_REFRESH', 'Radar marché entier + fil courtier', 240, True),
     ('PREMARKET_BRIEF', 'Brief pré-marché', None, False),
     ('INTRADAY_BRIEF', 'Brief intraday', None, False),
     ('CLOSE_BRIEF', 'Brief de clôture', None, False),
     ('EOD_SNAPSHOT', 'Instantané de fin de journée (track record)', 86400, False),
-    ('WEEKLY_REVIEW', 'Sélection & revue hebdomadaire', 604800, True),
+    #  604800 -> 300. `interval_s` est la cadence de la BOUCLE, pas la
+    #  période du roster : le roster est figé pour la semaine ISO, mais
+    #  `_weekly_loop` repasse toutes les 5 min pour rafraîchir les chiffres
+    #  vivants, et bat à chaque tour. Annoncer 7 jours donnait un seuil de
+    #  silence de 14 JOURS : une boucle réellement morte aurait mis deux
+    #  semaines à se voir.
+    ('WEEKLY_REVIEW', 'Sélection & revue hebdomadaire', 300, True),
     ('SYSTEM_AUDIT', 'Diagnostics système', None, False),
     ('DATA_BACKUP', 'Backup quotidien du desk (rotation 7)', 86400, True),
-    ('TRACK_RECORD_UPDATE', 'Mise à jour de la fiabilité mesurée', 86400, True),
+    #  86400 -> 6 h. Le battement a rejoint `_edge_loop`, la boucle qui
+    #  appelle vraiment `_track.record` et qui dort 6 h. L'écart faisait
+    #  attendre 2 jours avant qu'une boucle morte ne se voie.
+    ('TRACK_RECORD_UPDATE', 'Mise à jour de la fiabilité mesurée', 6 * 3600, True),
     ('ALERTS_EVALUATION', 'Évaluation serveur des alertes utilisateur', 60, True),
     # Position Intelligence (§39) — cycle de vie analytique des positions.
     ('STARTUP_POSITION_SYNC', 'Détection & réconciliation des positions au démarrage', None, False),

@@ -57,13 +57,36 @@ _SIGNATURES = (
 )
 
 #: Routes qui rendaient une exception brute, plus leur voisine restée saine.
+#  Élargi : toutes les routes qui répondent 200 en moins de 20 ms, mesurées une
+#  par une. Celles qui déclenchent une collecte réseau (yfinance sur un titre
+#  neuf) sont volontairement absentes — elles feraient dépendre ce banc d'une
+#  sortie HTTPS, et un gardien lent finit désactivé.
 _ROUTES = (
+    #  Les cinq d'origine : celles qui fuyaient, plus leurs voisines.
     '/options/AAPL',
     '/api/correlations/AAPL',
     '/api/ticker/AAPL',
     '/api/company/AAPL',
     '/healthz',
+    #  Élargissement — état, décision, mémoire, marché, anomalies, graphe.
+    '/readyz',
+    '/api/system-status',
+    '/api/data-quality',
+    '/api/tracking',
+    '/api/decision/AAPL',
+    '/api/session/digest',
+    '/api/market/summary',
+    '/api/anomalies/AAPL',
+    '/api/skyler/graph',
+    '/api/weekly',
 )
+
+#: Sous-ensemble pour le DÉNOMINATEUR. `/api/weekly` en est absent : il rend
+#: `{}` tant qu'aucun scan n'a construit la sélection hebdomadaire, et c'est un
+#: état légitime — pas une page vide. Exiger d'elle un corps non trivial
+#: ferait échouer ce banc sur un démarrage à froid, donc pour une raison qui ne
+#: concerne pas les fuites d'exception qu'il garde.
+_ROUTES_NON_VIDES = tuple(r for r in _ROUTES if r != '/api/weekly')
 
 
 @pytest.fixture(scope='module')
@@ -198,7 +221,7 @@ def test_la_charge_servie_ne_porte_aucune_signature_d_exception(client, route):
 def test_les_routes_exercees_rendent_bien_quelque_chose(client):
     """Dénominateur : si ces routes rendaient du vide, l'absence de signature
     ci-dessus serait vraie pour rien."""
-    for route in _ROUTES:
+    for route in _ROUTES_NON_VIDES:
         corps = client.get(route).get_data(as_text=True)
         assert len(corps) > 20, '%s rend %d octets' % (route, len(corps))
 

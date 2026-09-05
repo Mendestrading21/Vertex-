@@ -267,6 +267,17 @@ PAGE_TEMOIN = """
   <button class="etroit">etroit</button>
   <button class="gare">gare hors cadre</button>
   <div class="bouge">anime</div>
+  <!--  Fil d'Ariane temoin : un segment qui TRONQUE (84 px de boite pour un
+        libelle bien plus long, sous `overflow:hidden`) et un qui TIENT. Sans
+        ce couple, un recensement de troncatures VIDE ne prouverait rien : il
+        serait identique a celui d'une sonde devenue aveugle — un selecteur
+        renomme suffit a faire rendre `null` a SONDE_FIL, et le gardien
+        passerait au vert pour toujours.  -->
+  <nav class="vx-breadcrumb" style="display:flex;width:200px">
+    <span style="width:84px;overflow:hidden;white-space:nowrap"
+          >segment beaucoup trop long pour sa boite</span>
+    <span style="width:84px;overflow:hidden;white-space:nowrap">court</span>
+  </nav>
 </body></html>
 """
 
@@ -316,6 +327,23 @@ def _temoins(nav) -> list:
 
     if not page.evaluate(SONDE_MOUVEMENT)['uniques']:
         e.append('TEMOIN MOUVEMENT MUET : une animation infinie de 2 s n\'est pas vue')
+
+    fil = page.evaluate(SONDE_FIL)
+    if not fil:
+        e.append('TEMOIN FIL MUET (absent) : un `.vx-breadcrumb` present rend '
+                 '`null` — la sonde ne trouve plus le fil, et un recensement '
+                 'de troncatures vide ne voudrait plus rien dire')
+    else:
+        tronques = [x for x in fil['segments'] if x['tronque']]
+        tiennent = [x for x in fil['segments'] if not x['tronque']]
+        if not any('trop long' in x['texte'] for x in tronques):
+            e.append('TEMOIN FIL MUET : un segment de 84 px sous '
+                     '`overflow:hidden`, dont le contenu est deux fois plus '
+                     'large, ne ressort pas tronque')
+        if not any(x['texte'] == 'court' for x in tiennent):
+            e.append('TEMOIN NEGATIF ROMPU (fil) : un segment qui TIENT dans sa '
+                     'boite ressort tronque — tous les espaces seraient '
+                     'signales, et le recensement deviendrait du bruit')
     ctx.close()
     return e
 
@@ -331,8 +359,17 @@ def mesurer(base: str = BASE_DEFAUT, largeur: int = LARGEUR_DEFAUT, *,
         if temoins:
             echecs = _temoins(nav)
         for ident, href in espaces():
+            #  `has_touch` EST NECESSAIRE. La regle de cible tactile du produit
+            #  vit sous `@media (pointer:coarse)` : sans contexte tactile, elle
+            #  ne s'applique PAS, et cette sonde relevait alors chaque puce a
+            #  28 px comme « trop basse ». Douze faux defauts sur /calendar,
+            #  mesures sur un produit correct — la regle existait, c'est
+            #  l'instrument qui regardait au mauvais endroit. Verifie : avec
+            #  `has_touch`, les memes puces font 44 px.
             ctx = nav.new_context(viewport={'width': largeur, 'height': 900},
-                                  service_workers='block')
+                                  service_workers='block',
+                                  has_touch=(largeur <= 480),
+                                  is_mobile=(largeur <= 480))
             page = ctx.new_page()
             page.goto(base.rstrip('/') + href, wait_until='domcontentloaded', timeout=25000)
             page.wait_for_timeout(1800)

@@ -45,6 +45,15 @@ chose de vrai à lire.
 
 ## L1342 — `bret = 0.0` : mesuré, pas excusé
 
+> DEPUIS : ce handler a suivi `edge_backtest` dans
+> `vertex/engines/edge_validation.py` (strangler). Il n'a été ni supprimé ni
+> corrigé, seulement déplacé, et le plafond de `vertex/` l'absorbe. Tout ce
+> qui suit reste vrai : la caractérisation porte sur la formule de force
+> relative et sur le chemin de scan vivant, pas sur l'emplacement du `pass`.
+> Le backtest est en revanche désormais ÉPROUVÉ — voir
+> `tests/test_edge_validation.py`, qui vérifie l'absence de look-ahead que
+> personne ne pouvait mesurer tant que la fonction appelait le réseau.
+
 Dans `edge_backtest`, l'échec du calcul du rendement de référence laisse
 `bret = 0.0`, qui part dans `analyse(sub, bret)`. J'ai failli l'excuser en
 disant que 0 est neutre. **La mesure dit le contraire** : dans
@@ -120,13 +129,78 @@ FICHIER = 'terminal.py'
 #  ne suffit plus — la reprise de la valeur précédente est désormais EXPLICITE
 #  (`_tilt = scan_state.get('strat_tilt')`), même sémantique, dite au lieu
 #  d'avalée. La famille passe de 11 à 10.
+#  MISE À JOUR (strangler, extraction du backtest de l'edge) : 33 -> 32. Le
+#  `pass` retiré est L1342, l'un des DEUX « examinés de près » : celui qui
+#  laisse `bret = 0.0` quand le rendement de référence ne se calcule pas. Il
+#  n'a pas disparu — il a suivi `edge_backtest` dans
+#  `vertex/engines/edge_validation.py`, où le plafond de `vertex/`
+#  (`test_pass_et_contexte.MAX_PASS`) l'absorbe sans dérive. Sa
+#  caractérisation ci-dessous reste entièrement valable : elle porte sur la
+#  formule de force relative (`analysis.py`) et sur le chemin de scan vivant,
+#  pas sur l'emplacement du handler. La famille « examinés de près » passe de
+#  2 à 1 pour `terminal.py` : il n'y reste que l'overlay IBKR (L621).
+#  MISE À JOUR (battement manquant du calendrier) : 32 -> 33. Le `pass` AJOUTÉ
+#  entoure l'import et l'émission du battement `CATALYST_REFRESH` dans
+#  `_cal_loop`, à l'identique de celui de `_weekly_loop` — famille
+#  « journal/persistance » (9 -> 10), celle des beats du scheduler.
+#  Pourquoi il est admissible : ce `try` n'entoure aucune donnée financière. Un
+#  registre indisponible ne doit pas coûter le rafraîchissement du calendrier ;
+#  son échec produit une ABSENCE de diagnostic, jamais une valeur fausse.
+#  Ce qu'il coûte, dit franchement : si l'émission échouait, la page Système
+#  réafficherait « EN_ATTENTE » — le défaut même que ce lot corrige. Le risque
+#  est borné à un import de module déjà chargé et à une écriture de
+#  dictionnaire sous verrou ; il est accepté pour la même raison que chez son
+#  voisin, et il est nommé ici plutôt que supposé inoffensif.
+#  MISE À JOUR (les battements disent la vérité) : 33 -> 31. Quatre handlers
+#  RETIRÉS, deux AJOUTÉS.
+#
+#  Retirés — chacun avalait un échec dont un job dépendait pour se déclarer :
+#    · `_alerts_loop`   : le cycle entier d'évaluation des alertes ;
+#    · `_fund_loop`     : la collecte des fondamentaux ;
+#    · `_news_loop`     : le cycle du fil de nouvelles ;
+#    · `_edge_loop`     : `_track.record`, la mise à jour de la fiabilité.
+#  Les quatre nomment désormais leur motif et le transmettent au registre :
+#  l'échec passe de « avalé » à « ERREUR, avec sa raison ». Les trois premiers
+#  étaient classés « absence honnête » (10 -> 7) ; le quatrième
+#  « journal/persistance », la famille des beats et de track_record.
+#
+#  Ajoutés — deux gardes autour d'une ÉMISSION de battement (`_edge_loop` et
+#  la branche d'échec de `_news_loop`), à l'identique de celles de
+#  `_weekly_loop` et `_cal_loop`. Famille « journal/persistance » :
+#  10 - 1 + 2 = 11. Aucune donnée financière n'est entourée ; un registre
+#  indisponible ne doit pas coûter le cycle qu'il observe.
+#
+#  HONNÊTETÉ SUR CE RECLASSEMENT : comme le note l'en-tête, le lot 386 n'a pas
+#  consigné la famille de chaque ligne. L'attribution des trois « absence
+#  honnête » retirés est donc RAISONNÉE — leur `try` entourait une collecte
+#  dont l'échec laissait une donnée absente — et non retrouvée dans une
+#  classification d'origine. Le total, lui, est mesuré.
+#  MISE À JOUR (les deux dernières boucles muettes) : 31 -> 32.
+#    · `_opt_loop` : son `except: pass` — qui avalait tout le cycle du board
+#      d'options — nomme désormais son motif et le transmet au registre
+#      (« absence honnête » 7 -> 6) ; une garde AJOUTÉE entoure l'émission du
+#      battement, comme chez ses quatre voisines ;
+#    · `_startup`  : une garde AJOUTÉE entoure le battement de repli, celui
+#      qui manquait quand la séquence de démarrage elle-même casse — le job
+#      restait « EN_ATTENTE » à jamais et la raison partait dans un `print`.
+#  Famille « journal/persistance » : 11 + 2 = 13.
+#  MISE À JOUR (le radar nomme ce qui manque) : 32 -> 31. Deux handlers
+#  RETIRÉS dans `_radar_loop` — celui de la boucle des trois scanners et celui
+#  du fil courtier. Ils étaient classés « absence honnête » (6 -> 4) à tort :
+#  quand les quatre flux échouaient — le cas NOMINAL sans TWS — `out` restait
+#  vide, le `if out` sautait l'écriture, et le radar gardait sa valeur
+#  précédente PAR OMISSION, sans que la raison existe nulle part. Une absence
+#  silencieuse ressemble à une absence de marché ; ce n'en est pas une. Les
+#  motifs sont désormais retenus, servis dans `scan_state['radar_ecart']` et
+#  transmis au registre. Une garde AJOUTÉE entoure l'émission du battement
+#  (« journal/persistance » 13 -> 14), comme chez ses sept voisines.
 FAMILLES = {
     'nettoyage/fermeture': 6,
-    'journal/persistance': 9,
+    'journal/persistance': 14,
     'import/config optionnel': 1,
     'infra thread': 2,
-    'absence honnête': 10,
-    'examinés de près': 2,
+    'absence honnête': 4,
+    'examinés de près': 1,
     #  Fusion Black Glass : arrivés de `vertex-live`, classés ici parce qu'une
     #  notification perdue ou un enrichissement absent ne rend AUCUNE donnée
     #  fausse — la valeur reste celle de la source, simplement sans le
@@ -139,7 +213,7 @@ FAMILLES = {
 #  persistee laissant max-pain vide), quatre best-effort — chaine de
 #  demo, deux notifications SSE, arrondi du spot. Classement complet en
 #  tete de `test_pass_et_contexte.py`.
-TOTAL_PASS = 33
+TOTAL_PASS = 31
 
 # Fenêtre de fraîcheur de l'overlay IBKR. Au-delà, une valeur périmée serait
 # présentée comme du temps réel : c'est la borne d'honnêteté du mécanisme.

@@ -171,7 +171,17 @@ def test_le_bilan_du_scheduler_ne_compte_plus_les_jobs_sans_executant():
 
     instantane = _cx.snapshot({}, ibkr_enabled=False, demo_mode=True)
     ligne = next(c for c in instantane['connections'] if c['name'] == 'Scheduler')
-    assert '9 jobs exécutables' in ligne['detail'], (
+    #  9 -> 10 : `FUNDAMENTALS_REFRESH` est DÉCLARÉ. La boucle des
+    #  fondamentaux tournait déjà — elle empruntait le battement de
+    #  `TRACK_RECORD_UPDATE`, le job d'une autre boucle. Le total des
+    #  10 -> 12 : `OPTIONS_BOARD_REFRESH` (board d'options, 120 s) et
+    #  `MARKET_RADAR_REFRESH` (scanners du marché entier + fil courtier,
+    #  240 s), qui tournaient sans aucune ligne. Le total des
+    #  exécutables monte parce qu'une capacité réelle cesse d'être invisible,
+    #  pas parce qu'on a ajouté une ligne décorative : « 18 déclarés sans
+    #  exécutant » ne bouge pas, et `test_le_drapeau_implemente_suit_la_mesure`
+    #  refuserait le drapeau sans émetteur.
+    assert '12 jobs exécutables' in ligne['detail'], (
         'le detail servi ne reflete pas la mesure : %s' % ligne['detail'])
     assert '18 déclarés sans exécutant' in ligne['detail'], (
         'les jobs sans executant ne sont plus nommes : %s' % ligne['detail'])
@@ -202,5 +212,10 @@ def test_la_forme_a_trois_colonnes_reste_servie():
     """`_CANONICAL` est lu ailleurs dans le dépôt. Ajouter une quatrième colonne
     ne doit pas casser ces appelants."""
     assert all(len(t) == 3 for t in _reg._CANONICAL)
-    assert len(_reg._CANONICAL) == len(_reg._CANONICAL_4) == 27
+    #  27 -> 30 : `FUNDAMENTALS_REFRESH`, `OPTIONS_BOARD_REFRESH` et
+    #  `MARKET_RADAR_REFRESH` (cf. ci-dessus). Trois boucles cadencées
+    #  qui tournaient sans aucune ligne à l'écran, chacune empruntant le
+    #  job d'une autre ou n'en ayant aucun. Toutes les boucles de fond
+    #  du produit sont désormais déclarées.
+    assert len(_reg._CANONICAL) == len(_reg._CANONICAL_4) == 30
     assert _reg.NON_IMPLEMENTES and 'NEWS_REFRESH' not in _reg.NON_IMPLEMENTES

@@ -421,6 +421,28 @@ SONDE_CONTRASTE = r"""
     //  parfaitement conforme.
     return [255, 255, 255];
   };
+  //  LA TROISIEME FOIS OU L'INSTRUMENT ETAIT FAUX.
+  //
+  //  Un titre peint par `background-clip:text` + `-webkit-text-fill-color:
+  //  transparent` a son ENCRE dans son propre `background-image`. Lire
+  //  `color` y donne une couleur qui n'est jamais peinte, et `pire_fond`
+  //  demarrant sur l'element prend le degrade de l'encre POUR LE FOND :
+  //  encre claire comparee a elle-meme, 1,09:1. Les trois h1 du produit
+  //  ressortaient ainsi en defaut alors qu'ils sont du blanc sur obsidienne.
+  //
+  //  Quand ce motif est reconnu : l'encre est la rampe de l'element, le fond
+  //  est le premier ancetre qui peint, et le ratio retenu est le PIRE couple.
+  const encre_clippee = (el, s) => {
+    const clip = s.webkitBackgroundClip || s.backgroundClip;
+    if (clip !== 'text') return null;
+    //  Un `text-fill-color` OPAQUE gagne sur le degrade : l'encre est lui,
+    //  et le cas ordinaire s'applique. Ne pas le verifier ferait lire un
+    //  degrade decoratif comme encre sur un texte parfaitement peint.
+    const fill = lire(s.webkitTextFillColor);
+    if (fill && fill.a > 0.1) return null;
+    const stops = stops_opaques(s.backgroundImage);
+    return stops.length ? stops : null;
+  };
   const faibles = [];
   let mesures = 0;
   for (const el of document.querySelectorAll('*')) {
@@ -435,13 +457,24 @@ SONDE_CONTRASTE = r"""
     if (parseFloat(st.opacity) < 0.1) continue;
     const r = el.getBoundingClientRect();
     if (!r.width || !r.height) continue;
+    const encre = encre_clippee(el, st);
     const fg = lire(st.color);
-    if (!fg || fg.a < 0.1) continue;
+    if (!encre && (!fg || fg.a < 0.1)) continue;
     const taille = parseFloat(st.fontSize);
     const gras = parseInt(st.fontWeight, 10) >= 700;
     const grand = taille >= 24 || (gras && taille >= 18.66);
     const seuil = grand ? 3.0 : 4.5;
-    const rr = ratio(fg.rgb, pire_fond(el, fg.rgb));
+    let rr;
+    if (encre) {
+      rr = Infinity;
+      for (const teinte of encre) {
+        //  Le fond part du PARENT : l'element porte l'encre, pas le fond.
+        const r = ratio(teinte, pire_fond(el.parentElement, teinte));
+        if (r < rr) rr = r;
+      }
+    } else {
+      rr = ratio(fg.rgb, pire_fond(el, fg.rgb));
+    }
     mesures++;
     if (rr < seuil) {
       faibles.push({texte: propre.slice(0, 40), ratio: Math.round(rr * 100) / 100,
@@ -513,6 +546,12 @@ PAGE_TEMOIN_DEFAUTS = """
   /* Un stop CLAIR et un stop SOMBRE : seule la lecture du PIRE point de la
      rampe voit le defaut. Prendre le meilleur stop rendrait ce texte conforme. */
   .degrade-mixte{color:#000;background:linear-gradient(rgb(255,255,255),rgb(20,20,20))}
+  /* Encre peinte par `background-clip:text` : une rampe GRISE sur le fond gris
+     #777 de la page. Le texte est reellement illisible, et `color:#fff` ment —
+     il n'est jamais peint. Lire `color` rendrait ce defaut invisible. */
+  .encre-clippee{color:#fff;font-size:26px;-webkit-text-fill-color:transparent;
+    -webkit-background-clip:text;background-clip:text;
+    background-image:linear-gradient(rgb(130,130,130),rgb(122,122,122))}
   .bord{color:%s;background:#000;font-size:14px}
   button{outline:none!important;border:0;background:#777;color:#888}
   button:focus{outline:none!important}
@@ -521,6 +560,7 @@ PAGE_TEMOIN_DEFAUTS = """
   <div class="coupe"><div class="large">contenu coupe sans barre</div></div>
   <p class="gris">texte gris sur gris</p>
   <p class="degrade-mixte">texte sur degrade mixte</p>
+  <p class="encre-clippee">encre clippee illisible</p>
   <p class="bord">texte au bord du seuil</p>
   <button class="gris">bouton sans anneau</button>
   <script>throw new Error('temoin erreur console');</script>
@@ -558,12 +598,19 @@ PAGE_TEMOIN_PROPRE = """
   .squelette{width:300px;height:40px;overflow:hidden;position:relative;background:#222}
   .squelette::after{content:"";position:absolute;inset:0;transform:translateX(100%%);
     background:linear-gradient(90deg,transparent,rgba(255,255,255,.05),transparent)}
+  /* Le h1 du produit, reproduit a l'identique : rampe blanc -> #D4D8DF peinte
+     dans le texte, sur obsidienne. Parfaitement lisible. Si l'instrument le
+     signale, c'est LUI qui est faux — et c'est exactement ce qui arrivait. */
+  .titre-clippe{font-size:24px;color:#f3f5f8;-webkit-text-fill-color:transparent;
+    -webkit-background-clip:text;background-clip:text;
+    background-image:linear-gradient(174deg,rgb(255,255,255) 0%%,rgb(212,216,223) 116%%)}
 </style></head><body>
   <div class="squelette"></div>
   <div class="cadre"><p>texte blanc sur noir</p></div>
   <div class="defile"><div class="large">large mais DEFILABLE — c'est le remede</div></div>
   <p class="primaire">encre sombre sur le degrade du bouton primaire</p>
   <p class="grand">grand texte au-dessus du seuil</p>
+  <p class="titre-clippe">titre argente au degrade</p>
   <button>bouton avec anneau</button>
 </body></html>
 """ % (DEGRADE_PRIMAIRE, GRIS_3_50)
@@ -611,6 +658,11 @@ def _temoins(navigateur) -> list:
         echecs.append('TEMOIN CONTRASTE MUET (seuil) : %s sur #000, soit '
                       '3,50:1, passe le seuil normal de 4,5:1 — le seuil AA '
                       'n\'est plus celui qui est applique' % GRIS_3_50)
+    if not any('encre clippee' in f['texte'] for f in c['faibles']):
+        echecs.append('TEMOIN CONTRASTE MUET (encre clippee) : une rampe grise '
+                      'peinte par `background-clip:text` sur un fond gris '
+                      'ressort conforme — la sonde lit `color`, qui n\'est '
+                      'jamais peint, au lieu de l\'encre reelle')
     if not vus:
         echecs.append('TEMOIN ERREUR MUET : un `throw` au chargement n\'est pas '
                       'capte — le compteur d\'erreurs console ne compte rien')
@@ -650,6 +702,14 @@ def _temoins(navigateur) -> list:
         echecs.append('TEMOIN NEGATIF ROMPU (grand texte) : 3,50:1 en 26 px '
                       'ressort en anomalie — le seuil du grand texte (3,0) '
                       'n\'est plus distingue de celui du texte courant')
+    #  Le pendant du precedent, et le defaut que ce lot corrige : le h1 du
+    #  produit, blanc sur obsidienne, etait declare a 1,09:1 parce que son
+    #  PROPRE degrade d'encre etait pris pour son fond.
+    if any('titre argente' in f['texte'] for f in c2['faibles']):
+        echecs.append('TEMOIN NEGATIF ROMPU (encre clippee) : un titre blanc '
+                      'peint par `background-clip:text` sur obsidienne ressort '
+                      'en contraste faible — le degrade de l\'ENCRE est pris '
+                      'pour le FOND, et l\'encre est comparee a elle-meme')
     if c2['faibles']:
         echecs.append('TEMOIN NEGATIF ROMPU (contraste) : une page saine ressort '
                       'en contraste faible (%s)' % c2['faibles'][:1])
