@@ -270,11 +270,21 @@ _CONTENT = """
      6/rangée desktop → 3/rangée tablette → 2/rangée mobile (lisibilité). */
   .vx-idx-tile{position:relative;overflow:hidden}
   .vx-idx-tile .vx-kpi-value{font-variant-numeric:tabular-nums}
+  /*  `#vx-market-grid` MANQUAIT de ces deux listes. C'est le troisième
+     conteneur de tuiles — « L'essentiel du jour », arrivé après les deux
+     bandeaux — et il n'avait jamais reçu la règle mobile. Ses tuiles gardaient
+     donc leur `grid-column:span 2` en ligne : 51 px pour 92 px de contenu à
+     390 px, mesuré. « 44 000 » demande 76 px et en recevait 17 : la valeur
+     de chaque indice était illisible sur téléphone.
+     Le défaut ne se voyait que l'application PEUPLÉE — sur un scan vide, il
+     n'y a aucune tuile à écraser. */
   @media (max-width:900px){
-    #vx-market-strip .vx-idx-tile,#vx-cross-strip .vx-idx-tile{grid-column:span 4 !important}
+    #vx-market-strip .vx-idx-tile,#vx-cross-strip .vx-idx-tile,
+    #vx-market-grid .vx-idx-tile{grid-column:span 4 !important}
   }
   @media (max-width:560px){
-    #vx-market-strip .vx-idx-tile,#vx-cross-strip .vx-idx-tile{grid-column:span 6 !important}
+    #vx-market-strip .vx-idx-tile,#vx-cross-strip .vx-idx-tile,
+    #vx-market-grid .vx-idx-tile{grid-column:span 6 !important}
   }
   /* Posture 3 états (lecture moteur — jamais un pourcentage inventé) */
   .vx-posture{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px}

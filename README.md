@@ -21,6 +21,50 @@ Ouvrir `http://localhost:5002`. Les lanceurs `Lancer_VERTEX` et
 `Lancer_VERTEX_DEMO` restent disponibles ; `python terminal.py` fonctionne encore
 en mode de repli mais n'est plus l'entrée canonique.
 
+### Voir Vertex peuplé, sans TWS ni compte
+
+```bash
+DEMO=1 NO_IBKR=1 python -m vertex      # Windows : $env:DEMO=1; $env:NO_IBKR=1
+```
+
+La vitrine remplit les douze pages avec des données **synthétiques**, et le dit :
+un bandeau « DÉMO — données synthétiques clairement identifiées, jamais
+présentées comme réelles » reste visible, la provenance affiche `demo`. C'est le
+moyen de parcourir l'interface entière sans TWS, sans clé et sans compte.
+
+### Ce qui est normal au premier lancement
+
+| Ce que vous voyez | Ce que ça veut dire |
+|---|---|
+| `TWS / IB Gateway injoignable sur 7496, 7497, 4001, 4002` | Aucune session courtier ouverte. **État normal.** Vertex sert le différé yfinance et l'étiquette. Une seule ligne : les répétitions de la bibliothèque sont comptées, pas réaffichées. |
+| `Failed to get ticker 'X'` en rafale | Votre réseau ne joint pas Yahoo (VPN, pare-feu, réseau d'entreprise). Le scan reste vide et le dit — `source: unavailable`, jamais un chiffre inventé. |
+| Système → Connexions : `Claude — Secours` | Aucune `ANTHROPIC_API_KEY`. La synthèse déterministe des moteurs est servie ; l'enrichissement IA affiche « indisponible ». |
+
+### Vérifier que tout marche
+
+```bash
+curl http://localhost:5002/healthz      # build, moteurs, constitution
+curl http://localhost:5002/readyz       # prêt à servir
+```
+
+Puis, dans l'interface, **Système** répond à la question en une page : santé
+globale, matrice des connexions (configuré ≠ connecté), jobs de fond avec leur
+état réel (`ACTIF`, `ERREUR`, `SILENCIEUX`, `EN_ATTENTE`, `NON_IMPLÉMENTÉ`) et
+fraîcheur par domaine.
+
+### Rejouer les preuves
+
+```bash
+python -m compileall -q terminal.py vertex
+python -m pytest -q                      # suite complète
+python -m pytest tests/test_no_orders.py -q
+```
+
+Les deux gardiens navigateur (`tests/test_qa_espaces.py`,
+`tests/test_couche_visuelle.py`) exigent un serveur local **et** Chromium ; sans
+eux ils s'écartent d'eux-mêmes plutôt que de mesurer du vide. Lancer Vertex
+avant la suite si vous voulez la preuve visuelle complète.
+
 ## Mandats de décision
 
 | Mandat | Cadre |
