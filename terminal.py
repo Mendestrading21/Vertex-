@@ -1674,8 +1674,19 @@ def _news_loop():
             #  fausse elle aussi ; la vraie est celle d'en dessous, 60 s.
             from vertex.scheduler import registry as _sched
             _sched.beat('NEWS_REFRESH', ok=True)
-        except Exception:
-            pass
+        except Exception as e:
+            #  Ce battement ne pouvait JAMAIS dire ERREUR : place en fin de
+            #  `try`, il n'etait atteint qu'en cas de succes, et l'echec
+            #  partait dans un `pass` sans motif. Le fil tombait donc en
+            #  SILENCIEUX — « la boucle est morte ou coincee » — alors qu'elle
+            #  tournait et echouait toutes les 60 s pour une raison nommable.
+            #  Le registre a un champ pour cette raison ; il restait vide.
+            try:
+                from vertex.scheduler import registry as _sched
+                _sched.beat('NEWS_REFRESH', ok=False,
+                            error='%s: %s' % (type(e).__name__, e))
+            except Exception:
+                pass
         _live.wait_force('news', 60)
 
 
@@ -1790,6 +1801,7 @@ def _fund_loop():
     targets = UNIVERSE[:FUND_N]
     while True:
         if scan_state.get('rows'):
+            echec_fund = None
             try:
                 candidats = [s for s in targets if s not in _FUND_CACHE]
                 missing, _morts = _REFUS_FUND.filtrer(candidats)
@@ -1820,13 +1832,20 @@ def _fund_loop():
                 if _FUND_CACHE:
                     scan_state['fundamentals'] = {'by_sym': _FUND_CACHE,
                                                   'by_sector': _recompute_sectors(_FUND_CACHE)}
-            except Exception:
-                pass
+            except Exception as e:
+                echec_fund = '%s: %s' % (type(e).__name__, e)
             still_missing = any(s not in _FUND_CACHE and not _REFUS_FUND.refuse_recemment(s)
                                 for s in targets)
             try:
+                #  Cette boucle emettait `TRACK_RECORD_UPDATE`, le job d'une
+                #  AUTRE boucle, et a `ok=True` fige apres un `except: pass`.
+                #  Deux fautes en une : elle parlait au nom d'un travail
+                #  qu'elle ne fait pas, et elle le declarait sain quoi qu'il
+                #  arrive. Elle declare desormais SON job — les fondamentaux
+                #  tournaient sans aucune ligne a l'ecran — et dit la verite.
                 from vertex.scheduler import registry as _sched
-                _sched.beat('TRACK_RECORD_UPDATE', ok=True)
+                _sched.beat('FUNDAMENTALS_REFRESH', ok=(echec_fund is None),
+                            error=echec_fund)
             except Exception:
                 pass
             time.sleep(45 if still_missing else 6 * 3600)     # rapide tant que ça remplit, puis lent
@@ -1870,8 +1889,22 @@ def _edge_loop():
                     _save_json('edge_cache.json', eb)
             except Exception:
                 pass
+            #  LE BATTEMENT ETAIT DANS LA MAUVAISE BOUCLE. `TRACK_RECORD_UPDATE`
+            #  — « Mise a jour de la fiabilite mesuree » — etait emis par
+            #  `_fund_loop`, la boucle des FONDAMENTAUX, qui n'y touche pas.
+            #  La vraie mise a jour est ici, `_track.record`, et elle ne
+            #  battait rien. La page Systeme declarait donc la fiabilite
+            #  mesuree « ACTIF » sur la foi d'un cycle de fondamentaux, et un
+            #  `_track.record` en echec a chaque tour n'aurait rien dit.
+            echec_track = None
             try:
                 _track.record(scan_state)             # 📓 snapshot quotidien des verdicts (idempotent)
+            except Exception as e:
+                echec_track = '%s: %s' % (type(e).__name__, e)
+            try:
+                from vertex.scheduler import registry as _sched
+                _sched.beat('TRACK_RECORD_UPDATE', ok=(echec_track is None),
+                            error=echec_track)
             except Exception:
                 pass
             time.sleep(6 * 3600)
@@ -2462,6 +2495,7 @@ def _alert_price(sym):
 
 def _alerts_loop():
     while True:
+        echec = None
         try:
             blob = _load_json('desk_data.json', {}) or {}
             raw = (blob.get('data') or {}).get('vxAlerts')
@@ -2495,11 +2529,19 @@ def _alerts_loop():
                     _broker.publish('alerts', {'fired': len(_ALERTS_FIRED)})
                 except Exception:
                     pass
-        except Exception:
-            pass
+        except Exception as e:
+            #  L'echec est NOMME, pas avale.
+            echec = '%s: %s' % (type(e).__name__, e)
         try:
+            #  LE VERT ETAIT INCONDITIONNEL. Ce battement vivait APRES le
+            #  `except ...: pass` englobant, a `ok=True` fige : un cycle
+            #  entierement en echec — fichier du desk illisible, JSON
+            #  malforme — declarait quand meme le job SAIN. La page Systeme
+            #  affichait « Evaluation serveur des alertes utilisateur : ACTIF »
+            #  pendant que plus aucune alerte n'etait evaluee. C'est le filet
+            #  de l'utilisateur : le mensonge y coute le plus cher.
             from vertex.scheduler import registry as _sched
-            _sched.beat('ALERTS_EVALUATION', ok=True)
+            _sched.beat('ALERTS_EVALUATION', ok=(echec is None), error=echec)
         except Exception:
             pass
         time.sleep(60)

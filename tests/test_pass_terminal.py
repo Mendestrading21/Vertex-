@@ -151,12 +151,36 @@ FICHIER = 'terminal.py'
 #  est borné à un import de module déjà chargé et à une écriture de
 #  dictionnaire sous verrou ; il est accepté pour la même raison que chez son
 #  voisin, et il est nommé ici plutôt que supposé inoffensif.
+#  MISE À JOUR (les battements disent la vérité) : 33 -> 31. Quatre handlers
+#  RETIRÉS, deux AJOUTÉS.
+#
+#  Retirés — chacun avalait un échec dont un job dépendait pour se déclarer :
+#    · `_alerts_loop`   : le cycle entier d'évaluation des alertes ;
+#    · `_fund_loop`     : la collecte des fondamentaux ;
+#    · `_news_loop`     : le cycle du fil de nouvelles ;
+#    · `_edge_loop`     : `_track.record`, la mise à jour de la fiabilité.
+#  Les quatre nomment désormais leur motif et le transmettent au registre :
+#  l'échec passe de « avalé » à « ERREUR, avec sa raison ». Les trois premiers
+#  étaient classés « absence honnête » (10 -> 7) ; le quatrième
+#  « journal/persistance », la famille des beats et de track_record.
+#
+#  Ajoutés — deux gardes autour d'une ÉMISSION de battement (`_edge_loop` et
+#  la branche d'échec de `_news_loop`), à l'identique de celles de
+#  `_weekly_loop` et `_cal_loop`. Famille « journal/persistance » :
+#  10 - 1 + 2 = 11. Aucune donnée financière n'est entourée ; un registre
+#  indisponible ne doit pas coûter le cycle qu'il observe.
+#
+#  HONNÊTETÉ SUR CE RECLASSEMENT : comme le note l'en-tête, le lot 386 n'a pas
+#  consigné la famille de chaque ligne. L'attribution des trois « absence
+#  honnête » retirés est donc RAISONNÉE — leur `try` entourait une collecte
+#  dont l'échec laissait une donnée absente — et non retrouvée dans une
+#  classification d'origine. Le total, lui, est mesuré.
 FAMILLES = {
     'nettoyage/fermeture': 6,
-    'journal/persistance': 10,
+    'journal/persistance': 11,
     'import/config optionnel': 1,
     'infra thread': 2,
-    'absence honnête': 10,
+    'absence honnête': 7,
     'examinés de près': 1,
     #  Fusion Black Glass : arrivés de `vertex-live`, classés ici parce qu'une
     #  notification perdue ou un enrichissement absent ne rend AUCUNE donnée
@@ -170,7 +194,7 @@ FAMILLES = {
 #  persistee laissant max-pain vide), quatre best-effort — chaine de
 #  demo, deux notifications SSE, arrondi du spot. Classement complet en
 #  tete de `test_pass_et_contexte.py`.
-TOTAL_PASS = 33
+TOTAL_PASS = 31
 
 # Fenêtre de fraîcheur de l'overlay IBKR. Au-delà, une valeur périmée serait
 # présentée comme du temps réel : c'est la borne d'honnêteté du mécanisme.

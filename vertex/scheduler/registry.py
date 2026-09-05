@@ -53,6 +53,13 @@ _CANONICAL_4 = (
     #  NEWS_REFRESH et POSITION_REFRESH ; il en restait un.
     ('CATALYST_REFRESH', 'Calendrier earnings + macro', 3 * 3600, True),
     ('NEWS_REFRESH', 'Fil de nouvelles assaini', 60, True),
+    #  AJOUT : la boucle des fondamentaux tournait sans AUCUNE ligne a
+    #  l'ecran — elle empruntait le battement de `TRACK_RECORD_UPDATE`,
+    #  le job d'une autre boucle. Elle a desormais le sien. Cadence : la
+    #  boucle dort 45 s tant qu'il manque des titres, puis 6 h ; on
+    #  annonce la cadence de CROISIERE, celle qui vaut une fois le cache
+    #  rempli — annoncer 45 s ferait crier SILENCIEUX pendant six heures.
+    ('FUNDAMENTALS_REFRESH', 'Fondamentaux P/E + médianes secteur', 6 * 3600, True),
     ('PREMARKET_BRIEF', 'Brief pré-marché', None, False),
     ('INTRADAY_BRIEF', 'Brief intraday', None, False),
     ('CLOSE_BRIEF', 'Brief de clôture', None, False),

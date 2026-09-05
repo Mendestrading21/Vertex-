@@ -321,3 +321,142 @@ def test_un_tour_EN_ECHEC_ne_declare_pas_le_job_sain(monkeypatch):
         assert etat == 'ERREUR', 'état servi après un tour en échec : %s' % etat
     finally:
         _reg._JOBS['CATALYST_REFRESH'].update(memoire)
+
+
+# ── 5. Un battement doit pouvoir dire ERREUR ────────────────────────────────
+#
+#  `_weekly_loop` porte déjà la leçon, écrite dans son propre commentaire :
+#  « Émis inconditionnellement à `ok=True`, il déclarait le job WEEKLY_REVIEW
+#  sain alors que la construction venait d'échouer — la page Système affichait
+#  donc un vert faux. »
+#
+#  Trois boucles répétaient exactement ce motif, mesurées à l'AST :
+#
+#    ALERTS_EVALUATION   battement APRÈS le `except ...: pass` englobant, à
+#                        `ok=True` figé. Un cycle entièrement en échec — desk
+#                        illisible, JSON malformé — déclarait le job sain. La
+#                        page annonçait « Évaluation serveur des alertes
+#                        utilisateur : ACTIF » pendant que plus aucune alerte
+#                        n'était évaluée. C'est le filet de l'utilisateur.
+#
+#    TRACK_RECORD_UPDATE même motif, ET dans la MAUVAISE BOUCLE : il était émis
+#                        par `_fund_loop`, qui ne touche pas au track record.
+#                        `_track.record`, la vraie mise à jour, vivait dans
+#                        `_edge_loop` et ne battait rien.
+#
+#    NEWS_REFRESH        en fin de `try` : jamais atteint en cas d'échec, dont
+#                        le motif partait dans un `pass`. Le fil tombait en
+#                        SILENCIEUX — « la boucle est morte ou coincée » —
+#                        alors qu'elle tournait et échouait toutes les 60 s
+#                        pour une raison nommable.
+#
+#  `MARKET_DATA_REFRESH` faisait déjà les choses correctement : `ok=True` sur
+#  le chemin de succès, `ok=False, error=str(e)` dans son `except`. Il sert de
+#  témoin négatif — le banc ne doit pas crier sur lui.
+
+_JOBS_QUI_DOIVENT_POUVOIR_ECHOUER = (
+    'ALERTS_EVALUATION', 'TRACK_RECORD_UPDATE', 'NEWS_REFRESH',
+    'CATALYST_REFRESH', 'WEEKLY_REVIEW', 'MARKET_DATA_REFRESH',
+    'FUNDAMENTALS_REFRESH',
+)
+
+
+def _formes_de_battement() -> dict[str, list[dict]]:
+    """{job: [{'ok_fige_vrai': bool, 'motif': bool, 'fichier', 'ligne'}…]}"""
+    out: dict[str, list[dict]] = {}
+    for chemin in _fichiers():
+        try:
+            arbre = ast.parse(open(chemin, encoding='utf-8').read())
+        except (SyntaxError, UnicodeDecodeError):
+            continue
+        for n in ast.walk(arbre):
+            if not (isinstance(n, ast.Call)
+                    and getattr(n.func, 'attr', None) == 'beat'
+                    and n.args and isinstance(n.args[0], ast.Constant)):
+                continue
+            mots = {k.arg: k.value for k in n.keywords}
+            ok = mots.get('ok')
+            #  `ok` absent vaut True par défaut : c'est la même promesse figée.
+            fige = ok is None or (isinstance(ok, ast.Constant) and ok.value is True)
+            out.setdefault(n.args[0].value, []).append(
+                {'ok_fige_vrai': fige, 'motif': 'error' in mots,
+                 'fichier': os.path.relpath(chemin, _RACINE), 'ligne': n.lineno})
+    return out
+
+
+def test_le_detecteur_de_forme_distingue_les_trois_ecritures():
+    """Contre-épreuve du critère, sur des fragments dont on connaît la
+    réponse. Sans elle, « aucun vert de façade » pourrait signifier « je ne
+    sais pas reconnaître un `ok=True` »."""
+    cas = ast.parse(
+        "_s.beat('A', ok=True)\n"
+        "_s.beat('B')\n"
+        "_s.beat('C', ok=(e is None), error=e)\n")
+    vus = {}
+    for n in ast.walk(cas):
+        if isinstance(n, ast.Call) and getattr(n.func, 'attr', None) == 'beat':
+            mots = {k.arg: k.value for k in n.keywords}
+            ok = mots.get('ok')
+            vus[n.args[0].value] = (
+                ok is None or (isinstance(ok, ast.Constant) and ok.value is True),
+                'error' in mots)
+    assert vus == {'A': (True, False), 'B': (True, False), 'C': (False, True)}, vus
+
+
+@pytest.mark.parametrize('job', _JOBS_QUI_DOIVENT_POUVOIR_ECHOUER)
+def test_chaque_boucle_peut_declarer_son_echec(job):
+    """Au moins un émetteur du job transmet un `ok` CALCULÉ et son motif.
+    Un émetteur supplémentaire figé à `ok=True` reste licite — la branche
+    démo du calendrier en est une, et son cycle synthétique ne peut pas
+    échouer ; ce qui ne l'est pas, c'est qu'aucun émetteur ne puisse dire non.
+    """
+    formes = _formes_de_battement().get(job)
+    assert formes, 'aucun émetteur pour %s' % job
+    honnetes = [f for f in formes if not f['ok_fige_vrai'] and f['motif']]
+    assert honnetes, (
+        '%s ne peut JAMAIS se déclarer en échec : %d émetteur(s), tous figés à '
+        '`ok=True` sans motif (%s). Un cycle en échec laisserait la page '
+        'Système annoncer un job sain — le « vert faux » que `_weekly_loop` '
+        'nomme dans son propre commentaire.'
+        % (job, len(formes),
+           ', '.join('%s:%d' % (f['fichier'], f['ligne']) for f in formes)))
+
+
+def test_le_battement_du_track_record_vit_avec_le_travail_qu_il_decrit():
+    """Un battement émis par une boucle qui ne fait pas le travail décrit est
+    une mesure sans objet : `TRACK_RECORD_UPDATE` était émis par la boucle des
+    FONDAMENTAUX, pendant que `_track.record` tournait ailleurs sans rien
+    dire."""
+    #  PAR AST, pas par sous-chaîne : le commentaire qui explique le
+    #  déplacement contient le nom du job dans les DEUX fonctions. Un
+    #  `'TRACK_RECORD_UPDATE' not in source` échouait donc sur de la prose
+    #  sans effet — la leçon que `test_la_fenetre_de_fraicheur_ne_s_elargit_pas`
+    #  a déjà payée une fois.
+    src = open(os.path.join(_RACINE, 'terminal.py'), encoding='utf-8').read()
+    arbre = ast.parse(src)
+    fonctions = {n.name: n for n in ast.walk(arbre)
+                 if isinstance(n, ast.FunctionDef)}
+
+    def _bat(fn):
+        return {n.args[0].value for n in ast.walk(fonctions[fn])
+                if isinstance(n, ast.Call)
+                and getattr(n.func, 'attr', None) == 'beat'
+                and n.args and isinstance(n.args[0], ast.Constant)}
+
+    def _appelle_track(fn):
+        return any(isinstance(n, ast.Call)
+                   and getattr(n.func, 'attr', None) == 'record'
+                   and getattr(getattr(n.func, 'value', None), 'id', '') == '_track'
+                   for n in ast.walk(fonctions[fn]))
+
+    assert _appelle_track('_edge_loop'), (
+        '`_track.record` a quitté `_edge_loop` : le battement doit suivre le '
+        'travail, pas rester où il était')
+    assert 'TRACK_RECORD_UPDATE' in _bat('_edge_loop'), (
+        'la boucle qui appelle `_track.record` ne bat plus pour lui')
+    assert 'TRACK_RECORD_UPDATE' not in _bat('_fund_loop'), (
+        'la boucle des fondamentaux ré-emprunte le job du track record : elle '
+        'parlerait de nouveau au nom d’un travail qu’elle ne fait pas')
+    assert 'FUNDAMENTALS_REFRESH' in _bat('_fund_loop'), (
+        'la boucle des fondamentaux ne déclare plus son propre job : elle '
+        'redeviendrait invisible sur la page Système')
