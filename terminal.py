@@ -1947,51 +1947,11 @@ def _edge_loop():
 
 
 # ─── BAROMÈTRE DU MARCHÉ : internals / breadth agrégés depuis le scan (vue top-down) ──
-def _market_internals(rows, detail, breadth):
-    n = len(rows) or 1
-    up = sum(1 for r in rows if (r.get('change') or 0) > 0)
-    dn = sum(1 for r in rows if (r.get('change') or 0) < 0)
-    a50 = a200 = 0
-    for r in rows:
-        sg = (detail.get(r['symbol']) or {}).get('signals') or {}
-        if sg.get('above50'):
-            a50 += 1
-        if sg.get('above200'):
-            a200 += 1
-    nh = sum(1 for r in rows if (r.get('pos52') or 0) >= 95)
-    nl = sum(1 for r in rows if (r.get('pos52') if r.get('pos52') is not None else 100) <= 5)
-    rsis = [r.get('rsi') for r in rows if r.get('rsi') is not None]
-    ob = sum(1 for x in rsis if x >= 70)
-    ov = sum(1 for x in rsis if x <= 30)
-    dist = [0] * 10
-    for r in rows:
-        s = r.get('score')
-        if s is not None:
-            dist[min(9, max(0, int(s // 10)))] += 1
-    nb = sum(1 for r in rows if r.get('verdict') == 'BUY')
-    nw = sum(1 for r in rows if r.get('verdict') in ('WATCH', 'WAIT'))
-    na = sum(1 for r in rows if r.get('verdict') == 'AVOID')
-    pa50 = round(100 * a50 / n)
-    pa200 = round(100 * a200 / n)
-    advpct = round(100 * up / max(1, up + dn))
-    health = max(0, min(100, round(0.30 * pa50 + 0.25 * pa200 + 0.25 * breadth + 0.20 * advpct)))
-    sec = {}
-    for r in rows:
-        s = _GICS_SECTOR.get(r['symbol'])
-        if not s:
-            continue
-        sg = (detail.get(r['symbol']) or {}).get('signals') or {}
-        d = sec.setdefault(s, [0, 0])
-        d[1] += 1
-        if sg.get('above50'):
-            d[0] += 1
-    sectors_breadth = sorted([{'sector': s, 'pct': round(100 * v[0] / v[1]), 'n': v[1]}
-                              for s, v in sec.items() if v[1] >= 5], key=lambda x: -x['pct'])
-    return {'n': n, 'up': up, 'dn': dn, 'pct_a50': pa50, 'pct_a200': pa200, 'nh': nh, 'nl': nl,
-            'pct_ob': round(100 * ob / max(1, len(rsis))), 'pct_os': round(100 * ov / max(1, len(rsis))),
-            'avg_rsi': round(sum(rsis) / len(rsis)) if rsis else None, 'dist': dist,
-            'nb': nb, 'nw': nw, 'na': na, 'advpct': advpct, 'breadth': breadth,
-            'health': health, 'sectors': sectors_breadth}
+#  DÉPLACÉ (strangler) vers `vertex/market/internals.py`. La fonction ne
+#  collecte rien : tout entre par ses arguments, tout sort par sa valeur de
+#  retour — elle n'avait aucune raison de vivre dans le monolithe. Le nom est
+#  réexporté ici parce que `_scan_once` le résout dans CES globales.
+from vertex.market.internals import market_internals as _market_internals  # noqa: E402,F401
 
 
 # ─── WATCHLIST DE LA SEMAINE : sélection FIGÉE le lundi (état partagé → state.py) ──
