@@ -44,8 +44,13 @@ def weekly_regen_ep():
                              'updated': datetime.now().strftime('%H:%M:%S')})
         return jsonify({'ok': True, 'week': snap.get('week'),
                         'n': snap.get('meta', {}).get('n')})
-    except Exception as e:
-        return jsonify({'ok': False, 'error': '%s: %s' % (type(e).__name__, e)})
+    except Exception:                                         # noqa: BLE001
+        #  Code stable, jamais le texte de l'exception : `type(e).__name__` et
+        #  son message livraient un détail interne au client.
+        return jsonify({'ok': False, 'error': 'weekly_rebuild_unavailable',
+                        'note': 'la sélection hebdomadaire n’a pas pu être '
+                                'reconstruite — l’instantané précédent est '
+                                'conservé'})
 
 
 __all__ = ['bp']

@@ -72,11 +72,17 @@ def _annexes(sym):
     """
     try:
         pack = options_pack(sym)
-    except Exception as e:                                    # noqa: BLE001
-        #  L'aveu reste STRUCTURÉ. Avant ce lot, une coupure réseau faisait
-        #  sortir `IndexError: single positional indexer is out-of-bounds` dans
-        #  la charge servie — une exception Python présentée comme un état.
-        pack = {'sym': sym, 'error': '%s: %s' % (type(e).__name__, e),
+    except Exception:                                         # noqa: BLE001
+        #  L'aveu reste STRUCTURÉ **et sans texte d'exception**. Une coupure
+        #  réseau faisait sortir `IndexError: single positional indexer is
+        #  out-of-bounds` dans la charge servie : un type et un message internes
+        #  livrés au client, en anglais, qui ne disent rien de l'état réel. Le
+        #  lot précédent avait structuré la FORME du pack mais gardé le
+        #  MESSAGE brut. Code stable + note française, comme partout ailleurs
+        #  (`options_lab_unavailable`, `empreinte_absente`).
+        pack = {'sym': sym, 'error': 'options_pack_unavailable',
+                'note': 'chaîne d’options indisponible pour ce titre — '
+                        'aucune donnée n’est inférée',
                 'contracts': []}
     try:
         comp = _company.get(sym, demo=DEMO_MODE, brief=True)

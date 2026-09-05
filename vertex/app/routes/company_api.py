@@ -44,7 +44,9 @@ def api_company(sym):
     try:
         return jsonify(_company.get(sym.upper(), demo=DEMO_MODE, brief=True))
     except Exception as e:
-        return jsonify({'error': f'{type(e).__name__}: {e}'})
+        return jsonify({'error': 'company_unavailable',
+                        'note': 'fiche société indisponible — '
+                                'source injoignable ou titre inconnu'})
 
 
 @bp.route('/api/analyst/<sym>')
@@ -56,7 +58,9 @@ def api_analyst(sym):
     try:
         return jsonify(analyst_deep.get(sym.upper()) or {})
     except Exception as e:
-        return jsonify({'error': f'{type(e).__name__}: {e}'})
+        return jsonify({'error': 'company_unavailable',
+                        'note': 'fiche société indisponible — '
+                                'source injoignable ou titre inconnu'})
 
 
 @bp.route('/api/names')

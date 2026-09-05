@@ -202,8 +202,13 @@ def options_pack(sym):
                     flip = pk + (K - pk) * (-cum / (nc - cum))
                 pk, cum = K, nc
             out['gamma_flip'] = round(flip, 2) if flip else (out['put_wall'] if net > 0 else out['call_wall'])
-    except Exception as e:
-        out['error'] = f'{type(e).__name__}: {e}'
+    except Exception:                                         # noqa: BLE001
+        #  Code stable, jamais le texte de l'exception : ce pack est SERVI par
+        #  `/options/<sym>`, et `f'{type(e).__name__}: {e}'` y livrait
+        #  `IndexError: single positional indexer is out-of-bounds` au client.
+        out['error'] = 'options_pack_unavailable'
+        out['note'] = ('chaîne d’options indisponible pour ce titre — '
+                       'aucune donnée n’est inférée')
     return out
 
 

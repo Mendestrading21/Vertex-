@@ -104,7 +104,7 @@ def etat_actif() -> dict:
     try:
         profil = constitution.load_profile()
     except Exception as exc:                                   # noqa: BLE001
-        etat['erreur'] = ('%s: %s' % (type(exc).__name__, exc))[:160]
+        etat['erreur'] = 'profil_de_release_illisible'
         return etat
     swing = (profil.options_profile or {}).get('swing_3_6m') or {}
     etat.update({
