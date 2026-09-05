@@ -87,7 +87,24 @@ _JS_ARMER = r"""() => {
   // Le defilement EST un effet : plusieurs commandes de la page d'accueil ne
   // font que cela (les pastilles d'ancre menent a un bloc). Sans cette
   // mesure, l'outil les declarait mortes.
-  window.__vxEffet = { dom: 0, stockage: 0, defile: 0,
+  //  REMPLIR UN CHAMP EST UN EFFET, et c'est meme le plus courant dans un
+  //  produit fait de filtres et de formulaires. Une `value` d'input est une
+  //  PROPRIETE, pas un attribut : le MutationObserver ne la voit pas, aucun
+  //  reseau ne part, rien ne defile. L'outil declarait donc morts des boutons
+  //  qui marchent.
+  //
+  //  Mesure : sur `/intelligence`, NEUF boutons sur seize — les quatre
+  //  exemples de questions (« La these tient-elle apres les resultats ? »…)
+  //  et les cinq pastilles de tickers. Leur handler fait exactement
+  //  `$('vx-analyst-q').value = …` puis `focus()`. Ils remplissent le
+  //  formulaire de l'analyste, et l'outil les enterrait.
+  const champs = () => [...document.querySelectorAll('input, select, textarea')]
+    .map(c => (c.type === 'checkbox' || c.type === 'radio')
+                ? (c.checked ? '1' : '0') : String(c.value == null ? '' : c.value))
+    .join('\u0001');
+  window.__vxChamps = champs;
+  window.__vxEffet = { dom: 0, stockage: 0, defile: 0, champs: 0,
+                       c0: champs(),
                        y0: window.scrollY, x0: window.scrollX };
   window.__vxObs = new MutationObserver(m => { window.__vxEffet.dom += m.length; });
   window.__vxObs.observe(document.documentElement,
@@ -143,7 +160,7 @@ def main() -> int:
             page.goto(args.base + route_url, wait_until='domcontentloaded')
             page.wait_for_timeout(args.wait)
             candidats = page.evaluate(_JS_CANDIDATS)
-            morts = []
+            morts, instables = [], []
             debut, testes = time.monotonic(), 0
             for cand in candidats:
                 # Une route lente ne doit pas faire taire tout le releve : on
@@ -160,6 +177,44 @@ def main() -> int:
                 effets['reseau'] = effets['navigation'] = 0
                 page.route('**/*', _route)
                 cible = page.locator('[data-vx-sonde="%s"]' % cand['sonde']).first
+                url_avant = page.url
+
+                #  LE MEME BOUTON, OU UN AUTRE ? Les sondes sont reposees a
+                #  chaque re-navigation, dans l'ordre du DOM. Une page qui rend
+                #  en plusieurs temps n'a pas le meme DOM a 2,4 s qu'a 6 s : la
+                #  sonde N peut alors designer un AUTRE element, ou le meme
+                #  avant son remplissage. Cliquer la ne mesure plus rien.
+                #
+                #  Mesure qui a impose ce garde-fou : sur `/`, cinq tuiles
+                #  d'options ont ete declarees mortes. Leur propre trace le
+                #  disait — « strike 205 · prime  », la prime VIDE — alors
+                #  qu'une page stabilisee affiche « prime 43,84 $ » et que le
+                #  clic navigue bien vers /options/dossier/ACN. Cinq faux
+                #  morts, et un instrument qui crie faux finit par ne plus
+                #  etre cru : c'est alors le vrai bouton mort qu'on rate.
+                #  L'identite se lit AVEC LA MEME REGLE que `_JS_CANDIDATS` :
+                #  `innerText` SINON `aria-label`. Premiere version : elle ne
+                #  lisait que `innerText`, et ecartait donc les quatre boutons
+                #  a icone de la coque — Connexions, Notifications, Actualiser,
+                #  Reduire la navigation — sur les DOUZE routes. Un garde-fou
+                #  qui retire 48 boutons du releve coute plus qu'il ne protege.
+                _LIRE = ("el => (el.innerText || el.getAttribute('aria-label')"
+                         " || '').trim().slice(0, 44)")
+                try:
+                    texte_courant = cible.evaluate(_LIRE, timeout=1500)
+                except Exception:
+                    texte_courant = None
+                if texte_courant is not None and texte_courant != cand['texte']:
+                    page.wait_for_timeout(args.apres * 3)   # laisse finir le rendu
+                    try:
+                        texte_courant = cible.evaluate(_LIRE, timeout=1500)
+                    except Exception:
+                        texte_courant = None
+                if texte_courant is not None and texte_courant != cand['texte']:
+                    page.unroute('**/*', _route)
+                    instables.append(cand)
+                    continue
+
                 try:
                     # PAS de `force` : on veut que Playwright refuse un element
                     # que l'utilisateur ne pourrait pas atteindre. Forcer le clic
@@ -171,17 +226,34 @@ def main() -> int:
                     continue                        # non cliquable : hors sujet
                 page.wait_for_timeout(args.apres)
                 page.unroute('**/*', _route)
+                #  LA NAVIGATION SE LIT SUR L'URL, PAS SUR UNE EXCEPTION.
+                #
+                #  Le releve d'en dessous supposait qu'une page qui navigue
+                #  ferait LEVER `page.evaluate`. Elle ne leve pas : l'appel
+                #  reussit sur le NOUVEAU document, ou `window.__vxEffet`
+                #  n'existe pas, et le repli `{dom:0, stockage:0, …}` rendait
+                #  alors « aucun effet ». Tout bouton qui navigue par
+                #  `location.href` etait donc declare MORT.
+                #
+                #  Mesure : sur `/`, cinq tuiles d'options. Verifie une par une
+                #  — meme sequence, memes 2,4 s, meme interception — l'URL
+                #  passe de `/` a `/options/dossier/ACN`. Elles marchent, et
+                #  l'outil disait le contraire. Cinq faux morts sur 45.
+                if page.url != url_avant:
+                    continue                        # a navigue : c'est un effet
                 try:
                     interne = page.evaluate(
                         '() => { const e = window.__vxEffet'
-                        ' || {dom:0,stockage:0,defile:0,y0:0,x0:0};'
+                        ' || {dom:0,stockage:0,defile:0,champs:0,y0:0,x0:0};'
                         ' if (window.scrollY !== e.y0 || window.scrollX !== e.x0)'
                         '   e.defile = 1;'
+                        ' if (window.__vxChamps && e.c0 !== undefined'
+                        '     && window.__vxChamps() !== e.c0) e.champs = 1;'
                         ' return e; }')
                 except Exception:
                     continue                        # la page a navigue : c'est un effet
                 rien = (not interne.get('dom') and not interne.get('stockage')
-                        and not interne.get('defile')
+                        and not interne.get('defile') and not interne.get('champs')
                         and not effets['reseau'] and not effets['navigation'])
                 if rien:
                     morts.append(cand)
@@ -195,10 +267,17 @@ def main() -> int:
                 etat = '%d mort(s) sur %d' % (len(morts), len(candidats))
             else:
                 etat = 'OK (%d bouton(s) teste(s))' % len(candidats)
+            if instables:
+                etat += ' · %d non stabilise(s)' % len(instables)
             print('%-40s %s' % (route_url, etat))
             for m in morts:
                 print('     « %s »%s' % (m['texte'] or '(sans texte)',
                                          '  #' + m['id'] if m['id'] else ''))
+            #  DITS, PAS TUS : un bouton non stabilise n'est ni sain ni mort,
+            #  il n'a pas ete juge. Le taire rendrait une couverture partielle
+            #  pour une couverture complete.
+            for m in instables:
+                print('     ~ non stabilise : « %s »' % (m['texte'] or '(sans texte)'))
         nav.close()
     print('\nTOTAL : %d bouton(s) mort(s) sur %d route(s)'
           % (total, len(args.routes)))
